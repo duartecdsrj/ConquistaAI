@@ -18,7 +18,7 @@
         <div><strong>Concursos</strong><small>Seu plano de aprovação</small></div>
       </div>
       <q-list padding>
-        <q-item v-for="item in items" :key="item.id" clickable :active="active === item.id" active-class="nav-active" @click="emit('navigate', item.id)">
+        <q-item v-for="item in [...baseItems, ...items]" :key="item.id" clickable :active="active === item.id" active-class="nav-active" @click="emit('navigate', item.id)">
           <q-item-section><q-item-label>{{ item.label }}</q-item-label><q-item-label caption>{{ item.caption }}</q-item-label></q-item-section>
         </q-item>
       </q-list>
@@ -31,17 +31,19 @@
 import { computed, ref } from 'vue'
 import type { AuthenticatedUser } from '../../../Domain/Identity/AuthRepository'
 export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'catalog' | 'import'
-const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection }>()
+const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection; readonly canManage: boolean }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection]; logout: [] }>()
 const drawer = ref(true)
 const initials = computed(() => props.user.name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase())
-const items: readonly { id: ApplicationSection; label: string; caption: string }[] = [
+const items = computed(() => [
+  ...(!props.canManage ? [] : [
+  ]),
+] as readonly { id: ApplicationSection; label: string; caption: string }[])
+const baseItems: readonly { id: ApplicationSection; label: string; caption: string }[] = [
   { id: 'home', label: 'Início', caption: 'Visão geral' },
   { id: 'notebooks', label: 'Cadernos', caption: 'Monte e retome estudos' },
   { id: 'questions', label: 'Questões', caption: 'Banco publicado' },
   { id: 'performance', label: 'Desempenho', caption: 'Resultados reais' },
-  { id: 'catalog', label: 'Catálogo', caption: 'Administração' },
-  { id: 'import', label: 'Importar questões', caption: 'Preview e confirmação' },
 ]
 </script>
 <style scoped>

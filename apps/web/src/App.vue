@@ -1,7 +1,7 @@
 <template>
   <q-inner-loading :showing="loading" label="Carregando sessão..." />
   <LoginPage v-if="!loading && !authenticated" :submitting="submitting" :error="error" @submit="login" />
-  <AppShell v-else-if="!loading && user" :user="user" :active="section" @navigate="section = $event" @logout="logout">
+  <AppShell v-else-if="!loading && user" :user="user" :active="section" :can-manage="user.roles.includes('ADMIN')" @navigate="section = $event" @logout="logout">
     <HomePage v-if="section === 'home'" :user="user" @navigate="section = $event" />
     <NotebooksPage v-else-if="section === 'notebooks'" />
     <QuestionsPage v-else-if="section === 'questions'" />
