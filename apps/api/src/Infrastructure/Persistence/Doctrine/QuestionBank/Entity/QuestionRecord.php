@@ -24,4 +24,6 @@ class QuestionRecord
     public ?int $examYear;
     #[ORM\Column(type: 'string', length: 16)]
     public string $status;
+    #[ORM\Column(name: 'correct_option_id', type: 'string', length: 36, nullable: true)]
+    public ?string $correctOptionId = null;
 }

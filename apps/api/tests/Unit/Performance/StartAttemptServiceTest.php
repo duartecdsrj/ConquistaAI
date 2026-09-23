@@ -39,6 +39,7 @@ final class StartAttemptServiceTest extends TestCase
         $attempts = new class implements AttemptRepositoryInterface {
             public ?Attempt $saved = null;
             public function saveAttempt(Attempt $attempt): void { $this->saved = $attempt; }
+            public function findByIdForUser(string $attemptId, string $userId): ?Attempt { return null; }
             public function nextNumber(string $userId, string $notebookId, string $questionId): int { return 2; }
             public function appendAnswer(Answer $answer): void {}
             public function listAnswers(string $attemptId): array { return []; }
@@ -66,6 +67,7 @@ final class StartAttemptServiceTest extends TestCase
         };
         $attempts = new class implements AttemptRepositoryInterface {
             public function saveAttempt(Attempt $attempt): void {}
+            public function findByIdForUser(string $attemptId, string $userId): ?Attempt { return null; }
             public function nextNumber(string $userId, string $notebookId, string $questionId): int { return 1; }
             public function appendAnswer(Answer $answer): void {}
             public function listAnswers(string $attemptId): array { return []; }

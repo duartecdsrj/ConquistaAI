@@ -30,6 +30,30 @@ final class DoctrineAttemptRepository implements AttemptRepositoryInterface
         $this->entityManager->persist($record);
     }
 
+    public function findByIdForUser(string $attemptId, string $userId): ?Attempt
+    {
+        $record = $this->entityManager->createQueryBuilder()
+            ->select('attempt')
+            ->from(AttemptRecord::class, 'attempt')
+            ->where('attempt.id = :attemptId')
+            ->andWhere('attempt.userId = :userId')
+            ->setParameter('attemptId', $attemptId)
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $record instanceof AttemptRecord ? new Attempt(
+            $record->id,
+            $record->userId,
+            $record->notebookId,
+            $record->questionId,
+            $record->number,
+            $record->context,
+            $record->startedAt,
+            $record->completedAt,
+        ) : null;
+    }
+
     public function nextNumber(string $userId, string $notebookId, string $questionId): int
     {
         return 1 + (int) $this->entityManager->createQueryBuilder()
