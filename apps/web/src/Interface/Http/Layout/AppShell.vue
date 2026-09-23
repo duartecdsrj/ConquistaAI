@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { AuthenticatedUser } from '../../../Domain/Identity/AuthRepository'
-export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'catalog'
+export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'catalog' | 'import'
 const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection]; logout: [] }>()
 const drawer = ref(true)
@@ -41,6 +41,7 @@ const items: readonly { id: ApplicationSection; label: string; caption: string }
   { id: 'questions', label: 'Questões', caption: 'Banco publicado' },
   { id: 'performance', label: 'Desempenho', caption: 'Resultados reais' },
   { id: 'catalog', label: 'Catálogo', caption: 'Administração' },
+  { id: 'import', label: 'Importar questões', caption: 'Preview e confirmação' },
 ]
 </script>
 <style scoped>

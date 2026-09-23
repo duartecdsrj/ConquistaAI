@@ -6,6 +6,8 @@ import { configureAccessTokenProvider } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
 import { CatalogUseCases } from '../Application/Catalog/CatalogUseCases'
 import { AxiosCatalogRepository } from './Catalog/AxiosCatalogRepository'
+import { ImportUseCases } from '../Application/Import/ImportUseCases'
+import { AxiosImportRepository } from './Import/AxiosImportRepository'
 import { BrowserSessionStore } from './Identity/BrowserSessionStore'
 import { AxiosPerformanceRepository } from './Performance/AxiosPerformanceRepository'
 import { AxiosQuestionRepository } from './QuestionBank/AxiosQuestionRepository'
@@ -30,3 +32,4 @@ export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCa
 const performanceRepository = new AxiosPerformanceRepository()
 export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }
 export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())
+export const importUseCases = new ImportUseCases(new AxiosImportRepository())
