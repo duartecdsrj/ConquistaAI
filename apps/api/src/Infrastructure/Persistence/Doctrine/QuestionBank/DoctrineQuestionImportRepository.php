@@ -39,6 +39,13 @@ final class DoctrineQuestionImportRepository implements QuestionImportRepository
         }
     }
 
+    public function markCommitted(string $id): void
+    {
+        $record = $this->entityManager->find(QuestionImportRecord::class, $id);
+        if (!$record instanceof QuestionImportRecord) { throw new \DomainException("Importacao nao encontrada."); }
+        $record->status = "COMMITTED";
+    }
+
     public function findByIdForUser(string $id, string $userId): ?QuestionImport
     {
         $record = $this->entityManager->createQueryBuilder()

@@ -62,4 +62,5 @@ final class InMemoryQuestionImports implements QuestionImportRepositoryInterface
     public function save(QuestionImport $import): void { $this->imports[] = $import; }
 
     public function findByIdForUser(string $id, string $userId): ?QuestionImport { return null; }
+    public function markCommitted(string $id): void {}
 }

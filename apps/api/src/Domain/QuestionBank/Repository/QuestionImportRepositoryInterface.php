@@ -10,4 +10,5 @@ interface QuestionImportRepositoryInterface
     public function save(QuestionImport $import): void;
 
     public function findByIdForUser(string $id, string $userId): ?QuestionImport;
+    public function markCommitted(string $id): void;
 }

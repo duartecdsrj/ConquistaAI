@@ -20,4 +20,6 @@ class QuestionOptionRecord
     public string $content;
     #[ORM\Column(name: 'sort_order', type: 'smallint')]
     public int $sortOrder;
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
+    public \DateTimeImmutable $createdAt;
 }
