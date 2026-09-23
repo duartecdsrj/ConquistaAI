@@ -16,10 +16,10 @@ foreach (glob(__DIR__ . '/../migrations/*.sql') ?: [] as $migration) {
     try {
         $pdo->exec((string) file_get_contents($migration));
         $pdo->prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, UTC_TIMESTAMP())')->execute([$version]);
-        $pdo->commit();
+        if ($pdo->inTransaction()) { $pdo->commit(); }
         fwrite(STDOUT, "Applied {$version}\n");
     } catch (Throwable $exception) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) { $pdo->rollBack(); }
         throw $exception;
     }
 }

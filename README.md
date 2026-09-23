@@ -36,7 +36,7 @@ Depois da Fase 1 ser implementada, a aplicacao sera iniciada com:
 
 ```bash
 cp .env.example .env
-docker compose up -d --build
+HTTP_PORT=8081 docker compose up -d --build
 ```
 
 Somente o Nginx tera porta publica. MySQL e Redis permanecerao na rede interna do Compose.

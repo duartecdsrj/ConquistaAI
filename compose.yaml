@@ -2,7 +2,7 @@ services:
   nginx:
     build: ./docker/nginx
     ports:
-      - "8080:80"
+      - "${HTTP_PORT:-8081}:80"
     depends_on:
       api:
         condition: service_healthy
@@ -24,7 +24,7 @@ services:
       - web_node_modules:/app/node_modules
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/ >/dev/null 2>&1 || exit 1"]
+      test: ["CMD", "node", "/app/healthcheck.js"]
       interval: 10s
       timeout: 3s
       retries: 15

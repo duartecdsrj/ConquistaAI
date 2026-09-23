@@ -30,7 +30,7 @@ Um assunto pertence a um edital. Isso impede que uma mesma sigla com significado
 | `question_subjects` | question_id, subject_id | associacao N:N |
 | `question_tags` | question_id, tag_id | associacao N:N |
 | `question_imports` | created_by, format, filename, status, totals, report_json | lote administrativo |
-| `question_import_rows` | import_id, row_number, payload_json, status, errors_json, question_id opcional | auditoria de cada linha |
+| `question_import_rows` | import_id, line_number, payload_json, status, errors_json, question_id opcional | auditoria de cada linha |
 | `ai_question_generations` | requested_by, provider, model, prompt, subject_id, generated_at | audita questoes propostas |
 
 `correct_option_id` deve pertencer a alternativa da propria questao, validacao aplicada pelo caso de uso. `status` admite `DRAFT`, `REVIEW`, `PUBLISHED`, `VOID`. Apenas `PUBLISHED` aparece em selecoes comuns; `VOID` preserva rastreabilidade e nao gera correcao positiva/negativa.

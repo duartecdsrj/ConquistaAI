@@ -2,7 +2,7 @@
 
 ## Fase 0 - Fundacao arquitetural
 
-Entregue nesta etapa: decisoes de arquitetura, modelo de dados, API e plano. A proxima acao e inicializar o monorepo, o Docker Compose, as dependencias e a primeira migration.
+Entregue nesta etapa: decisoes de arquitetura, modelo de dados, API e plano. A infraestrutura do MVP agora inclui Compose, frontend Vue/Quasar, healthchecks, CORS configuravel, migrations e scripts de backup/restauracao. A proxima acao e inicializar o monorepo, o Docker Compose, as dependencias e a primeira migration.
 
 ## Fase 1 - MVP
 

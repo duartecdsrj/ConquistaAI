@@ -139,7 +139,7 @@ CREATE TABLE question_imports (
 CREATE TABLE question_import_rows (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   import_id CHAR(36) NOT NULL,
-  row_number INT NOT NULL,
+  line_number INT NOT NULL,
   payload JSON NOT NULL,
   status ENUM('VALID','INVALID','DUPLICATE') NOT NULL,
   errors JSON NOT NULL,
