@@ -1,0 +1,7 @@
+.env
+.DS_Store
+apps/api/vendor/
+apps/api/var/
+apps/web/node_modules/
+apps/web/dist/
+backups/

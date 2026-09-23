@@ -1,0 +1,85 @@
+services:
+  nginx:
+    build: ./docker/nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    networks: [public, internal]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./apps/web
+      target: development
+    volumes:
+      - ./apps/web:/app
+      - web_node_modules:/app/node_modules
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/ >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 15
+
+  api:
+    build: ./apps/api
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-concursos}
+      DB_USER: ${DB_USER:-concursos}
+      DB_PASSWORD: ${DB_PASSWORD:-change-me}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER:-concursos-api}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-900}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-2592000}
+    volumes:
+      - ./apps/api:/app
+      - api_vendor:/app/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "php -r 'exit(@file_get_contents(\"http://127.0.0.1:8000/health\") === false ? 1 : 0);'"]
+      interval: 10s
+      timeout: 3s
+      retries: 15
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-concursos}
+      MYSQL_USER: ${MYSQL_USER:-concursos}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-change-me}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-root-password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+networks:
+  public:
+  internal:
+    internal: true
+
+volumes:
+  mysql_data:
+  api_vendor:
+  web_node_modules:
