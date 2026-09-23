@@ -25,7 +25,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
 | Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit` |
 | Revisão editorial | `GET /admin/questions/drafts`; `POST /admin/questions/{id}/publish` |
-| Taxonomia | `POST /admin/taxonomy/subjects` (cria assunto canônico) |
+| Taxonomia | `GET, POST /admin/taxonomy/subjects` (lista paginada e cria assunto canônico) |
 | Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
 
 `GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.

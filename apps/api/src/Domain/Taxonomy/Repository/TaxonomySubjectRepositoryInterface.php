@@ -12,4 +12,9 @@ interface TaxonomySubjectRepositoryInterface extends TaxonomyHierarchyRepository
     public function findById(string $id): ?TaxonomySubject;
 
     public function findByParentAndSlug(?string $parentId, string $slug): ?TaxonomySubject;
+
+    /** @return list<TaxonomySubject> */
+    public function list(int $offset, int $limit): array;
+
+    public function count(): int;
 }

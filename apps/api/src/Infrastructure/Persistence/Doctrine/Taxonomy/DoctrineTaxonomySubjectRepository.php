@@ -58,6 +58,16 @@ final class DoctrineTaxonomySubjectRepository implements TaxonomySubjectReposito
         return $record instanceof TaxonomySubjectRecord ? $this->map($record) : null;
     }
 
+    public function list(int $offset, int $limit): array
+    {
+        return array_map($this->map(...), $this->entityManager->createQueryBuilder()->select('subject')->from(TaxonomySubjectRecord::class, 'subject')->orderBy('subject.level', 'ASC')->addOrderBy('subject.name', 'ASC')->setFirstResult($offset)->setMaxResults($limit)->getQuery()->getResult());
+    }
+
+    public function count(): int
+    {
+        return (int) $this->entityManager->createQueryBuilder()->select('COUNT(subject.id)')->from(TaxonomySubjectRecord::class, 'subject')->getQuery()->getSingleScalarResult();
+    }
+
     public function ancestorIds(string $subjectId): array
     {
         $ancestors = [];
