@@ -25,7 +25,7 @@ Atualizado em 23/09/2026. Cada marco só avança quando backend, frontend, docum
 ## M0 — sequência detalhada
 
 - M0.1: tabelas canônicas, aliases e auditoria de fusão. **Concluída nesta entrega inicial.**
-- M0.2: domínio Taxonomy, slug/normalização, operações de árvore e prevenção de ciclo. **Em andamento: normalização e prevenção de ciclo concluídas.**
+- M0.2: domínio Taxonomy, slug/normalização, operações de árvore e prevenção de ciclo. **Em andamento: normalização, prevenção de ciclo e criação persistida concluídas.**
 - M0.3: API administrativa e testes.
 - M0.4: árvore de assuntos, aliases, mover e editar no frontend.
 - M0.5: sugestões de duplicidade, proposta de fusão e reatribuição transacional.
