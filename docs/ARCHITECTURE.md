@@ -99,3 +99,7 @@ Para uma questao em simulado ainda aberto, o contexto exclui gabarito, comentari
 - CORS permitido apenas para origens configuradas; rate limiting para login, refresh e assistente.
 - Logs JSON incluem request id, usuario quando disponivel e duracao, mas nunca senha, token, segredo ou prompt com dados sensiveis desnecessarios.
 - `compose.yaml` usara redes internas para MySQL/Redis, volumes nomeados e healthchecks para MySQL, API, frontend e Nginx.
+
+## Frontend modular
+
+A SPA aplica os mesmos limites de contexto do backend. Cada modulo usa Domain, Application, Infrastructure e Interface/Http. O cliente Axios e um adaptador de infraestrutura unico: normaliza envelopes, erros, autenticacao e paginacao. Paginas e componentes nao conhecem detalhes HTTP ou regras de negocio.

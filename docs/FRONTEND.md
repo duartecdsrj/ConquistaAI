@@ -1,37 +1,59 @@
 # Frontend
 
-A interface web usa Vue 3 e Quasar, com foco em leitura rápida, navegação simples e boa adaptação a telas menores.
+## Arquitetura obrigatoria
 
-## Tela inicial
+O frontend segue DDD adaptado a SPA e organiza cada contexto em quatro camadas:
 
-A página inicial inclui:
+Interface (pages/components/composables) -> Application (use cases) -> Domain (models and ports) <- Infrastructure (Axios repositories)
 
-- menu lateral recolhível com acesso a Início, Estudar, Cadernos, Desempenho e Revisões;
-- resumo de questões, acertos, tempo e revisões pendentes;
-- meta semanal e sequência de estudo;
-- cartões para retomar cadernos;
-- desempenho por assunto.
+- Domain/<Context> contem modelos, tipos imutaveis e interfaces de repositorio. Nao importa Vue, Quasar, Axios ou navegador.
+- Application/<Context> contem casos de uso. Recebe comandos e usa somente contratos de dominio.
+- Infrastructure contem Axios, armazenamento do navegador e implementacoes dos repositorios.
+- Interface/Http contem paginas, componentes e composables. Telas nao chamam Axios, nao acessam localStorage e nao possuem regra de negocio.
+- Infrastructure/Container.ts e o ponto de composicao das dependencias.
 
-Em telas de celular, o menu lateral pode ser aberto pelo botão no cabeçalho, os cartões passam a ocupar uma coluna e as ações principais usam toda a largura disponível.
+O fluxo de uma acao deve ser:
 
-## Design
+Page -> composable/view model -> use case -> repository interface -> Axios repository -> API
+API -> envelope DTO -> mapper/repository -> use case -> composable -> page
 
-A paleta utiliza fundo claro, azul como cor de ação principal e tons suaves para estados informativos. Os componentes são nativos do Quasar, sem imagens pesadas, para preservar carregamento leve.
+## Cliente HTTP e contratos
 
-## Execução
+Somente Infrastructure/Http/AxiosApiClient.ts consome Axios diretamente. Ele padroniza:
 
-```bash
+- base URL /api/v1, Accept application/json e withCredentials;
+- injecao do token Bearer por interceptor;
+- conversao do envelope data/meta em retorno tipado;
+- conversao de falhas em ApiRequestError, com codigo, status, detalhes e request id;
+- paginacao com PageQuery, PageResult e paginationParams.
+
+Novos repositorios devem usar getData, postData ou getPage. Nunca retornar AxiosResponse, arrays sem tipo ou o envelope HTTP para a camada de aplicacao.
+
+Listagens usam page e per_page, com padrao 1 e 25 e maximo 100. Filtros devem ser DTOs imutaveis do contexto e ser serializados pelo repositorio de infraestrutura.
+
+## Identity
+
+O modulo Identity possui:
+
+- contrato AuthRepository e porta SessionStore no dominio;
+- casos de uso de login, restauracao e logout na aplicacao;
+- AxiosAuthRepository e BrowserSessionStore na infraestrutura;
+- useAuth como adaptador de apresentacao.
+
+A tela de login apenas coleta os valores e emite um evento. A validacao de credenciais e a persistencia de sessao pertencem aos casos de uso e adaptadores.
+
+## Execucao e validacao
+
 docker compose up -d --build
-```
-
-A interface fica disponível em `http://localhost:8081`.
-
-## Validação
-
-O comando configurado é:
-
-```bash
+docker compose exec frontend npm install
 docker compose exec frontend npm run build
-```
 
-O projeto ainda não possui `tsconfig.json`; por isso o `vue-tsc --noEmit` exibe a ajuda do TypeScript antes de chamar o Vite. A interface é servida em modo de desenvolvimento pelo Vite no Compose.
+A interface fica disponivel em http://localhost:8081.
+
+## Quasar e identidade visual
+
+Quasar e a base de componentes da interface. O plugin Vite e configurado em apps/web/vite.config.ts e o bootstrap da aplicacao importa o CSS do framework em main.ts.
+
+As cores da identidade visual ficam em src/styles/quasar.variables.sass. Estilos globais estritamente necessarios ficam em src/styles/app.sass. Componentes devem preferir QLayout, QPage, QCard, QForm, QInput, QBtn, QBanner e QAvatar, aplicando classes locais apenas para acabamento visual.
+
+Nao importar outro framework CSS, nem substituir a paleta azul clara, os fundos suaves, os cartoes com cantos arredondados ou a tipografia atual sem uma decisao de produto.

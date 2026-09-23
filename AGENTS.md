@@ -126,3 +126,22 @@ Todo endpoint responde JSON no formato abaixo. Nao criar variacoes por controlle
 6. Adicione testes para controller, service e repository conforme o risco.
 
 Historico de tentativas e respostas e imutavel. Toda consulta ou alteracao de dados pessoais deve restringir o resultado ao usuario autenticado.
+
+## Frontend: DDD e consumo da API
+
+O frontend em apps/web deve respeitar o fluxo:
+
+Page/Component -> Composable (adaptador de interface) -> Application Use Case -> Domain Repository Interface -> Infrastructure Axios Repository -> API
+
+- Pages e componentes Quasar apresentam dados e emitem eventos. Nao podem importar Axios, chamar fetch, acessar localStorage ou conter regra de negocio.
+- apps/web/src/Domain/<Context> contem entidades/modelos, value objects e portas (interfaces). Nao pode importar Vue, Quasar, Axios ou APIs do navegador.
+- apps/web/src/Application/<Context> contem DTOs e casos de uso; depende somente de Domain.
+- apps/web/src/Infrastructure implementa portas usando Axios e APIs do navegador. Infrastructure/Container.ts e o unico ponto de composicao.
+- apps/web/src/Interface/Http contem pages, componentes e composables. Composables traduzem eventos da tela para use cases e expoem estado de apresentacao.
+- Somente Infrastructure/Http/AxiosApiClient.ts pode importar Axios. E proibido usar fetch no frontend.
+- Repositorios nunca retornam AxiosResponse nem envelopes HTTP para Application ou Interface.
+- Toda resposta deve respeitar data/meta e falha error/meta, convertida para ApiRequestError.
+- Listagens usam PageQuery e PageResult, com page=1, perPage=25 e maximo 100. Filtros devem ser DTOs tipados e imutaveis.
+- Antes de criar uma tela ou endpoint cliente, atualize docs/FRONTEND.md e, quando o contrato HTTP mudar, docs/API.md.
+- Quasar e o sistema de componentes obrigatorio do frontend. Use seus componentes antes de criar equivalentes HTML/CSS.
+- A identidade visual e definida em apps/web/src/styles/quasar.variables.sass e apps/web/src/styles/app.sass. Preserve a paleta azul clara, fundos suaves e cartoes arredondados.
