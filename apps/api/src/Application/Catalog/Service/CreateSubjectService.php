@@ -9,11 +9,13 @@ use App\Application\Catalog\Mapper\SubjectResponseMapper;
 use App\Application\Catalog\Port\TransactionManagerInterface;
 use App\Domain\Catalog\Entity\Subject;
 use App\Domain\Catalog\Repository\SubjectRepositoryInterface;
+use App\Domain\Catalog\Repository\SyllabusRepositoryInterface;
 
 final class CreateSubjectService
 {
     public function __construct(
         private readonly SubjectRepositoryInterface $subjects,
+        private readonly SyllabusRepositoryInterface $syllabi,
         private readonly SubjectResponseMapper $mapper,
         private readonly TransactionManagerInterface $transactions,
     ) {}
@@ -21,6 +23,7 @@ final class CreateSubjectService
     public function create(CreateSubjectRequestDto $input): SubjectResponseDto
     {
         $name = trim($input->name);
+        if (!$this->syllabi->existsById($input->syllabusId) || ($input->parentId !== null && !$this->subjects->existsForSyllabus($input->parentId, $input->syllabusId))) { throw new \DomainException('Referencia de assunto invalida.'); }
         if ($name === '' || mb_strlen($name) > 190 || $input->sortOrder < 0) {
             throw new \InvalidArgumentException('Dados de assunto invalidos.');
         }
