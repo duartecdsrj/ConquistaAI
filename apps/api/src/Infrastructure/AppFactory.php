@@ -27,6 +27,7 @@ use App\Infrastructure\Security\RandomRefreshTokenGenerator;
 use App\Infrastructure\Security\Sha256IpAddressHasher;
 use App\Infrastructure\Security\SystemClock;
 use App\Infrastructure\Import\JsonCsvQuestionImportReader;
+use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionImportRepository;
 use App\Interface\Http\Identity\Controller\AuthController;
 use App\Interface\Http\Identity\IdentityRequestFactory;
 use App\Interface\Http\Catalog\CatalogRequestFactory;
@@ -188,12 +189,20 @@ $errorMiddleware = $app->addErrorMiddleware(false, true, true);
 
     private static function questionImportController(ApiResponseFactory $responses, AuthService $authentication): QuestionImportController
     {
+        $entityManager = DoctrineEntityManagerFactory::create();
+
         return new QuestionImportController(
             $authentication,
-            new PreviewQuestionImportService(new JsonCsvQuestionImportReader(), new \App\Application\QuestionBank\Service\QuestionImportValidationService()),
+            new PreviewQuestionImportService(
+                new JsonCsvQuestionImportReader(),
+                new \App\Application\QuestionBank\Service\QuestionImportValidationService(),
+                new DoctrineQuestionImportRepository($entityManager),
+                new DoctrineTransactionManager($entityManager),
+            ),
             $responses,
         );
     }
+
 
     private static function catalogController(ApiResponseFactory $responses, AuthService $authentication): CatalogController
     {

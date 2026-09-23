@@ -39,7 +39,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 ```
 
 ou `{ "format": "CSV", "content": "statement,options,correct_option\\n..." }`.
-A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a situacao e os erros. Uma linha repetida recebe `DUPLICATE_CANDIDATE`. O preview nao persiste questoes; somente uma confirmacao posterior podera gravar linhas validas explicitamente aprovadas.
+A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a situacao e os erros. Uma linha repetida recebe `DUPLICATE_CANDIDATE`. O preview persiste o relatorio e cada linha, associado ao administrador que o enviou, mas nao cria questoes. A confirmacao posterior podera gravar somente linhas validas explicitamente aprovadas.
 ## Cadernos, simulados e resolucao
 
 | Metodo e rota | Regra |

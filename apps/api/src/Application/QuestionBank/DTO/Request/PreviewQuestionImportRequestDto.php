@@ -5,7 +5,10 @@ namespace App\Application\QuestionBank\DTO\Request;
 
 final readonly class PreviewQuestionImportRequestDto
 {
-    public function __construct(public string $format, public string $content)
-    {
+    public function __construct(
+        public string $format,
+        public string $content,
+        public string $userId = '',
+    ) {
     }
 }

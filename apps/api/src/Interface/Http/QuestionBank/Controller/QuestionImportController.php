@@ -33,7 +33,9 @@ final class QuestionImportController
             return $this->responses->problem($response, 'FORBIDDEN', 'Permissao insuficiente.', 403, $this->requestId($request));
         }
 
-        return $this->responses->success($response, $this->preview->preview($input), $this->requestId($request), 201);
+        $report = $this->preview->preview(new PreviewQuestionImportRequestDto($input->format, $input->content, $user->id));
+
+        return $this->responses->success($response, $report, $this->requestId($request), 201);
     }
 
     private function requestId(ServerRequestInterface $request): string
