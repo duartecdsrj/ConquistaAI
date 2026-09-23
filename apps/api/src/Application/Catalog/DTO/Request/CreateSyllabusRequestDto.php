@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\Catalog\DTO\Request;
+final readonly class CreateSyllabusRequestDto { public function __construct(public string $positionId, public string $name, public ?string $publishedAt, public ?string $sourceUrl) {} }
