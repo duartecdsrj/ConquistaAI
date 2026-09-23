@@ -1,0 +1,26 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Interface\Http\QuestionBank;
+
+use App\Application\QuestionBank\DTO\Request\PreviewQuestionImportRequestDto;
+use InvalidArgumentException;
+use Psr\Http\Message\ServerRequestInterface;
+
+final class QuestionImportRequestFactory
+{
+    public function preview(ServerRequestInterface $request): PreviewQuestionImportRequestDto
+    {
+        try {
+            $payload = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            throw new InvalidArgumentException('JSON invalido.');
+        }
+
+        if (!is_array($payload) || !is_string($payload['format'] ?? null) || !is_string($payload['content'] ?? null)) {
+            throw new InvalidArgumentException('Informe format e content.');
+        }
+
+        return new PreviewQuestionImportRequestDto($payload['format'], $payload['content']);
+    }
+}

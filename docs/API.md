@@ -28,6 +28,18 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 
 `GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
 
+
+
+### Preview de importacao
+
+`POST /api/v1/question-imports` requer `ADMIN` e recebe:
+
+```json
+{ "format": "JSON", "content": "[...]" }
+```
+
+ou `{ "format": "CSV", "content": "statement,options,correct_option\\n..." }`.
+A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a situacao e os erros. Uma linha repetida recebe `DUPLICATE_CANDIDATE`. O preview nao persiste questoes; somente uma confirmacao posterior podera gravar linhas validas explicitamente aprovadas.
 ## Cadernos, simulados e resolucao
 
 | Metodo e rota | Regra |

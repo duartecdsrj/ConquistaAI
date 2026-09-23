@@ -1,1 +1,6 @@
-<template><q-layout view="hHh lpR fFf"><q-header elevated><q-toolbar><q-toolbar-title>Concursos</q-toolbar-title></q-toolbar></q-header><q-page-container><q-page class="q-pa-lg"><h1>Plataforma de estudos</h1><p>API do MVP em preparação.</p></q-page></q-page-container></q-layout></template>
+<template><q-layout view="hHh lpR fFf"><q-header
+            elevated><q-toolbar><q-toolbar-title>Concursos</q-toolbar-title></q-toolbar></q-header><q-page-container><q-page
+                class="q-pa-lg">
+                <h1>Plataforma de estudos</h1>
+                <p>API do MVP em preparaÃ§Ã£o.</p>
+            </q-page></q-page-container></q-layout></template>

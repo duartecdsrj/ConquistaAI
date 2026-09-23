@@ -2,7 +2,7 @@
 
 Aplicacao web auto-hospedada para estudo por questoes, inicialmente voltada ao concurso Transpetro - Analise de Sistemas: Infraestrutura, mas modelada para suportar qualquer concurso, edital e cargo.
 
-O projeto ainda esta na etapa de arquitetura da Fase 1. A implementacao comeca depois da aprovacao desta base documental.
+A Fase 1 esta em implementacao. A infraestrutura e os fluxos iniciais de identidade ja podem ser executados localmente.
 
 ## Documentacao
 
@@ -30,9 +30,9 @@ O projeto ainda esta na etapa de arquitetura da Fase 1. A implementacao comeca d
 | Borda | Nginx |
 | Execucao | Docker Compose |
 
-## Execucao futura
+## Execucao local
 
-Depois da Fase 1 ser implementada, a aplicacao sera iniciada com:
+Para iniciar a aplicacao:
 
 ```bash
 cp .env.example .env
@@ -41,11 +41,15 @@ HTTP_PORT=8081 docker compose up -d --build
 
 Somente o Nginx tera porta publica. MySQL e Redis permanecerao na rede interna do Compose.
 
-## Backup e restauracao planejados
+## Backup e restauracao
 
 ```bash
 ./scripts/backup.sh
 ./scripts/restore.sh backups/arquivo.sql.gz
 ```
 
-Os scripts validarao variaveis de ambiente e usarao o servico MySQL interno; detalhes serao incluidos junto com a infraestrutura na Fase 1.
+Os scripts usam o servico MySQL interno. Para criar o primeiro usuario local, use o comando abaixo com uma senha de ao menos 12 caracteres:
+
+```bash
+docker compose exec api php bin/create-user.php admin@example.test "Administrador" "uma-senha-segura" ADMIN,USER
+```
