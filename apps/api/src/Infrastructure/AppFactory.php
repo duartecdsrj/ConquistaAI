@@ -157,8 +157,7 @@ final class AppFactory
         $app->post('/v1/question-imports/{id}/commit', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($imports, $importRequests, $identityRequests, $responses): ResponseInterface {
             try {
                 $access = $identityRequests->accessToken($request);
-                $user = self::authService()->currentUser($access);
-                return $imports->commit($request, $response, $access, $importRequests->commit($request, $user->id, (string) ($arguments['id'] ?? '')));
+                return $imports->commit($request, $response, $access, $importRequests->commit($request, '', (string) ($arguments['id'] ?? '')));
             } catch (InvalidArgumentException $exception) {
                 return self::validationProblem($responses, $request, $response, $exception->getMessage());
             }

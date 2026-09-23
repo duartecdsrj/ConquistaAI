@@ -56,7 +56,7 @@ final class QuestionImportController
     {
         $user = $this->admin($request, $response, $access);
         if ($user instanceof ResponseInterface) { return $user; }
-        try { $result = $this->commitImport->commit($input); } catch (DomainException $exception) { return $this->responses->problem($response, "STATE_CONFLICT", "A importacao nao pode ser confirmada.", 409, $this->requestId($request)); }
+        try { $result = $this->commitImport->commit(new CommitQuestionImportRequestDto($user->id, $input->importId, $input->syllabusId)); } catch (DomainException $exception) { return $this->responses->problem($response, "STATE_CONFLICT", "A importacao nao pode ser confirmada.", 409, $this->requestId($request)); }
         return $this->responses->success($response, $result, $this->requestId($request), 201);
     }
 
