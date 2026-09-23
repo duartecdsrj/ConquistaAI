@@ -44,6 +44,7 @@ use App\Interface\Http\Study\StudyRouteRegistrar;
 use App\Interface\Http\QuestionBank\PublishedQuestionRouteRegistrar;
 use App\Interface\Http\QuestionBank\EditorialQuestionRouteRegistrar;
 use App\Interface\Http\Performance\PerformanceRouteRegistrar;
+use App\Interface\Http\Taxonomy\TaxonomyRouteRegistrar;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -69,6 +70,7 @@ final class AppFactory
         (new PerformanceRouteRegistrar($responses, self::authService()))->register($app);
         (new PublishedQuestionRouteRegistrar($responses, self::authService()))->register($app);
         (new EditorialQuestionRouteRegistrar($responses, self::authService()))->register($app);
+        (new TaxonomyRouteRegistrar($responses, self::authService()))->register($app);
 
         $app->get('/health', static function (ServerRequestInterface $request, ResponseInterface $response) use ($responses): ResponseInterface {
             return $responses->success($response, ['status' => 'ok'], (string) $request->getAttribute('request_id'));
