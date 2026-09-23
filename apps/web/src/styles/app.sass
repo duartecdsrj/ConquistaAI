@@ -14,6 +14,42 @@ input
 
 .q-btn
   letter-spacing: normal
+  min-height: 40px
 
 .q-field--outlined .q-field__control
   border-radius: 10px
+
+@media (max-width: 599px)
+  .page
+    padding: 24px 16px !important
+
+  .page .top
+    gap: 16px
+    margin-bottom: 22px
+
+  .page .top h1
+    font-size: 26px
+    line-height: 1.2
+
+  .page .top .q-btn
+    min-height: 44px
+
+  .page .grid
+    grid-template-columns: minmax(0, 1fr) !important
+    gap: 12px
+
+  .q-dialog__inner--minimized > div
+    max-width: calc(100vw - 24px)
+
+  .q-card__actions
+    gap: 8px
+
+  .q-card__actions .q-btn
+    min-height: 42px
+
+@media (min-width: 600px) and (max-width: 899px)
+  .page
+    padding: 32px 24px !important
+
+  .page .grid
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important

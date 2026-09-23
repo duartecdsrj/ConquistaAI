@@ -50,6 +50,10 @@ docker compose exec frontend npm run build
 
 A interface fica disponivel em http://localhost:8081.
 
+## Responsividade
+
+A interface é mobile-first: em telas menores que 900 px, a navegação lateral vira drawer sobreposto acionado pelo cabeçalho; em até 599 px, páginas usam espaçamento de 16 px, grades passam a uma coluna e ações mantêm alvo mínimo de 40 px. A resolução de cadernos compacta os controles do cabeçalho, mantém cronômetro e pausa acessíveis e preserva alternativas com área de toque mínima de 54 px.
+
 ## Quasar e identidade visual
 
 Quasar e a base de componentes da interface. O plugin Vite e configurado em apps/web/vite.config.ts e o bootstrap da aplicacao importa o CSS do framework em main.ts.
@@ -76,9 +80,17 @@ A marca oficial do produto está em apps/web/public/images/concursos-study-mark.
 - Question Bank: consulta de questões publicadas com filtros.
 - Performance: métricas básicas do usuário.
 - Catalog: administração em cascata de concursos, cargos, editais, assuntos e tags para usuários ADMIN.
+- Editorial: listagem de rascunhos e publicação administrativa de questões validadas.
 
 Cada módulo mantém Domain, Application, Infrastructure e Interface separados; páginas Quasar somente coordenam composables e eventos.
 
 ## Marca
 
 O nome da aplicação é **ConquistaAI**. O lema oficial é: **“Estude. Evolua. Conquiste.”**. Use ambos nos pontos de marca da interface e preserve o ativo visual em apps/web/public/images/concursos-study-mark.png.
+
+## Alterações recentes de interface
+
+- A página HTML declara `viewport` para evitar a renderização em largura de desktop no celular.
+- Em larguras menores que 900 px, o menu é um drawer sobreposto aberto pelo cabeçalho; em desktop ele permanece lateral.
+- O Vite aceita somente `conquistaai.app.br` e `www.conquistaai.app.br`, sem liberar hosts genéricos.
+- A execução de cadernos mantém controles compactos, cronômetro, pausa e alternativas com áreas de toque adequadas.

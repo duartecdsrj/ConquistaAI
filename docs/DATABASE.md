@@ -49,7 +49,7 @@ Duplicidade de importacao nao depende de hash como decisao final: um hash normal
 | `review_events` | review_id, attempt_id opcional, event, occurred_at, payload_json | historico de agendamento e desempenho |
 | `recommendation_snapshots` | user_id, subject_id, reason, score, confidence, metrics_json, generated_at, dismissed_at | explicabilidade e historico de recomendacao |
 
-`notebooks.type` e `PRACTICE` ou `SIMULATION`; `mode` e `STUDY` ou `EXAM`. Simulados devem usar `EXAM`. A distribuicao planejada do simulado e armazenada em `filters_json`/configuracao estruturada; os itens efetivos ficam apenas em `notebook_questions`.
+`notebooks.type` e `PRACTICE` ou `SIMULATION`; `mode` e `STUDY` ou `EXAM`; `status` pode ser `DRAFT`, `IN_PROGRESS`, `PAUSED` ou `FINISHED`. A pausa acumula `duration_seconds` e a retomada reinicia apenas o intervalo ativo. Simulados devem usar `EXAM`. A distribuicao planejada do simulado e armazenada em `filters_json`/configuracao estruturada; os itens efetivos ficam apenas em `notebook_questions`.
 
 Uma `attempt` representa a interacao do usuario com uma questao em uma execucao. `answers` mantem cada alteracao, inclusive pulo com `option_id` nulo. O resultado final e derivado da ultima resposta submetida antes da finalizacao, comparada ao gabarito valido naquele momento. `final_answer_id` e uma referencia de conveniencia definida na conclusao; o historico continua em `answers`.
 
@@ -74,3 +74,15 @@ User 1--N Attempt 1--N Answer; Attempt N--1 Question
 User 1--N Review N--1 Question
 User 1--N AIConversation 1--N AIMessage
 ```
+
+## Taxonomia canônica de assuntos
+
+A migration `005_taxonomy_foundation.sql` introduz uma taxonomia global sem alterar ou remover a árvore legada em `subjects`. A coexistência é deliberada: os vínculos atuais continuam operacionais até que o marco M0 conclua a migração explícita de conteúdo programático e questões.
+
+| Entidade | Finalidade |
+| --- | --- |
+| `taxonomy_subjects` | assunto canônico global, com `parent_id` recursivo, `slug`, descrição, nível e estado ativo |
+| `taxonomy_subject_aliases` | sinônimos normalizados que resolvem para o assunto canônico |
+| `taxonomy_subject_merges` | auditoria de fusões administrativas, com origem, destino, autor e motivo |
+
+A profundidade de `taxonomy_subjects` é ilimitada. O serviço de domínio do marco M0.2 impedirá ciclos, normalizará nomes/aliases e fará a reatribuição transacional de referências quando houver fusão. A IA poderá apenas propor reconciliações; decisões de baixa confiança exigem revisão humana.

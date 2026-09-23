@@ -103,3 +103,7 @@ Para uma questao em simulado ainda aberto, o contexto exclui gabarito, comentari
 ## Frontend modular
 
 A SPA aplica os mesmos limites de contexto do backend. Cada modulo usa Domain, Application, Infrastructure e Interface/Http. O cliente Axios e um adaptador de infraestrutura unico: normaliza envelopes, erros, autenticacao e paginacao. Paginas e componentes nao conhecem detalhes HTTP ou regras de negocio.
+
+## Transição para taxonomia canônica
+
+O catálogo legado mantém `subjects` associado a `syllabi` para compatibilidade com o MVP. A partir do marco M0, o contexto **Taxonomy** passa a concentrar assuntos canônicos globais, aliases, prevenção de ciclos, propostas de duplicidade e fusões auditáveis. Nenhuma relação existente é removida nesta etapa: a associação entre edital/cargo e assunto canônico será adicionada no marco M1, com migração explícita e reprocessável.

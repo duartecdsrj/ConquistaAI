@@ -11,6 +11,8 @@ A Fase 1 esta em implementacao. A infraestrutura e os fluxos iniciais de identid
 - [API REST](docs/API.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Frontend](docs/FRONTEND.md)
+- [Cronograma de desenvolvimento](docs/DEVELOPMENT_SCHEDULE.md)
+- [Operação externa](docs/OPERATIONS.md)
 
 ## Principios
 
