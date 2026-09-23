@@ -9,6 +9,7 @@ use App\Domain\Performance\Entity\Attempt;
 interface AttemptRepositoryInterface
 {
     public function saveAttempt(Attempt $attempt): void;
+    public function nextNumber(string $userId, string $notebookId, string $questionId): int;
 
     /** Appends a new answer; prior answers are never updated. */
     public function appendAnswer(Answer $answer): void;
