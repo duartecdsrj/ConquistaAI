@@ -12,6 +12,8 @@ import { BrowserSessionStore } from './Identity/BrowserSessionStore'
 import { AxiosPerformanceRepository } from './Performance/AxiosPerformanceRepository'
 import { AxiosQuestionRepository } from './QuestionBank/AxiosQuestionRepository'
 import { AxiosStudyRepository } from './Study/AxiosStudyRepository'
+import { AxiosTaxonomyRepository } from './Taxonomy/AxiosTaxonomyRepository'
+import { CreateTaxonomySubjectUseCase, ListTaxonomySubjectsUseCase } from '../Application/Taxonomy/TaxonomyUseCases'
 
 const sessionStore = new BrowserSessionStore()
 configureAccessTokenProvider(() => sessionStore.accessToken())
@@ -32,6 +34,8 @@ export const studyUseCases = {
   statistics: new GetNotebookStatisticsUseCase(studyRepository),
   finish: new FinishNotebookUseCase(studyRepository),
 }
+const taxonomyRepository = new AxiosTaxonomyRepository()
+export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository) }
 export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(new AxiosQuestionRepository()) }
 const performanceRepository = new AxiosPerformanceRepository()
 export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }

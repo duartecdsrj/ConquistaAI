@@ -1,0 +1,3 @@
+import type { CreateTaxonomySubject, TaxonomyRepository, TaxonomySubject } from '../../Domain/Taxonomy/TaxonomyRepository'
+import { getPage, postData, type PageQuery, type PageResult } from '../Http/AxiosApiClient'
+export class AxiosTaxonomyRepository implements TaxonomyRepository { public list(query?:PageQuery):Promise<PageResult<TaxonomySubject>> { return getPage<TaxonomySubject>('/admin/taxonomy/subjects',query) } public create(input:CreateTaxonomySubject):Promise<TaxonomySubject>{return postData<TaxonomySubject,{name:string;parent_id:string|null;description:string|null}>('/admin/taxonomy/subjects',{name:input.name,parent_id:input.parentId,description:input.description})} }
