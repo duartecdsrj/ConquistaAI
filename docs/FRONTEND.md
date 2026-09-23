@@ -57,3 +57,24 @@ Quasar e a base de componentes da interface. O plugin Vite e configurado em apps
 As cores da identidade visual ficam em src/styles/quasar.variables.sass. Estilos globais estritamente necessarios ficam em src/styles/app.sass. Componentes devem preferir QLayout, QPage, QCard, QForm, QInput, QBtn, QBanner e QAvatar, aplicando classes locais apenas para acabamento visual.
 
 Nao importar outro framework CSS, nem substituir a paleta azul clara, os fundos suaves, os cartoes com cantos arredondados ou a tipografia atual sem uma decisao de produto.
+
+## Entrega paralela de backend e frontend
+
+A partir da Fase 1, uma funcionalidade só é considerada entregue quando sua experiência correspondente também está disponível na SPA, sempre que houver interação humana aplicável.
+
+- Antes de iniciar o próximo item do roadmap, conclua no mesmo ciclo o contrato HTTP, o caso de uso backend, o repositório Axios, o caso de uso frontend, o composable e a tela ou componente Quasar.
+- A prioridade de interface acompanha a prioridade de produto: autenticação, cadernos/resolução, questões, desempenho; depois catálogo e importação administrativa.
+- Recursos exclusivamente internos (migrações, observabilidade, segurança de infraestrutura) não exigem tela, mas devem ser documentados.
+- Não use dados simulados para representar recursos já atendidos pela API. A tela deve consumir o contrato real, inclusive estados de carregamento, erro, vazio, filtros e paginação quando aplicável.
+- Toda nova rota ou mudança de contrato exige atualização de docs/API.md; todo novo módulo visual exige atualização deste arquivo.
+
+A marca oficial do produto está em apps/web/public/images/concursos-study-mark.png. Ela deve ser reutilizada como imagem — sem recriação em CSS, SVG ou texto — nos pontos de marcação da experiência.
+
+## Módulos já conectados à API
+
+- Study: lista e criação de cadernos, navegação pela seleção congelada e registro de resposta.
+- Question Bank: consulta de questões publicadas com filtros.
+- Performance: métricas básicas do usuário.
+- Catalog: administração em cascata de concursos, cargos, editais, assuntos e tags para usuários ADMIN.
+
+Cada módulo mantém Domain, Application, Infrastructure e Interface separados; páginas Quasar somente coordenam composables e eventos.

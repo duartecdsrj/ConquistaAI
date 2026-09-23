@@ -145,3 +145,9 @@ Page/Component -> Composable (adaptador de interface) -> Application Use Case ->
 - Antes de criar uma tela ou endpoint cliente, atualize docs/FRONTEND.md e, quando o contrato HTTP mudar, docs/API.md.
 - Quasar e o sistema de componentes obrigatorio do frontend. Use seus componentes antes de criar equivalentes HTML/CSS.
 - A identidade visual e definida em apps/web/src/styles/quasar.variables.sass e apps/web/src/styles/app.sass. Preserve a paleta azul clara, fundos suaves e cartoes arredondados.
+
+## Entrega integrada: backend e frontend
+
+Para qualquer funcionalidade com interação de usuário, a implementação deve avançar em backend e frontend no mesmo ciclo. Não inicie o próximo recurso de produto enquanto o anterior não tiver: contrato documentado, caso de uso e testes proporcionais no backend; e módulo DDD, repositório Axios, composable e experiência Quasar correspondente no frontend.
+
+A interface não pode simular dados já disponibilizados pela API. Deve tratar carregamento, erro, vazio, filtros e paginação conforme o contrato. Exceções são apenas recursos estritamente internos, como migrações, infraestrutura e observabilidade; nesses casos, documente a decisão.

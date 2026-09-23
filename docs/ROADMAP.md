@@ -43,3 +43,7 @@ Critério de aceite: nenhum usuario consegue ler ou alterar registros pessoais d
 ## Riscos e decisoes pendentes
 
 O MVP nao deve importar Excel nem integrar fornecedor de IA. Ambos sao extensoes posteriores. A taxonomia de assuntos deve ser cadastrada por edital na administracao; a carga inicial da Transpetro sera feita por importacao/seed versionado depois que o formato editorial for validado. Definiremos antes da implementacao visual o formato de conteudo rico para enunciados (Markdown sanitizado e imagens em armazenamento local na primeira versao).
+
+## Regra de entrega integrada
+
+A execução da Fase 1 segue entrega paralela: todo recurso com uso humano deve chegar ao backend e à SPA no mesmo ciclo. O frontend adota módulos DDD, cliente Axios único, envelopes data/meta, estados de carregamento/erro/vazio e componentes Quasar. A marca visual oficial é o ativo apps/web/public/images/concursos-study-mark.png.

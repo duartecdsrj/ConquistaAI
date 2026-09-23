@@ -93,3 +93,7 @@ O endpoint contextual de questao recebe `question_id` e `attempt_id`. Para simul
 `GET /auth/me` devolve `{ "id", "email", "name", "roles" }` em `data`. Credenciais, token expirado ou revogado e usuario bloqueado retornam `401 UNAUTHENTICATED`, sem revelar qual condicao falhou.
 
 Os services recebem Request DTOs e retornam Response DTOs; JWT, cookies, Argon2id e Doctrine pertencem aos adaptadores de infraestrutura.
+
+### Navegação de questões congeladas
+
+GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e devolve uma lista paginada de questões na ordem gravada em notebook_questions. A rota filtra o caderno pelo proprietário, preserva a seleção congelada e não repete os filtros usados na criação. Um caderno inexistente ou de outro usuário retorna 404 RESOURCE_NOT_FOUND.
