@@ -33,6 +33,14 @@ export function useTaxonomy() {
     finally { loading.value = false }
   }
 
+  async function createAlias(subjectId: string, alias: string): Promise<boolean> {
+    saving.value = true
+    error.value = ''
+    try { await taxonomyUseCases.createAlias.execute({ subjectId, alias }); return true }
+    catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível criar o alias.'; return false }
+    finally { saving.value = false }
+  }
+
   async function create(name: string, parentId: string | null, description: string | null): Promise<boolean> {
     saving.value = true
     error.value = ''
@@ -45,5 +53,5 @@ export function useTaxonomy() {
     } finally { saving.value = false }
   }
 
-  return { create, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
+  return { create, createAlias, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
 }
