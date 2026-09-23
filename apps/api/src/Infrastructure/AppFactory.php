@@ -12,6 +12,7 @@ use App\Application\Catalog\Service\UpdateExamService;
 use App\Application\Catalog\Service\DeleteExamService;
 use App\Application\Identity\Service\AuthService;
 use App\Application\QuestionBank\Service\PreviewQuestionImportService;
+use App\Application\QuestionBank\Service\GetQuestionImportService;
 use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Http\CorsMiddleware;
 use App\Infrastructure\Http\RequestIdMiddleware;
@@ -138,6 +139,14 @@ final class AppFactory
         });
 
         $app->add(new RequestIdMiddleware());
+        $app->get('/v1/question-imports/{id}', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($imports, $identityRequests, $responses): ResponseInterface {
+            try {
+                return $imports->get($request, $response, $identityRequests->accessToken($request), (string) ($arguments['id'] ?? ''));
+            } catch (InvalidArgumentException $exception) {
+                return self::validationProblem($responses, $request, $response, $exception->getMessage());
+            }
+        });
+
         $app->add(new CorsMiddleware());
 $errorMiddleware = $app->addErrorMiddleware(false, true, true);
         $errorMiddleware->setDefaultErrorHandler(
@@ -190,18 +199,21 @@ $errorMiddleware = $app->addErrorMiddleware(false, true, true);
     private static function questionImportController(ApiResponseFactory $responses, AuthService $authentication): QuestionImportController
     {
         $entityManager = DoctrineEntityManagerFactory::create();
+        $repository = new DoctrineQuestionImportRepository($entityManager);
 
         return new QuestionImportController(
             $authentication,
             new PreviewQuestionImportService(
                 new JsonCsvQuestionImportReader(),
                 new \App\Application\QuestionBank\Service\QuestionImportValidationService(),
-                new DoctrineQuestionImportRepository($entityManager),
+                $repository,
                 new DoctrineTransactionManager($entityManager),
             ),
+            new GetQuestionImportService($repository),
             $responses,
         );
     }
+
 
 
     private static function catalogController(ApiResponseFactory $responses, AuthService $authentication): CatalogController
