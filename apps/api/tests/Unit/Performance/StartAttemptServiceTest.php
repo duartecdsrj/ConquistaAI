@@ -48,7 +48,7 @@ final class StartAttemptServiceTest extends TestCase
         };
 
         $attempt = (new StartAttemptService($notebooks, $attempts, $transactions))
-            ->start(new StartAttemptRequestDto('user-1', 'notebook-1', 'question-1', 'STUDY'));
+            ->start(new StartAttemptRequestDto('user-1', 'notebook-1', 'question-1'));
 
         self::assertSame(2, $attempt->number);
         self::assertSame('question-1', $attempts->saved?->questionId);
@@ -76,6 +76,6 @@ final class StartAttemptServiceTest extends TestCase
 
         $this->expectException(\DomainException::class);
         (new StartAttemptService($notebooks, $attempts, $transactions))
-            ->start(new StartAttemptRequestDto('user-1', 'notebook-1', 'question-2', 'STUDY'));
+            ->start(new StartAttemptRequestDto('user-1', 'notebook-1', 'question-2'));
     }
 }

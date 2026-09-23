@@ -9,7 +9,6 @@ final readonly class StartAttemptRequestDto
         public string $userId,
         public string $notebookId,
         public string $questionId,
-        public string $context,
     ) {
     }
 }

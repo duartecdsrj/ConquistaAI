@@ -36,7 +36,7 @@ final class StartAttemptService
                 $request->notebookId,
                 $request->questionId,
                 $this->attempts->nextNumber($request->userId, $request->notebookId, $request->questionId),
-                $request->context,
+                $notebook->mode->value,
                 new \DateTimeImmutable('now', $this->utc),
             );
             $this->attempts->saveAttempt($attempt);

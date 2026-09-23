@@ -32,6 +32,7 @@ use App\Interface\Http\QuestionBank\Controller\QuestionImportController;
 use App\Interface\Http\QuestionBank\QuestionImportRequestFactory;
 use App\Interface\Http\Study\StudyRouteRegistrar;
 use App\Interface\Http\QuestionBank\PublishedQuestionRouteRegistrar;
+use App\Interface\Http\Performance\PerformanceRouteRegistrar;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -51,6 +52,7 @@ final class AppFactory
         $importRequests = new QuestionImportRequestFactory();
         (new StudyRouteRegistrar($responses, self::authService()))->register($app);
         $imports = self::questionImportController($responses, self::authService());
+        (new PerformanceRouteRegistrar($responses, self::authService()))->register($app);
         (new PublishedQuestionRouteRegistrar($responses, self::authService()))->register($app);
 
         $app->get('/health', static function (ServerRequestInterface $request, ResponseInterface $response) use ($responses): ResponseInterface {
