@@ -63,6 +63,11 @@ final class DoctrineTaxonomySubjectRepository implements TaxonomySubjectReposito
         return array_map($this->map(...), $this->entityManager->createQueryBuilder()->select('subject')->from(TaxonomySubjectRecord::class, 'subject')->orderBy('subject.level', 'ASC')->addOrderBy('subject.name', 'ASC')->setFirstResult($offset)->setMaxResults($limit)->getQuery()->getResult());
     }
 
+    public function hasChildren(string $subjectId): bool
+    {
+        return (int) $this->entityManager->createQueryBuilder()->select("COUNT(subject.id)")->from(TaxonomySubjectRecord::class, "subject")->where("subject.parentId = :parentId")->setParameter("parentId", $subjectId)->getQuery()->getSingleScalarResult() > 0;
+    }
+
     public function count(): int
     {
         return (int) $this->entityManager->createQueryBuilder()->select('COUNT(subject.id)')->from(TaxonomySubjectRecord::class, 'subject')->getQuery()->getSingleScalarResult();

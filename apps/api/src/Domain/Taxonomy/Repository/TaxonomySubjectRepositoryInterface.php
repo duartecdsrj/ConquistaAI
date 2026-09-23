@@ -16,5 +16,6 @@ interface TaxonomySubjectRepositoryInterface extends TaxonomyHierarchyRepository
     /** @return list<TaxonomySubject> */
     public function list(int $offset, int $limit): array;
 
+    public function hasChildren(string $subjectId): bool;
     public function count(): int;
 }
