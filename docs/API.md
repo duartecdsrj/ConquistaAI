@@ -21,7 +21,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Cargos | `GET, POST /exams/{examId}/positions`; `PATCH, DELETE /positions/{id}` |
 | Editais | `GET, POST /positions/{positionId}/syllabi`; `PATCH, DELETE /syllabi/{id}` |
 | Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `GET, PATCH, DELETE /subjects/{id}` |
-| Tags | `GET /tags`; `POST, PATCH, DELETE /tags/{id}` |
+| Tags | `GET, POST /tags` |
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
 | Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit` |
 | Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
