@@ -5,9 +5,10 @@ namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Application\Identity\Port\TransactionManagerInterface as IdentityTransactionManagerInterface;
 use App\Application\Catalog\Port\TransactionManagerInterface as CatalogTransactionManagerInterface;
+use App\Application\Study\Port\TransactionManagerInterface as StudyTransactionManagerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class DoctrineTransactionManager implements IdentityTransactionManagerInterface, CatalogTransactionManagerInterface
+final class DoctrineTransactionManager implements IdentityTransactionManagerInterface, CatalogTransactionManagerInterface, StudyTransactionManagerInterface
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {

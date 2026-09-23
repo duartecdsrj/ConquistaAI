@@ -1,0 +1,18 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Domain\QuestionBank\ReadModel;
+
+final readonly class PublishedQuestion
+{
+    /** @param list<PublishedQuestionOption> $options */
+    public function __construct(
+        public string $id,
+        public string $statement,
+        public string $difficulty,
+        public ?string $board,
+        public ?int $year,
+        public array $options,
+    ) {
+    }
+}

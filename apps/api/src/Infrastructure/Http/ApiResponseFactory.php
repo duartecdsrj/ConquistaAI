@@ -12,6 +12,28 @@ final class ApiResponseFactory
         return $this->json($response, ['data' => $data, 'meta' => ['request_id' => $requestId]], $status, $requestId);
     }
 
+    public function paginated(
+        ResponseInterface $response,
+        array $data,
+        string $requestId,
+        int $page,
+        int $perPage,
+        int $total,
+    ): ResponseInterface {
+        return $this->json($response, [
+            'data' => $data,
+            'meta' => [
+                'request_id' => $requestId,
+                'pagination' => [
+                    'page' => $page,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                    'total_pages' => $total === 0 ? 0 : (int) ceil($total / $perPage),
+                ],
+            ],
+        ], 200, $requestId);
+    }
+
     public function problem(ResponseInterface $response, string $code, string $message, int $status, string $requestId, array $details = []): ResponseInterface
     {
         return $this->json($response, ['error' => ['code' => $code, 'message' => $message, 'details' => $details], 'meta' => ['request_id' => $requestId]], $status, $requestId);
