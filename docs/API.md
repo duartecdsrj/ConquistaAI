@@ -53,7 +53,7 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 | `POST /attempts/{id}/complete` | conclui tentativa e aplica correcao conforme modo |
 | `POST /notebooks/{id}/finish` | finaliza caderno/simulado e revela resultado quando cabivel |
 
-O corpo de criacao inclui `type`, `mode`, `name`, `quantity`, filtros e, para simulados, `duration_seconds` e distribuicao. A API rejeita selecao insuficiente em vez de completar com questoes fora dos filtros sem avisar.
+`POST /notebooks` recebe `name`, `mode` (`STUDY` ou `EXAM`), `quantity` e o objeto opcional `filters`. Os filtros aceitos no MVP sao `subject_id`, `board`, `year` e `difficulty` (`EASY`, `MEDIUM` ou `HARD`). O cliente nao envia IDs de questoes: o service consulta somente questoes publicadas, persiste a lista retornada em `notebook_questions` e a composicao nunca muda. A API responde `422 VALIDATION_FAILED` quando os filtros nao encontram a quantidade solicitada, em vez de completar o caderno com questoes fora dos filtros.
 
 ## Desempenho e revisoes
 

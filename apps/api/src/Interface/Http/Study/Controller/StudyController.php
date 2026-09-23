@@ -94,7 +94,7 @@ final class StudyController
             $input->name,
             $input->mode,
             $input->quantity,
-            $input->questionIds,
+            $input->filters,
         );
 
         try {

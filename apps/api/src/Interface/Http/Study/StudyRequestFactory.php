@@ -25,21 +25,21 @@ final class StudyRequestFactory
         $name = $payload['name'] ?? null;
         $mode = $payload['mode'] ?? null;
         $quantity = $payload['quantity'] ?? null;
-        $questionIds = $payload['question_ids'] ?? null;
+        $filters = $payload['filters'] ?? [];
 
         if (
             !is_string($name)
             || !is_string($mode)
             || !in_array($mode, ['STUDY', 'EXAM'], true)
             || !is_int($quantity)
-            || !is_array($questionIds)
-            || !array_is_list($questionIds)
-            || array_filter($questionIds, static fn (mixed $id): bool => !is_string($id)) !== []
+            || !is_array($filters)
+            || array_is_list($filters)
+            || !$this->validFilters($filters)
         ) {
             throw new InvalidArgumentException('Campos de caderno invalidos.');
         }
 
-        return new CreateNotebookInputRequestDto($name, $mode, $quantity, $questionIds);
+        return new CreateNotebookInputRequestDto($name, $mode, $quantity, $filters);
     }
 
     private function positiveInteger(mixed $value, string $field): int
@@ -51,6 +51,20 @@ final class StudyRequestFactory
             return (int) $value;
         }
         throw new InvalidArgumentException(sprintf('Parametro %s invalido.', $field));
+    }
+
+    /** @param array<string, mixed> $filters */
+    private function validFilters(array $filters): bool
+    {
+        $allowed = ['subject_id', 'board', 'year', 'difficulty'];
+        if (array_diff(array_keys($filters), $allowed) !== []) {
+            return false;
+        }
+
+        return (!isset($filters['subject_id']) || is_string($filters['subject_id']))
+            && (!isset($filters['board']) || is_string($filters['board']))
+            && (!isset($filters['year']) || is_int($filters['year']))
+            && (!isset($filters['difficulty']) || (is_string($filters['difficulty']) && in_array($filters['difficulty'], ['EASY', 'MEDIUM', 'HARD'], true)));
     }
 
     /** @return array<string, mixed> */

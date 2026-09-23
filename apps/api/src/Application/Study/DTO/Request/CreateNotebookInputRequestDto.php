@@ -3,15 +3,14 @@ declare(strict_types=1);
 
 namespace App\Application\Study\DTO\Request;
 
-/** @phpstan-type QuestionIdList list<string> */
 final readonly class CreateNotebookInputRequestDto
 {
-    /** @param QuestionIdList $questionIds */
+    /** @param array{subject_id?: string, board?: string, year?: int, difficulty?: string} $filters */
     public function __construct(
         public string $name,
         public string $mode,
         public int $quantity,
-        public array $questionIds,
+        public array $filters,
     ) {
     }
 }

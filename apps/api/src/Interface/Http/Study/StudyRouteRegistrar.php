@@ -13,6 +13,7 @@ use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
+use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrinePublishedQuestionRepository;
 use App\Interface\Http\Identity\IdentityRequestFactory;
 use App\Interface\Http\Study\Controller\StudyController;
 use InvalidArgumentException;
@@ -35,7 +36,7 @@ final class StudyRouteRegistrar
         $mapper = new NotebookResponseMapper();
         $controller = new StudyController(
             $this->authentication,
-            new CreateNotebookService($repository, $mapper, new DoctrineTransactionManager($entityManager)),
+            new CreateNotebookService($repository, new DoctrinePublishedQuestionRepository($entityManager), $mapper, new DoctrineTransactionManager($entityManager)),
             new GetNotebookService($repository, $mapper),
             new ListNotebooksService($repository, $mapper),
             $this->responses,
