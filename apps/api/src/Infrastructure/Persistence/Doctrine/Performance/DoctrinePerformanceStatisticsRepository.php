@@ -33,6 +33,8 @@ final class DoctrinePerformanceStatisticsRepository implements PerformanceStatis
             ->innerJoin(AttemptRecord::class, 'attempt', 'WITH', 'attempt.id = answer.attemptId')
             ->innerJoin(QuestionRecord::class, 'question', 'WITH', 'question.id = attempt.questionId')
             ->where('attempt.userId = :userId')
+            ->andWhere('attempt.completedAt IS NOT NULL')
+            ->andWhere('attempt.finalAnswerId = answer.id')
             ->setParameter('userId', $userId)
             ->orderBy('answer.submittedAt', 'ASC')
             ->getQuery()
