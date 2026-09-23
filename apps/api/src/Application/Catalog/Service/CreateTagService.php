@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\Catalog\Service;
+use App\Application\Catalog\DTO\Request\CreateTagRequestDto;use App\Application\Catalog\DTO\Response\TagResponseDto;use App\Application\Catalog\Mapper\TagResponseMapper;use App\Application\Catalog\Port\TransactionManagerInterface;use App\Domain\Catalog\Entity\Tag;use App\Domain\Catalog\Repository\TagRepositoryInterface;
+final class CreateTagService {public function __construct(private readonly TagRepositoryInterface $tags,private readonly TagResponseMapper $mapper,private readonly TransactionManagerInterface $transactions){}public function create(CreateTagRequestDto $input):TagResponseDto{$name=trim($input->name);if($name===''||mb_strlen($name)>100)throw new \InvalidArgumentException('Tag invalida.');if($this->tags->existsByName($name))throw new \DomainException('Tag ja existe.');$tag=new Tag($this->id(),$name);$this->transactions->transactional(fn()=>$this->tags->save($tag));return $this->mapper->map($tag);}private function id():string{$b=random_bytes(16);$b[6]=chr((ord($b[6])&15)|64);$b[8]=chr((ord($b[8])&63)|128);return vsprintf('%s%s-%s-%s-%s-%s%s%s',str_split(bin2hex($b),4));}}
