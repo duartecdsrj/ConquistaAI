@@ -1,7 +1,7 @@
 import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
 import { GetMyStatisticsUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
-import { CreateNotebookUseCase, GetNotebookUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase } from '../Application/Study/StudyUseCases'
+import { CreateNotebookUseCase, FinishNotebookUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
 import { CatalogUseCases } from '../Application/Catalog/CatalogUseCases'
@@ -27,6 +27,10 @@ export const studyUseCases = {
   get: new GetNotebookUseCase(studyRepository),
   listQuestions: new ListNotebookQuestionsUseCase(studyRepository),
   create: new CreateNotebookUseCase(studyRepository),
+  start: new StartNotebookUseCase(studyRepository),
+  pause: new PauseNotebookUseCase(studyRepository),
+  statistics: new GetNotebookStatisticsUseCase(studyRepository),
+  finish: new FinishNotebookUseCase(studyRepository),
 }
 export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(new AxiosQuestionRepository()) }
 const performanceRepository = new AxiosPerformanceRepository()

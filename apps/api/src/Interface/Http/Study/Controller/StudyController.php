@@ -1,81 +1,18 @@
 <?php
 declare(strict_types=1);
-
 namespace App\Interface\Http\Study\Controller;
-
-use App\Application\Identity\DTO\Request\AccessTokenRequestDto;
-use App\Application\Identity\DTO\Response\CurrentUserResponseDto;
-use App\Application\Identity\Service\AuthService;
-use App\Application\Study\DTO\Request\CreateNotebookInputRequestDto;
-use App\Application\Study\DTO\Request\CreateNotebookRequestDto;
-use App\Application\Study\DTO\Request\GetNotebookRequestDto;
-use App\Application\Study\DTO\Request\ListNotebookQuestionsRequestDto;
-use App\Application\Study\DTO\Request\ListNotebooksRequestDto;
-use App\Application\Study\Service\CreateNotebookService;
-use App\Application\Study\Service\GetNotebookService;
-use App\Application\Study\Service\ListNotebookQuestionsService;
-use App\Application\Study\Service\ListNotebooksService;
-use App\Domain\Identity\Exception\UnavailableUserException;
-use App\Infrastructure\Http\ApiResponseFactory;
-use DomainException;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-
-final class StudyController
-{
-    public function __construct(
-        private readonly AuthService $authentication,
-        private readonly CreateNotebookService $createNotebook,
-        private readonly GetNotebookService $getNotebook,
-        private readonly ListNotebooksService $listNotebooks,
-        private readonly ListNotebookQuestionsService $listNotebookQuestions,
-        private readonly ApiResponseFactory $responses,
-    ) {}
-
-    public function getNotebook(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, GetNotebookRequestDto $input): ResponseInterface
-    {
-        $user = $this->authenticatedUser($request, $response, $access);
-        if ($user instanceof ResponseInterface) return $user;
-        $notebook = $this->getNotebook->getForUser($user->id, $input);
-        return $notebook === null
-            ? $this->responses->problem($response, 'RESOURCE_NOT_FOUND', 'Recurso nao encontrado.', 404, $this->requestId($request))
-            : $this->responses->success($response, $notebook, $this->requestId($request));
-    }
-
-    public function listNotebookQuestions(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, ListNotebookQuestionsRequestDto $input): ResponseInterface
-    {
-        $user = $this->authenticatedUser($request, $response, $access);
-        if ($user instanceof ResponseInterface) return $user;
-        $page = $this->listNotebookQuestions->listForUser($user->id, $input);
-        if ($page === null) return $this->responses->problem($response, 'RESOURCE_NOT_FOUND', 'Recurso nao encontrado.', 404, $this->requestId($request));
-        return $this->responses->paginated($response, $page->items, $this->requestId($request), $page->page, $page->perPage, $page->total);
-    }
-
-    public function listNotebooks(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, ListNotebooksRequestDto $input): ResponseInterface
-    {
-        $user = $this->authenticatedUser($request, $response, $access);
-        if ($user instanceof ResponseInterface) return $user;
-        $page = $this->listNotebooks->listForUser($user->id, $input);
-        return $this->responses->paginated($response, $page->items, $this->requestId($request), $page->page, $page->perPage, $page->total);
-    }
-
-    public function createNotebook(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, CreateNotebookInputRequestDto $input): ResponseInterface
-    {
-        $user = $this->authenticatedUser($request, $response, $access);
-        if ($user instanceof ResponseInterface) return $user;
-        $command = new CreateNotebookRequestDto($user->id, $input->name, $input->mode, $input->quantity, $input->filters);
-        try {
-            $notebook = $this->createNotebook->create($command);
-        } catch (DomainException|\InvalidArgumentException $exception) {
-            return $this->responses->problem($response, 'VALIDATION_FAILED', 'Um ou mais campos sao invalidos.', 422, $this->requestId($request), [['field' => 'request', 'code' => 'INVALID_VALUE', 'message' => $exception->getMessage()]]);
-        }
-        return $this->responses->success($response, $notebook, $this->requestId($request), 201);
-    }
-
-    private function authenticatedUser(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access): CurrentUserResponseDto|ResponseInterface
-    {
-        try { return $this->authentication->currentUser($access); }
-        catch (DomainException|UnavailableUserException) { return $this->responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, $this->requestId($request)); }
-    }
-    private function requestId(ServerRequestInterface $request): string { return (string) $request->getAttribute('request_id'); }
+use App\Application\Identity\DTO\Request\AccessTokenRequestDto;use App\Application\Identity\DTO\Response\CurrentUserResponseDto;use App\Application\Identity\Service\AuthService;use App\Application\Study\DTO\Request\CreateNotebookInputRequestDto;use App\Application\Study\DTO\Request\CreateNotebookRequestDto;use App\Application\Study\DTO\Request\GetNotebookRequestDto;use App\Application\Study\DTO\Request\ListNotebookQuestionsRequestDto;use App\Application\Study\DTO\Request\ListNotebooksRequestDto;use App\Application\Study\Service\CreateNotebookService;use App\Application\Study\Service\FinishNotebookService;use App\Application\Study\Service\GetNotebookService;use App\Application\Study\Service\GetNotebookStatisticsService;use App\Application\Study\Service\ListNotebookQuestionsService;use App\Application\Study\Service\ListNotebooksService;use App\Application\Study\Service\PauseNotebookService;use App\Application\Study\Service\StartNotebookService;use App\Domain\Identity\Exception\UnavailableUserException;use App\Infrastructure\Http\ApiResponseFactory;use DomainException;use Psr\Http\Message\ResponseInterface;use Psr\Http\Message\ServerRequestInterface;
+final class StudyController {
+ public function __construct(private readonly AuthService $authentication,private readonly CreateNotebookService $createNotebook,private readonly GetNotebookService $getNotebook,private readonly ListNotebooksService $listNotebooks,private readonly ListNotebookQuestionsService $listNotebookQuestions,private readonly StartNotebookService $startNotebook,private readonly PauseNotebookService $pauseNotebook,private readonly FinishNotebookService $finishNotebook,private readonly GetNotebookStatisticsService $statistics,private readonly ApiResponseFactory $responses){}
+ public function getNotebook(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,GetNotebookRequestDto $input):ResponseInterface{$user=$this->user($request,$response,$access);if($user instanceof ResponseInterface)return $user;$notebook=$this->getNotebook->getForUser($user->id,$input);return $notebook===null?$this->notFound($request,$response):$this->responses->success($response,$notebook,$this->id($request));}
+ public function startNotebook(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,GetNotebookRequestDto $input):ResponseInterface{return $this->transition($request,$response,$access,$input,$this->startNotebook->startForUser(...));}
+ public function pauseNotebook(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,GetNotebookRequestDto $input):ResponseInterface{return $this->transition($request,$response,$access,$input,$this->pauseNotebook->pauseForUser(...));}
+ public function finishNotebook(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,GetNotebookRequestDto $input):ResponseInterface{return $this->transition($request,$response,$access,$input,$this->finishNotebook->finishForUser(...));}
+ public function statistics(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,GetNotebookRequestDto $input):ResponseInterface{$user=$this->user($request,$response,$access);if($user instanceof ResponseInterface)return $user;$stats=$this->statistics->getForUser($user->id,$input);return $stats===null?$this->notFound($request,$response):$this->responses->success($response,$stats,$this->id($request));}
+ public function listNotebookQuestions(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,ListNotebookQuestionsRequestDto $input):ResponseInterface{$user=$this->user($request,$response,$access);if($user instanceof ResponseInterface)return $user;$page=$this->listNotebookQuestions->listForUser($user->id,$input);return $page===null?$this->notFound($request,$response):$this->responses->paginated($response,$page->items,$this->id($request),$page->page,$page->perPage,$page->total);}
+ public function listNotebooks(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,ListNotebooksRequestDto $input):ResponseInterface{$user=$this->user($request,$response,$access);if($user instanceof ResponseInterface)return $user;$page=$this->listNotebooks->listForUser($user->id,$input);return $this->responses->paginated($response,$page->items,$this->id($request),$page->page,$page->perPage,$page->total);}
+ public function createNotebook(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,CreateNotebookInputRequestDto $input):ResponseInterface{$user=$this->user($request,$response,$access);if($user instanceof ResponseInterface)return $user;try{$notebook=$this->createNotebook->create(new CreateNotebookRequestDto($user->id,$input->name,$input->mode,$input->quantity,$input->filters));}catch(DomainException|\InvalidArgumentException $e){return $this->responses->problem($response,'VALIDATION_FAILED','Um ou mais campos sao invalidos.',422,$this->id($request),[['field'=>'request','code'=>'INVALID_VALUE','message'=>$e->getMessage()]]);}return $this->responses->success($response,$notebook,$this->id($request),201);}
+ private function transition(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,GetNotebookRequestDto $input,callable $action):ResponseInterface{$user=$this->user($request,$response,$access);if($user instanceof ResponseInterface)return $user;try{$notebook=$action($user->id,$input);}catch(DomainException $e){return $this->responses->problem($response,'STATE_CONFLICT','O caderno nao pode mudar de estado.',409,$this->id($request),[['field'=>'notebook_id','code'=>'INVALID_STATE','message'=>$e->getMessage()]]);}return $notebook===null?$this->notFound($request,$response):$this->responses->success($response,$notebook,$this->id($request));}
+ private function user(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access):CurrentUserResponseDto|ResponseInterface{try{return $this->authentication->currentUser($access);}catch(DomainException|UnavailableUserException){return $this->responses->problem($response,'UNAUTHENTICATED','Credenciais invalidas ou expiradas.',401,$this->id($request));}}
+ private function notFound(ServerRequestInterface $request,ResponseInterface $response):ResponseInterface{return $this->responses->problem($response,'RESOURCE_NOT_FOUND','Recurso nao encontrado.',404,$this->id($request));}private function id(ServerRequestInterface $request):string{return (string)$request->getAttribute('request_id');}
 }

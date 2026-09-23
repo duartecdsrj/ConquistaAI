@@ -8,6 +8,6 @@ export default defineConfig({
     quasar({ sassVariables: new URL('./src/styles/quasar.variables.sass', import.meta.url).pathname }),
   ],
   server: {
-    hmr: { host: 'localhost', clientPort: 8081, protocol: 'ws' },
+    allowedHosts: ['conquistaai.app.br', 'www.conquistaai.app.br'],
   },
 });

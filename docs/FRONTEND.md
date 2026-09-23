@@ -72,9 +72,13 @@ A marca oficial do produto está em apps/web/public/images/concursos-study-mark.
 
 ## Módulos já conectados à API
 
-- Study: lista e criação de cadernos, navegação pela seleção congelada e registro de resposta.
+- Study: lista, criação, início, execução em tela inteira, finalização e navegação pela seleção congelada. A tela de execução apresenta apenas uma questão por vez, cronômetro persistido com pausa/retomada, estatísticas reais do caderno, restauração de respostas já registradas, ações Anterior/Próxima e confirmação de finalização.
 - Question Bank: consulta de questões publicadas com filtros.
 - Performance: métricas básicas do usuário.
 - Catalog: administração em cascata de concursos, cargos, editais, assuntos e tags para usuários ADMIN.
 
 Cada módulo mantém Domain, Application, Infrastructure e Interface separados; páginas Quasar somente coordenam composables e eventos.
+
+## Marca
+
+O nome da aplicação é **ConquistaAI**. O lema oficial é: **“Estude. Evolua. Conquiste.”**. Use ambos nos pontos de marca da interface e preserve o ativo visual em apps/web/public/images/concursos-study-mark.png.

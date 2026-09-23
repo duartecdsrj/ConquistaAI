@@ -48,11 +48,15 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 | `POST /notebooks` | cria caderno e congela selecao de questoes |
 | `GET /notebooks` | lista cadernos do usuario atual |
 | `GET /notebooks/{id}` | detalhes e progresso, com isolamento por dono |
-| `POST /notebooks/{id}/start` | abre uma execucao de estudo |
+| `POST /notebooks/{id}/start` | inicia ou retoma a execução e grava `startedAt` |
+| `POST /notebooks/{id}/pause` | pausa o contador e preserva a duração acumulada |
+| `GET /notebooks/{id}/statistics` | resumo do progresso e desempenho do caderno |
 | `POST /notebooks/{id}/questions/{questionId}/attempts` | inicia tentativa |
 | `POST /attempts/{id}/answers` | registra marcacao imutavel |
 | `POST /attempts/{id}/complete` | conclui tentativa e aplica correcao conforme modo |
 | `POST /notebooks/{id}/finish` | finaliza caderno/simulado e revela resultado quando cabivel |
+
+`POST /notebooks/{id}/start` é idempotente enquanto o caderno está em andamento e retorna o caderno com `status`, `startedAt`, `finishedAt` e `durationSeconds`. `POST /notebooks/{id}/pause` acumula a duração já decorrida e muda o estado para `PAUSED`; `start` retoma a contagem sem perder o acumulado. `GET /notebooks/{id}/statistics` retorna `total`, `answered`, `correct`, `incorrect`, `percentage`, `averageElapsedSeconds`, `elapsedSeconds` e `answeredQuestionIds`, sempre restritos ao proprietário. `POST /notebooks/{id}/finish` encerra o caderno, calcula a duração acumulada e impede novas tentativas. Um caderno finalizado não pode ser iniciado nem finalizado novamente.
 
 `POST /notebooks` recebe `name`, `mode` (`STUDY` ou `EXAM`), `quantity` e o objeto opcional `filters`. Os filtros aceitos no MVP sao `subject_id`, `board`, `year` e `difficulty` (`EASY`, `MEDIUM` ou `HARD`). O cliente nao envia IDs de questoes: o service consulta somente questoes publicadas, persiste a lista retornada em `notebook_questions` e a composicao nunca muda. A API responde `422 VALIDATION_FAILED` quando os filtros nao encontram a quantidade solicitada, em vez de completar o caderno com questoes fora dos filtros.
 

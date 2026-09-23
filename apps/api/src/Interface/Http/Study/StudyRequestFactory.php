@@ -32,7 +32,7 @@ final class StudyRequestFactory
         $mode = $payload['mode'] ?? null;
         $quantity = $payload['quantity'] ?? null;
         $filters = $payload['filters'] ?? [];
-        if (!is_string($name) || !is_string($mode) || !in_array($mode, ['STUDY', 'EXAM'], true) || !is_int($quantity) || !is_array($filters) || array_is_list($filters) || !$this->validFilters($filters)) {
+        if (!is_string($name) || !is_string($mode) || !in_array($mode, ['STUDY', 'EXAM'], true) || !is_int($quantity) || !is_array($filters) || !$this->validFilters($filters)) {
             throw new InvalidArgumentException('Campos de caderno invalidos.');
         }
         return new CreateNotebookInputRequestDto($name, $mode, $quantity, $filters);
@@ -59,9 +59,9 @@ final class StudyRequestFactory
     /** @return array<string, mixed> */
     private function json(ServerRequestInterface $request): array
     {
-        try { $payload = json_decode((string) $request->getBody(), false, 512, JSON_THROW_ON_ERROR); }
+        try { $payload = json_decode((string) $request->getBody(), true, 512, JSON_THROW_ON_ERROR); }
         catch (\JsonException) { throw new InvalidArgumentException('JSON invalido.'); }
-        if (!is_object($payload)) throw new InvalidArgumentException('O corpo deve ser um objeto JSON.');
-        return get_object_vars($payload);
+        if (!is_array($payload) || array_is_list($payload)) throw new InvalidArgumentException('O corpo deve ser um objeto JSON.');
+        return $payload;
     }
 }

@@ -1,9 +1,41 @@
 import type { PublishedQuestion } from '../../Domain/QuestionBank/QuestionRepository'
-import type { CreateNotebookCommand, Notebook, StudyRepository } from '../../Domain/Study/StudyRepository'
+import type { CreateNotebookCommand, Notebook, NotebookStatistics, StudyRepository } from '../../Domain/Study/StudyRepository'
 import type { PageQuery, PageResult } from '../../Infrastructure/Http/AxiosApiClient'
-export class ListNotebooksUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(query?: PageQuery): Promise<PageResult<Notebook>> { return this.repository.list(query) } }
-export class GetNotebookUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(id: string): Promise<Notebook> { return this.repository.get(id) } }
-export class ListNotebookQuestionsUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(id: string, query?: PageQuery): Promise<PageResult<PublishedQuestion>> { return this.repository.listQuestions(id, query) } }
+
+export class ListNotebooksUseCase {
+  public constructor(private readonly repository: StudyRepository) {}
+  public execute(query?: PageQuery): Promise<PageResult<Notebook>> { return this.repository.list(query) }
+}
+
+export class GetNotebookUseCase {
+  public constructor(private readonly repository: StudyRepository) {}
+  public execute(id: string): Promise<Notebook> { return this.repository.get(id) }
+}
+
+export class ListNotebookQuestionsUseCase {
+  public constructor(private readonly repository: StudyRepository) {}
+  public execute(id: string, query?: PageQuery): Promise<PageResult<PublishedQuestion>> { return this.repository.listQuestions(id, query) }
+}
+
+export class StartNotebookUseCase {
+  public constructor(private readonly repository: StudyRepository) {}
+  public execute(id: string): Promise<Notebook> {
+    if (!id) return Promise.reject(new Error('Caderno inválido.'))
+    return this.repository.start(id)
+  }
+}
+
+export class PauseNotebookUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(id: string): Promise<Notebook> { return this.repository.pause(id) } }
+export class GetNotebookStatisticsUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(id: string): Promise<NotebookStatistics> { return this.repository.statistics(id) } }
+
+export class FinishNotebookUseCase {
+  public constructor(private readonly repository: StudyRepository) {}
+  public execute(id: string): Promise<Notebook> {
+    if (!id) return Promise.reject(new Error('Caderno inválido.'))
+    return this.repository.finish(id)
+  }
+}
+
 export class CreateNotebookUseCase {
   public constructor(private readonly repository: StudyRepository) {}
   public async execute(command: CreateNotebookCommand): Promise<Notebook> {

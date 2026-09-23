@@ -1,0 +1,32 @@
+[
+  {
+    "statement": "Em uma rede IPv4, qual mascara representa uma sub-rede /24?",
+    "options": [
+      { "id": "a", "label": "A", "content": "255.255.0.0" },
+      { "id": "b", "label": "B", "content": "255.255.255.0" },
+      { "id": "c", "label": "C", "content": "255.0.0.0" },
+      { "id": "d", "label": "D", "content": "255.255.255.252" }
+    ],
+    "correct_option": "b"
+  },
+  {
+    "statement": "Qual comando SQL consulta todos os registros da tabela usuarios?",
+    "options": [
+      { "id": "a", "label": "A", "content": "SELECT * FROM usuarios;" },
+      { "id": "b", "label": "B", "content": "UPDATE usuarios;" },
+      { "id": "c", "label": "C", "content": "DELETE usuarios;" },
+      { "id": "d", "label": "D", "content": "CREATE usuarios;" }
+    ],
+    "correct_option": "a"
+  },
+  {
+    "statement": "No modelo TCP/IP, qual protocolo e usado para resolver nomes de dominio?",
+    "options": [
+      { "id": "a", "label": "A", "content": "DHCP" },
+      { "id": "b", "label": "B", "content": "DNS" },
+      { "id": "c", "label": "C", "content": "FTP" },
+      { "id": "d", "label": "D", "content": "SSH" }
+    ],
+    "correct_option": "b"
+  }
+]

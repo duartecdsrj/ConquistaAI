@@ -5,6 +5,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Study;
 
 use App\Domain\Study\Entity\Notebook;
 use App\Domain\Study\Enum\NotebookMode;
+use App\Domain\Study\Enum\NotebookStatus;
 use App\Domain\Study\Repository\NotebookRepositoryInterface;
 use App\Domain\Study\ValueObject\FrozenQuestionSelection;
 use App\Infrastructure\Persistence\Doctrine\Study\Entity\NotebookQuestionRecord;
@@ -13,20 +14,28 @@ use Doctrine\ORM\EntityManagerInterface;
 
 final class DoctrineNotebookRepository implements NotebookRepositoryInterface
 {
-    public function __construct(private readonly EntityManagerInterface $entityManager) {}
+    public function __construct(private readonly EntityManagerInterface $entityManager)
+    {
+    }
 
     public function save(Notebook $notebook): void
     {
+        $record = $this->entityManager->find(NotebookRecord::class, $notebook->id);
+        if ($record instanceof NotebookRecord) {
+            $this->synchronize($record, $notebook);
+
+            return;
+        }
+
         $record = new NotebookRecord();
         $record->id = $notebook->id;
         $record->userId = $notebook->userId;
         $record->name = $notebook->name;
         $record->type = 'PRACTICE';
         $record->mode = $notebook->mode->value;
-        $record->status = 'DRAFT';
         $record->filters = [];
         $record->createdAt = $notebook->createdAt;
-        $record->updatedAt = $notebook->createdAt;
+        $this->synchronize($record, $notebook);
         $this->entityManager->persist($record);
 
         foreach ($notebook->selection->questionIds as $position => $questionId) {
@@ -82,6 +91,15 @@ final class DoctrineNotebookRepository implements NotebookRepositoryInterface
             ->getSingleScalarResult();
     }
 
+    private function synchronize(NotebookRecord $record, Notebook $notebook): void
+    {
+        $record->status = $notebook->status->value;
+        $record->startedAt = $notebook->startedAt;
+        $record->finishedAt = $notebook->finishedAt;
+        $record->durationSeconds = $notebook->durationSeconds;
+        $record->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+    }
+
     private function map(NotebookRecord $record): Notebook
     {
         $questionIds = array_map(
@@ -103,6 +121,10 @@ final class DoctrineNotebookRepository implements NotebookRepositoryInterface
             NotebookMode::from($record->mode),
             FrozenQuestionSelection::fromQuestionIds($questionIds, count($questionIds)),
             $record->createdAt,
+            NotebookStatus::from($record->status),
+            $record->startedAt,
+            $record->finishedAt,
+            $record->durationSeconds,
         );
     }
 }
