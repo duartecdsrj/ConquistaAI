@@ -28,6 +28,7 @@ final class DoctrineImportedQuestionWriter implements ImportedQuestionWriterInte
             $question->createdAt = new \DateTimeImmutable('now');
             $question->updatedAt = $question->createdAt;
             $this->entityManager->persist($question);
+            $this->entityManager->flush();
 
             foreach ($row['options'] as $index => $option) {
                 $record = new QuestionOptionRecord();
@@ -42,6 +43,7 @@ final class DoctrineImportedQuestionWriter implements ImportedQuestionWriterInte
                     $question->correctOptionId = $record->id;
                 }
             }
+            $this->entityManager->flush();
             $created++;
         }
 

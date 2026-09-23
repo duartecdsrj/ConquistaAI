@@ -13,6 +13,8 @@ use App\Application\Catalog\Service\DeleteExamService;
 use App\Application\Identity\Service\AuthService;
 use App\Application\QuestionBank\Service\PreviewQuestionImportService;
 use App\Application\QuestionBank\Service\GetQuestionImportService;
+use App\Application\QuestionBank\Service\CommitQuestionImportService;
+use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineImportedQuestionWriter;
 use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Http\CorsMiddleware;
 use App\Infrastructure\Http\RequestIdMiddleware;
@@ -148,6 +150,16 @@ final class AppFactory
                 return self::validationProblem($responses, $request, $response, $exception->getMessage());
             }
         });
+        $app->post('/v1/question-imports/{id}/commit', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($imports, $importRequests, $identityRequests, $responses): ResponseInterface {
+            try {
+                $access = $identityRequests->accessToken($request);
+                $user = self::authService()->currentUser($access);
+                return $imports->commit($request, $response, $access, $importRequests->commit($request, $user->id, (string) ($arguments['id'] ?? '')));
+            } catch (InvalidArgumentException $exception) {
+                return self::validationProblem($responses, $request, $response, $exception->getMessage());
+            }
+        });
+
 
         $app->add(new CorsMiddleware());
 $errorMiddleware = $app->addErrorMiddleware(false, true, true);
@@ -212,6 +224,7 @@ $errorMiddleware = $app->addErrorMiddleware(false, true, true);
                 new DoctrineTransactionManager($entityManager),
             ),
             new GetQuestionImportService($repository),
+            new CommitQuestionImportService($repository, new DoctrineImportedQuestionWriter($entityManager), new DoctrineTransactionManager($entityManager)),
             $responses,
         );
     }

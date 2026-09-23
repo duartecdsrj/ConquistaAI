@@ -6,6 +6,8 @@ namespace App\Interface\Http\QuestionBank\Controller;
 use App\Application\Identity\DTO\Request\AccessTokenRequestDto;
 use App\Application\Identity\Service\AuthService;
 use App\Application\QuestionBank\DTO\Request\PreviewQuestionImportRequestDto;
+use App\Application\QuestionBank\DTO\Request\CommitQuestionImportRequestDto;
+use App\Application\QuestionBank\Service\CommitQuestionImportService;
 use App\Application\QuestionBank\Service\GetQuestionImportService;
 use App\Application\QuestionBank\Service\PreviewQuestionImportService;
 use App\Domain\Identity\Exception\UnavailableUserException;
@@ -20,6 +22,7 @@ final class QuestionImportController
         private readonly AuthService $authentication,
         private readonly PreviewQuestionImportService $preview,
         private readonly GetQuestionImportService $getImport,
+        private readonly CommitQuestionImportService $commitImport,
         private readonly ApiResponseFactory $responses,
     ) {
     }
@@ -47,6 +50,14 @@ final class QuestionImportController
         return $report === null
             ? $this->responses->problem($response, 'RESOURCE_NOT_FOUND', 'Recurso nao encontrado.', 404, $this->requestId($request))
             : $this->responses->success($response, $report, $this->requestId($request));
+    }
+
+    public function commit(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, CommitQuestionImportRequestDto $input): ResponseInterface
+    {
+        $user = $this->admin($request, $response, $access);
+        if ($user instanceof ResponseInterface) { return $user; }
+        try { $result = $this->commitImport->commit($input); } catch (DomainException $exception) { return $this->responses->problem($response, "STATE_CONFLICT", "A importacao nao pode ser confirmada.", 409, $this->requestId($request)); }
+        return $this->responses->success($response, $result, $this->requestId($request), 201);
     }
 
     private function admin(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access): \App\Application\Identity\DTO\Response\CurrentUserResponseDto|ResponseInterface
