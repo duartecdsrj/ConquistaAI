@@ -9,6 +9,7 @@
     <CatalogPage v-else-if="section === 'catalog'" />
     <ImportPage v-else-if="section === 'import'" />
     <EditorialPage v-else-if="section === 'editorial'" />
+    <TaxonomyPage v-else-if="section === 'taxonomy'" />
     <PerformancePage v-else />
   </AppShell>
 </template>
@@ -25,6 +26,7 @@ import PerformancePage from './Interface/Http/Performance/PerformancePage.vue'
 import CatalogPage from './Interface/Http/Catalog/CatalogPage.vue'
 import ImportPage from './Interface/Http/Import/ImportPage.vue'
 import EditorialPage from './Interface/Http/Editorial/EditorialPage.vue'
+import TaxonomyPage from './Interface/Http/Taxonomy/TaxonomyPage.vue'
 import { useAuth } from './Interface/Http/Identity/useAuth'
 
 const section = ref<ApplicationSection>('home')

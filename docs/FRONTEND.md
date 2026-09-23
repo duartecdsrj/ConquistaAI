@@ -81,6 +81,7 @@ A marca oficial do produto está em apps/web/public/images/concursos-study-mark.
 - Performance: métricas básicas do usuário.
 - Catalog: administração em cascata de concursos, cargos, editais, assuntos e tags para usuários ADMIN.
 - Editorial: listagem de rascunhos e publicação administrativa de questões validadas.
+- Taxonomy: árvore de assuntos canônicos e criação de nós administrativos; a tela consome a lista paginada da API e não contém regras de negócio.
 
 Cada módulo mantém Domain, Application, Infrastructure e Interface separados; páginas Quasar somente coordenam composables e eventos.
 

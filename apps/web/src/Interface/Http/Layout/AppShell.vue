@@ -30,7 +30,7 @@ import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import type { AuthenticatedUser } from '../../../Domain/Identity/AuthRepository'
 
-export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'catalog' | 'import' | 'editorial'
+export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'catalog' | 'import' | 'editorial' | 'taxonomy'
 
 const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection; readonly canManage: boolean }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection]; logout: [] }>()
@@ -46,6 +46,7 @@ const navigationItems = computed<readonly { id: ApplicationSection; label: strin
     { id: 'catalog' as const, label: 'Catálogo', caption: 'Administração' },
     { id: 'import' as const, label: 'Importar questões', caption: 'Preview e confirmação' },
     { id: 'editorial' as const, label: 'Revisar questões', caption: 'Publicação editorial' },
+    { id: 'taxonomy' as const, label: 'Taxonomia', caption: 'Assuntos canônicos' },
   ] : []),
 ])
 
