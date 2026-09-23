@@ -69,6 +69,15 @@ final class DoctrineAttemptRepository implements AttemptRepositoryInterface
             ->getSingleScalarResult();
     }
 
+    public function complete(string $attemptId, string $finalAnswerId, DateTimeImmutable $completedAt): bool
+    {
+        $record = $this->entityManager->find(AttemptRecord::class, $attemptId);
+        if (!$record instanceof AttemptRecord || $record->completedAt !== null) { return false; }
+        $record->finalAnswerId = $finalAnswerId;
+        $record->completedAt = $completedAt;
+        return true;
+    }
+
     public function appendAnswer(Answer $answer): void
     {
         $record = new AnswerRecord();

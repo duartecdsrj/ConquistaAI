@@ -22,6 +22,7 @@ final class AppendAnswerServiceTest extends TestCase
                 return new Attempt('attempt', $userId, 'notebook', 'question', 1, 'STUDY', new \DateTimeImmutable());
             }
             public function nextNumber(string $userId, string $notebookId, string $questionId): int { return 1; }
+            public function complete(string $attemptId, string $finalAnswerId, \DateTimeImmutable $completedAt): bool { return true; }
             public function appendAnswer(Answer $answer): void { $this->answer = $answer; }
             public function listAnswers(string $attemptId): array { return [new Answer('old', $attemptId, 'old-option', 1, 1, new \DateTimeImmutable())]; }
         };
@@ -42,6 +43,7 @@ final class AppendAnswerServiceTest extends TestCase
             public function saveAttempt(Attempt $attempt): void {}
             public function findByIdForUser(string $attemptId, string $userId): ?Attempt { return null; }
             public function nextNumber(string $userId, string $notebookId, string $questionId): int { return 1; }
+            public function complete(string $attemptId, string $finalAnswerId, \DateTimeImmutable $completedAt): bool { return true; }
             public function appendAnswer(Answer $answer): void {}
             public function listAnswers(string $attemptId): array { return []; }
         };

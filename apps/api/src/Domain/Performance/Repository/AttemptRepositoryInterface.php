@@ -11,6 +11,7 @@ interface AttemptRepositoryInterface
     public function saveAttempt(Attempt $attempt): void;
     public function findByIdForUser(string $attemptId, string $userId): ?Attempt;
     public function nextNumber(string $userId, string $notebookId, string $questionId): int;
+    public function complete(string $attemptId, string $finalAnswerId, \DateTimeImmutable $completedAt): bool;
 
     /** Appends a new answer; prior answers are never updated. */
     public function appendAnswer(Answer $answer): void;

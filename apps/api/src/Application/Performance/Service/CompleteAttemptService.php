@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\Performance\Service;
+use App\Application\Performance\Port\TransactionManagerInterface;use App\Domain\Performance\Repository\AttemptRepositoryInterface;
+final class CompleteAttemptService {public function __construct(private readonly AttemptRepositoryInterface $attempts,private readonly TransactionManagerInterface $transactions,private readonly \DateTimeZone $utc=new \DateTimeZone('UTC')){}public function complete(string $userId,string $attemptId):\DateTimeImmutable{return $this->transactions->transactional(function()use($userId,$attemptId){$attempt=$this->attempts->findByIdForUser($attemptId,$userId);if($attempt===null||$attempt->completedAt!==null)throw new \DomainException('Tentativa nao pode ser concluida.');$answers=$this->attempts->listAnswers($attemptId);if($answers===[])throw new \DomainException('Tentativa sem resposta.');$last=$answers[array_key_last($answers)];$at=new \DateTimeImmutable('now',$this->utc);if(!$this->attempts->complete($attemptId,$last->id,$at))throw new \DomainException('Tentativa nao pode ser concluida.');return $at;});}}

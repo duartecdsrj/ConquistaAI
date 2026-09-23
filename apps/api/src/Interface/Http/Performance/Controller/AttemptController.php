@@ -9,6 +9,7 @@ use App\Application\Identity\Service\AuthService;
 use App\Application\Performance\DTO\Request\AppendAnswerRequestDto;
 use App\Application\Performance\DTO\Request\StartAttemptRequestDto;
 use App\Application\Performance\Service\AppendAnswerService;
+use App\Application\Performance\Service\CompleteAttemptService;
 use App\Application\Performance\Service\StartAttemptService;
 use App\Domain\Identity\Exception\UnavailableUserException;
 use App\Infrastructure\Http\ApiResponseFactory;
@@ -22,6 +23,7 @@ final class AttemptController
         private readonly AuthService $authentication,
         private readonly StartAttemptService $startAttempts,
         private readonly AppendAnswerService $appendAnswers,
+        private readonly CompleteAttemptService $completeAttempts,
         private readonly ApiResponseFactory $responses,
     ) {
     }
@@ -77,6 +79,14 @@ final class AttemptController
             'elapsed_seconds' => $answer->elapsedSeconds,
             'submitted_at' => $answer->submittedAt->format(DATE_ATOM),
         ], $this->requestId($request), 201);
+    }
+
+    public function complete(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, string $attemptId): ResponseInterface
+    {
+        $user = $this->authenticatedUser($request, $response, $access);
+        if ($user instanceof ResponseInterface) return $user;
+        try { $completedAt = $this->completeAttempts->complete($user->id, $attemptId); } catch (DomainException) { return $this->responses->problem($response, "STATE_CONFLICT", "A tentativa nao pode ser concluida.", 409, $this->requestId($request)); }
+        return $this->responses->success($response, ["id" => $attemptId, "completed_at" => $completedAt->format(DATE_ATOM)], $this->requestId($request));
     }
 
     private function authenticatedUser(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access): CurrentUserResponseDto|ResponseInterface

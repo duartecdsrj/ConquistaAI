@@ -5,6 +5,7 @@ namespace App\Interface\Http\Performance;
 
 use App\Application\Identity\Service\AuthService;
 use App\Application\Performance\Service\AppendAnswerService;
+use App\Application\Performance\Service\CompleteAttemptService;
 use App\Application\Performance\Service\BasicStatisticsService;
 use App\Application\Performance\Service\GetBasicStatisticsService;
 use App\Application\Performance\Service\StartAttemptService;
@@ -39,6 +40,7 @@ final class PerformanceRouteRegistrar
             $this->authentication,
             new StartAttemptService(new DoctrineNotebookRepository($entityManager), $attempts, $transactions),
             new AppendAnswerService($attempts, $transactions),
+            new CompleteAttemptService($attempts, $transactions),
             $this->responses,
         );
         $statisticsController = new StatisticsController(
@@ -93,6 +95,22 @@ final class PerformanceRouteRegistrar
                 );
             } catch (InvalidArgumentException $exception) {
                 return self::validation($responses, $request, $response, $exception);
+            }
+        });
+        $app->post('/v1/attempts/{attemptId}/complete', static function (
+            ServerRequestInterface $request,
+            ResponseInterface $response,
+            array $arguments,
+        ) use ($attemptController, $identity, $responses): ResponseInterface {
+            try {
+                return $attemptController->complete(
+                    $request,
+                    $response,
+                    $identity->accessToken($request),
+                    (string) ($arguments['attemptId'] ?? ''),
+                );
+            } catch (InvalidArgumentException $exception) {
+                return self::unauthenticated($responses, $request, $response, $exception);
             }
         });
     }

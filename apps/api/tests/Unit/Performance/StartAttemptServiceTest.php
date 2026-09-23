@@ -41,6 +41,7 @@ final class StartAttemptServiceTest extends TestCase
             public function saveAttempt(Attempt $attempt): void { $this->saved = $attempt; }
             public function findByIdForUser(string $attemptId, string $userId): ?Attempt { return null; }
             public function nextNumber(string $userId, string $notebookId, string $questionId): int { return 2; }
+            public function complete(string $attemptId, string $finalAnswerId, \DateTimeImmutable $completedAt): bool { return true; }
             public function appendAnswer(Answer $answer): void {}
             public function listAnswers(string $attemptId): array { return []; }
         };
@@ -69,6 +70,7 @@ final class StartAttemptServiceTest extends TestCase
             public function saveAttempt(Attempt $attempt): void {}
             public function findByIdForUser(string $attemptId, string $userId): ?Attempt { return null; }
             public function nextNumber(string $userId, string $notebookId, string $questionId): int { return 1; }
+            public function complete(string $attemptId, string $finalAnswerId, \DateTimeImmutable $completedAt): bool { return true; }
             public function appendAnswer(Answer $answer): void {}
             public function listAnswers(string $attemptId): array { return []; }
         };
