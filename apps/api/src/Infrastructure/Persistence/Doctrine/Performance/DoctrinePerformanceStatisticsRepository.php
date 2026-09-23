@@ -17,17 +17,21 @@ final class DoctrinePerformanceStatisticsRepository implements PerformanceStatis
 
     public function completedAnswersForUser(string $userId): array
     {
+        $firstSubject = $this->entityManager->createQueryBuilder()
+            ->select('MIN(subjectSelection.subjectId)')
+            ->from(QuestionSubjectRecord::class, 'subjectSelection')
+            ->where('subjectSelection.questionId = question.id');
+
         $rows = $this->entityManager->createQueryBuilder()
             ->select(
                 'answer.optionId AS optionId',
                 'answer.elapsedSeconds AS elapsedSeconds',
                 'question.correctOptionId AS correctOptionId',
-                'subject.subjectId AS subjectId',
+                sprintf('(%s) AS subjectId', $firstSubject->getDQL()),
             )
             ->from(AnswerRecord::class, 'answer')
             ->innerJoin(AttemptRecord::class, 'attempt', 'WITH', 'attempt.id = answer.attemptId')
             ->innerJoin(QuestionRecord::class, 'question', 'WITH', 'question.id = attempt.questionId')
-            ->leftJoin(QuestionSubjectRecord::class, 'subject', 'WITH', 'subject.questionId = question.id')
             ->where('attempt.userId = :userId')
             ->setParameter('userId', $userId)
             ->orderBy('answer.submittedAt', 'ASC')
