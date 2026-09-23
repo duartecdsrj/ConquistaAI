@@ -4,12 +4,28 @@ declare(strict_types=1);
 namespace App\Interface\Http\Catalog;
 
 use App\Application\Catalog\DTO\Request\CreateExamRequestDto;
+use App\Application\Catalog\DTO\Request\UpdateExamRequestDto;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class CatalogRequestFactory
 {
     public function createExam(ServerRequestInterface $request): CreateExamRequestDto
+    {
+        [$name, $organizer, $year] = $this->examFields($request);
+
+        return new CreateExamRequestDto($name, $organizer, $year);
+    }
+
+    public function updateExam(ServerRequestInterface $request, string $id): UpdateExamRequestDto
+    {
+        [$name, $organizer, $year] = $this->examFields($request);
+
+        return new UpdateExamRequestDto($id, $name, $organizer, $year);
+    }
+
+    /** @return array{string, ?string, ?int} */
+    private function examFields(ServerRequestInterface $request): array
     {
         $payload = $this->json($request);
         $name = $payload['name'] ?? null;
@@ -20,7 +36,7 @@ final class CatalogRequestFactory
             throw new InvalidArgumentException('Campos de concurso invalidos.');
         }
 
-        return new CreateExamRequestDto($name, $organizer, $year);
+        return [$name, $organizer, $year];
     }
 
     /** @return array<string, mixed> */

@@ -7,6 +7,9 @@ use App\Application\Identity\Mapper\IdentityResponseMapper;
 use App\Application\Catalog\Mapper\ExamResponseMapper;
 use App\Application\Catalog\Service\CreateExamService;
 use App\Application\Catalog\Service\ListExamsService;
+use App\Application\Catalog\Service\GetExamService;
+use App\Application\Catalog\Service\UpdateExamService;
+use App\Application\Catalog\Service\DeleteExamService;
 use App\Application\Identity\Service\AuthService;
 use App\Application\QuestionBank\Service\PreviewQuestionImportService;
 use App\Infrastructure\Http\ApiResponseFactory;
@@ -103,6 +106,28 @@ final class AppFactory
             }
         });
 
+        $app->get('/v1/exams/{id}', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($catalog, $identityRequests, $responses): ResponseInterface {
+            try {
+                return $catalog->getExam($request, $response, $identityRequests->accessToken($request), (string) ($arguments['id'] ?? ''));
+            } catch (InvalidArgumentException $exception) {
+                return self::validationProblem($responses, $request, $response, $exception->getMessage());
+            }
+        });
+        $app->put('/v1/exams/{id}', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($catalog, $catalogRequests, $identityRequests, $responses): ResponseInterface {
+            try {
+                return $catalog->updateExam($request, $response, $identityRequests->accessToken($request), $catalogRequests->updateExam($request, (string) ($arguments['id'] ?? '')));
+            } catch (InvalidArgumentException $exception) {
+                return self::validationProblem($responses, $request, $response, $exception->getMessage());
+            }
+        });
+        $app->delete('/v1/exams/{id}', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($catalog, $identityRequests, $responses): ResponseInterface {
+            try {
+                return $catalog->deleteExam($request, $response, $identityRequests->accessToken($request), (string) ($arguments['id'] ?? ''));
+            } catch (InvalidArgumentException $exception) {
+                return self::validationProblem($responses, $request, $response, $exception->getMessage());
+            }
+        });
+
         $app->post('/v1/question-imports', static function (ServerRequestInterface $request, ResponseInterface $response) use ($imports, $importRequests, $identityRequests, $responses): ResponseInterface {
             try {
                 return $imports->preview($request, $response, $identityRequests->accessToken($request), $importRequests->preview($request));
@@ -179,6 +204,9 @@ $errorMiddleware = $app->addErrorMiddleware(false, true, true);
             $authentication,
             new CreateExamService(new DoctrineExamRepository($entityManager), $mapper, new DoctrineTransactionManager($entityManager)),
             new ListExamsService(new DoctrineExamRepository($entityManager), $mapper),
+            new GetExamService(new DoctrineExamRepository($entityManager), $mapper),
+            new UpdateExamService(new DoctrineExamRepository($entityManager), $mapper, new DoctrineTransactionManager($entityManager)),
+            new DeleteExamService(new DoctrineExamRepository($entityManager), new DoctrineTransactionManager($entityManager)),
             $responses,
         );
     }

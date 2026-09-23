@@ -11,6 +11,10 @@ interface ExamRepositoryInterface
 
     public function findById(string $id): ?Exam;
 
+    public function update(Exam $exam): bool;
+
+    public function deleteById(string $id): bool;
+
     /** @return list<Exam> */
     public function list(): array;
 }

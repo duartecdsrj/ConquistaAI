@@ -42,6 +42,8 @@ final class InMemoryExams implements ExamRepositoryInterface
     public array $saved = [];
     public function save(Exam $exam): void { $this->saved[] = $exam; }
     public function findById(string $id): ?Exam { return null; }
+    public function update(Exam $exam): bool { return false; }
+    public function deleteById(string $id): bool { return false; }
     public function list(): array { return $this->saved; }
 }
 final class CatalogTransactionSpy implements TransactionManagerInterface

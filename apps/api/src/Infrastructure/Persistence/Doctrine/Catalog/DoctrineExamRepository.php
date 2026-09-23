@@ -35,6 +35,34 @@ final class DoctrineExamRepository implements ExamRepositoryInterface
         return $record instanceof ExamRecord ? $this->map($record) : null;
     }
 
+    public function update(Exam $exam): bool
+    {
+        $record = $this->entityManager->find(ExamRecord::class, $exam->id);
+        if (!$record instanceof ExamRecord) {
+            return false;
+        }
+
+        $record->name = $exam->name;
+        $record->organizer = $exam->organizer;
+        $record->year = $exam->year;
+        $record->updatedAt = new DateTimeImmutable('now');
+
+        return true;
+    }
+
+    public function deleteById(string $id): bool
+    {
+        $record = $this->entityManager->find(ExamRecord::class, $id);
+        if (!$record instanceof ExamRecord) {
+            return false;
+        }
+
+        $this->entityManager->remove($record);
+
+        return true;
+    }
+
+    /** @return list<Exam> */
     public function list(): array
     {
         return array_map(

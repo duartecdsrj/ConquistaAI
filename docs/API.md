@@ -17,7 +17,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 
 | Recurso | Rotas |
 | --- | --- |
-| Concursos | `GET, POST /exams`; `GET, PATCH, DELETE /exams/{id}` |
+| Concursos | `GET, POST /exams`; `GET, PUT, DELETE /exams/{id}` |
 | Cargos | `GET, POST /exams/{examId}/positions`; `PATCH, DELETE /positions/{id}` |
 | Editais | `GET, POST /positions/{positionId}/syllabi`; `PATCH, DELETE /syllabi/{id}` |
 | Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `GET, PATCH, DELETE /subjects/{id}` |
