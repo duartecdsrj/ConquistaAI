@@ -236,3 +236,8 @@ docker compose exec -T frontend npm run build
 - PHPUnit aprovado: 30 testes e 71 assertions.
 - Build frontend aprovado.
 - M0.6 concluído com propostas determinísticas revisáveis; fusões continuam dependentes de confirmação ADMIN explícita.
+
+## Commit de reconciliação auditável
+
+- Commit `7d40e04` concluiu M0.6 e, com isso, o marco M0 de Taxonomia canônica.
+- Próxima etapa autorizada: M1 — concursos, cargos e editais estruturados; iniciar pelo inventário dos contratos e persistência existentes antes de alterar código.
