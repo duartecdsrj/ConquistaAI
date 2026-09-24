@@ -83,3 +83,10 @@ docker compose exec -T frontend npm run build
 - Pendentes de commit: DTO e serviço transacional `AssignQuestionTaxonomySubjects`, além da verificação de existência de questão no repositório editorial.
 - Validação executada: PHPUnit aprovado com 30 testes e 71 assertions.
 - Próximo passo: expor o endpoint administrativo, criar o módulo Axios e a interação editorial correspondente antes de iniciar fusões.
+
+## Avanço atual — rota editorial de Taxonomia
+
+- Pendente de commit: `PUT /v1/admin/questions/{id}/taxonomy-subjects` no registrar editorial.
+- O payload requer `taxonomy_subject_ids` como lista de strings e chama o caso de uso transacional.
+- PHPUnit aprovado: 30 testes, 71 assertions.
+- Próximo passo: documentar o contrato, criar o adaptador Axios e expor o controle na tela editorial.
