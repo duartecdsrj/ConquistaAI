@@ -117,3 +117,7 @@ A tela Import usa `useImport` como adaptador de interface. Ela carrega concurso,
 ## Dashboard de desempenho por edital
 
 O módulo Performance consulta `GET /dashboard/me` pelas camadas Domain, Application, Infrastructure e `usePerformance`. A tela Quasar permite selecionar um edital com tentativas concluídas, lista métricas por assunto canônico incluindo descendentes e indica explicitamente quando a amostra ainda não alcançou 10 respostas em 3 dias distintos.
+
+## Design system administrativo e Taxonomia
+
+`DESIGN_SYSTEM.md` registra os fundamentos e padrões administrativos derivados da referência visual aprovada: superfícies claras, hierarquia azul, cartões arredondados, árvore pesquisável e área de trabalho com abas. A tela `TaxonomyPage.vue` aplica esses padrões com os fluxos reais de criação, edição, aliases, sugestões e confirmação de fusão; não introduz chamadas HTTP fora de `useTaxonomy`.

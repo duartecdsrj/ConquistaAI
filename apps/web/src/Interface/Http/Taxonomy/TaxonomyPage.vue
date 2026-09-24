@@ -1,88 +1,46 @@
 <template>
   <q-page class="taxonomy-page">
     <section class="page-heading">
-      <div>
-        <p class="eyebrow">ADMINISTRAÇÃO</p>
-        <h1>Taxonomia de assuntos</h1>
-        <p>Organize assuntos canônicos e seus relacionamentos.</p>
-      </div>
-      <q-btn flat no-caps color="primary" label="Atualizar" :loading="loading" @click="load" />
+      <div><p class="eyebrow">ADMINISTRAÇÃO</p><h1>Taxonomia de assuntos</h1><p>Organize os assuntos canônicos, suas variações e relacionamentos em uma única estrutura.</p></div>
+      <div class="header-actions"><q-badge color="blue-1" text-color="primary" rounded>{{ subjects.length }} assuntos</q-badge><q-btn unelevated no-caps color="primary" icon="refresh" label="Atualizar taxonomia" :loading="loading" @click="refresh" /></div>
     </section>
-
-    <q-banner v-if="error" rounded class="error-banner">{{ error }}</q-banner>
-
+    <q-banner v-if="error" rounded class="error-banner"><template #avatar><q-icon name="error_outline" /></template>{{ error }}</q-banner>
     <section class="taxonomy-grid">
       <q-card flat class="tree-card">
-        <q-card-section>
-          <h2>Árvore de conhecimento</h2>
-          <q-inner-loading :showing="loading" />
-          <q-tree v-if="tree.length" :nodes="tree" node-key="id" default-expand-all dense no-connectors />
-          <p v-else-if="!loading" class="empty-state">Ainda não há assuntos canônicos.</p>
-        </q-card-section>
+        <q-card-section class="tree-head"><div><h2>Árvore de conhecimento</h2><p>Selecione um assunto para editar ou revisar seus detalhes.</p></div><q-btn flat round dense icon="more_vert" aria-label="Mais ações da árvore" /></q-card-section>
+        <q-card-section class="tree-tools"><q-input v-model="treeFilter" dense outlined clearable placeholder="Buscar na árvore..." aria-label="Buscar na árvore"><template #prepend><q-icon name="search" /></template></q-input><q-btn outline round dense icon="filter_alt" aria-label="Filtrar assuntos" /></q-card-section>
+        <q-card-section class="tree-body"><q-inner-loading :showing="loading" color="primary" /><q-tree v-if="tree.length" v-model:selected="selectedTreeNode" :nodes="tree" node-key="id" default-expand-all dense no-connectors :filter="treeFilter" @update:selected="selectSubject"><template #default-header="prop"><div class="tree-label"><q-icon :name="prop.node.children.length ? 'folder' : 'article'" color="primary" size="18px" /><span>{{ prop.node.label }}</span></div></template></q-tree><div v-else-if="!loading" class="empty-state"><q-icon name="account_tree" size="34px" /><p>Ainda não há assuntos canônicos.</p><q-btn flat no-caps color="primary" label="Criar primeiro assunto" @click="workTab = 'create'" /></div></q-card-section>
       </q-card>
-
-      <q-card flat class="form-card">
-        <q-card-section>
-          <p class="eyebrow">NOVO ASSUNTO</p>
-          <h2>Adicionar à árvore</h2>
-          <q-select v-model="editingId" outlined clearable emit-value map-options :options="parentOptions" label="Editar assunto existente" @update:model-value="selectSubject" />
-          <q-form class="q-gutter-md" @submit.prevent="save">
-            <q-input v-model="name" outlined label="Nome" :rules="[(value) => !!value || 'Informe o nome do assunto.']" />
-            <q-select v-model="parentId" outlined clearable emit-value map-options :options="parentOptions" label="Assunto pai (opcional)" />
-            <q-input v-model="description" outlined type="textarea" label="Descrição (opcional)" />
-            <q-btn unelevated no-caps color="primary" type="submit"  :label="editingId ? 'Salvar alterações' : 'Criar assunto'" :loading="saving" />
-          </q-form>
-          <q-separator class="q-my-lg" />
-          <q-form class="q-gutter-md" @submit.prevent="saveAlias">
-            <p class="alias-title">Novo alias</p>
-            <q-select v-model="aliasSubjectId" outlined emit-value map-options :options="parentOptions" label="Assunto canônico" />
-            <q-input v-model="alias" outlined label="Variação do nome" />
-            <q-btn outline no-caps color="primary" type="submit" label="Adicionar alias" :loading="saving" />
-          </q-form>
-        </q-card-section>
+      <q-card flat class="workspace-card">
+        <q-tabs v-model="workTab" dense align="left" active-color="primary" indicator-color="primary" class="workspace-tabs"><q-tab name="create" icon="add_circle" label="Adicionar assunto" /><q-tab name="edit" icon="edit" label="Editar assunto" :disable="!editingId" /><q-tab name="alias" icon="link" label="Aliases" /><q-tab name="review" icon="fact_check" label="Revisão" /></q-tabs>
+        <q-separator />
+        <q-tab-panels v-model="workTab" animated class="workspace-panels">
+          <q-tab-panel name="create"><p class="panel-eyebrow">NOVO ASSUNTO</p><h2>Adicionar à árvore</h2><p class="panel-copy">Defina o nome, o pai e uma descrição que ajude na revisão editorial.</p><q-form class="form-grid" @submit.prevent="createSubject"><q-select v-model="parentId" outlined clearable emit-value map-options :options="parentOptions" label="Assunto pai (opcional)" /><q-input v-model="name" outlined label="Nome do assunto *" :rules="[(value) => !!value || 'Informe o nome do assunto.']" /><q-input v-model="description" class="span-2" outlined type="textarea" label="Descrição (opcional)" maxlength="500" counter /><div class="form-actions span-2"><q-btn flat no-caps label="Limpar" @click="resetForm" /><q-btn unelevated no-caps color="primary" icon="add" type="submit" label="Criar assunto" :loading="saving" /></div></q-form></q-tab-panel>
+          <q-tab-panel name="edit"><p class="panel-eyebrow">ASSUNTO SELECIONADO</p><h2>{{ selectedSubject?.name ?? 'Selecione um assunto' }}</h2><p class="panel-copy">A alteração de pai é bloqueada para nós com filhos, preservando a árvore.</p><q-form v-if="editingId" class="form-grid" @submit.prevent="saveEdit"><q-select v-model="parentId" outlined clearable emit-value map-options :options="parentOptions" label="Assunto pai" /><q-input v-model="name" outlined label="Nome do assunto *" :rules="[(value) => !!value || 'Informe o nome do assunto.']" /><q-input v-model="description" class="span-2" outlined type="textarea" label="Descrição" maxlength="500" counter /><div class="form-actions span-2"><q-btn flat no-caps label="Cancelar" @click="resetForm" /><q-btn unelevated no-caps color="primary" icon="save" type="submit" label="Salvar alterações" :loading="saving" /></div></q-form><div v-else class="empty-state"><q-icon name="touch_app" size="34px" /><p>Escolha um item na árvore para editar.</p></div></q-tab-panel>
+          <q-tab-panel name="alias"><p class="panel-eyebrow">VARIAÇÕES DO NOME</p><h2>Adicionar alias</h2><p class="panel-copy">Aliases melhoram busca e reconciliação sem criar assuntos duplicados.</p><q-form class="form-grid" @submit.prevent="saveAlias"><q-select v-model="aliasSubjectId" class="span-2" outlined emit-value map-options :options="parentOptions" label="Assunto canônico *" /><q-input v-model="alias" class="span-2" outlined label="Variação do nome *" :rules="[(value) => !!value || 'Informe a variação.']" /><div class="form-actions span-2"><q-btn unelevated no-caps color="primary" icon="link" type="submit" label="Adicionar alias" :loading="saving" /></div></q-form></q-tab-panel>
+          <q-tab-panel name="review"><p class="panel-eyebrow">REVISÃO HUMANA</p><h2>Possíveis duplicidades</h2><p class="panel-copy">Nenhuma sugestão executa fusão automaticamente.</p><q-list bordered separator class="review-list"><q-item v-for="item in suggestions" :key="item.sourceId + item.candidateId"><q-item-section><q-item-label>{{ item.sourceName }} · {{ item.candidateName }}</q-item-label><q-item-label caption>Similaridade de {{ Math.round(item.similarity * 100) }}%.</q-item-label></q-item-section><q-item-section side><q-btn flat no-caps color="primary" label="Revisar" @click="prepareMerge(item.sourceId, item.candidateId)" /></q-item-section></q-item><q-item v-if="!suggestions.length"><q-item-section class="text-grey-7">Nenhuma duplicidade candidata encontrada.</q-item-section></q-item></q-list><q-separator class="q-my-lg" /><h3>Confirmar fusão auditável</h3><q-form class="form-grid" @submit.prevent="confirmMerge"><q-select v-model="mergeSource" outlined emit-value map-options :options="parentOptions" label="Assunto de origem" /><q-select v-model="mergeTarget" outlined emit-value map-options :options="parentOptions" label="Assunto de destino" /><q-input v-model="mergeReason" class="span-2" outlined type="textarea" label="Motivo da fusão *" /><div class="form-actions span-2"><q-btn unelevated no-caps color="primary" icon="merge" type="submit" label="Confirmar fusão" :disable="!mergeSource || !mergeTarget || !mergeReason" :loading="saving" /></div></q-form></q-tab-panel>
+        </q-tab-panels>
       </q-card>
-    <q-card flat class="suggestions-card"><q-card-section><div class="row items-center justify-between"><h2>Possíveis duplicidades</h2><q-btn flat no-caps label="Analisar" color="primary" @click="loadSuggestions" /></div><q-list v-if="suggestions.length" separator><q-item v-for="item in suggestions" :key="item.sourceId + item.candidateId"><q-item-section><q-item-label>{{ item.sourceName }} · {{ item.candidateName }}</q-item-label><q-item-label caption>Similaridade de {{ Math.round(item.similarity * 100) }}%. Revisão humana necessária.</q-item-label></q-item-section></q-item></q-list><p v-else class="empty-state">Nenhuma sugestão carregada.</p></q-card-section></q-card>
     </section>
   </q-page>
 </template>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useTaxonomy } from './useTaxonomy'
-
-const { create, createAlias, error, loadReconciliationProposals, loadSuggestions, merge, reconciliationProposals, suggestions, update, load, loading, saving, subjects, tree } = useTaxonomy()
-const name = ref('')
-const parentId = ref<string | null>(null)
-const description = ref('')
-const editingId = ref<string | null>(null)
-const alias = ref('')
-const aliasSubjectId = ref<string | null>(null)
-const mergeSource = ref<string | null>(null); const mergeTarget = ref<string | null>(null); const mergeReason = ref('')
-const parentOptions = computed(() => subjects.value.map((subject) => ({
-  label: '· '.repeat(subject.level) + subject.name,
-  value: subject.id,
-})))
-
-function selectSubject(id: string | null): void { const subject = subjects.value.find((item) => item.id === id); if (subject) { name.value = subject.name; parentId.value = subject.parentId; description.value = subject.description ?? '' } }
-
-async function save(): Promise<void> {
-  if (editingId.value ? await update(editingId.value, name.value, parentId.value, description.value || null) : await create(name.value, parentId.value, description.value || null)) {
-    editingId.value = null
-    name.value = ''
-    parentId.value = null
-    description.value = ''
-  }
-}
-
-async function confirmMerge(): Promise<void> { if (mergeSource.value && mergeTarget.value && await merge(mergeSource.value, mergeTarget.value, mergeReason.value)) { mergeSource.value = null; mergeTarget.value = null; mergeReason.value = '' } }
-
-async function saveAlias(): Promise<void> {
-  if (aliasSubjectId.value && await createAlias(aliasSubjectId.value, alias.value)) { alias.value = ''; aliasSubjectId.value = null }
-}
-
-onMounted(async () => { await load(); await loadSuggestions(); await loadReconciliationProposals() })
+const { create, createAlias, error, loadReconciliationProposals, loadSuggestions, merge, suggestions, update, load, loading, saving, subjects, tree } = useTaxonomy()
+const workTab = ref('create'); const treeFilter = ref(''); const selectedTreeNode = ref<string | null>(null); const editingId = ref<string | null>(null); const name = ref(''); const parentId = ref<string | null>(null); const description = ref(''); const alias = ref(''); const aliasSubjectId = ref<string | null>(null); const mergeSource = ref<string | null>(null); const mergeTarget = ref<string | null>(null); const mergeReason = ref('')
+const parentOptions = computed(() => subjects.value.filter((subject) => subject.id !== editingId.value).map((subject) => ({ label: '· '.repeat(subject.level) + subject.name, value: subject.id })))
+const selectedSubject = computed(() => subjects.value.find((item) => item.id === editingId.value) ?? null)
+function selectSubject(id: string | null): void { if (!id) return; const subject = subjects.value.find((item) => item.id === id); if (!subject) return; editingId.value = subject.id; name.value = subject.name; parentId.value = subject.parentId; description.value = subject.description ?? ''; workTab.value = 'edit' }
+function resetForm(): void { editingId.value = null; selectedTreeNode.value = null; name.value = ''; parentId.value = null; description.value = ''; workTab.value = 'create' }
+async function createSubject(): Promise<void> { if (await create(name.value, parentId.value, description.value || null)) resetForm() }
+async function saveEdit(): Promise<void> { if (editingId.value && await update(editingId.value, name.value, parentId.value, description.value || null)) await refresh() }
+async function saveAlias(): Promise<void> { if (aliasSubjectId.value && await createAlias(aliasSubjectId.value, alias.value)) { alias.value = ''; aliasSubjectId.value = null } }
+function prepareMerge(source: string, target: string): void { mergeSource.value = source; mergeTarget.value = target }
+async function confirmMerge(): Promise<void> { if (mergeSource.value && mergeTarget.value && await merge(mergeSource.value, mergeTarget.value, mergeReason.value)) { mergeSource.value = null; mergeTarget.value = null; mergeReason.value = ''; await refresh() } }
+async function refresh(): Promise<void> { await load(); await loadSuggestions(); await loadReconciliationProposals() }
+onMounted(refresh)
 </script>
-
 <style scoped>
-.taxonomy-page{max-width:1180px;margin:auto;padding:42px 34px}.page-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:24px}.eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.page-heading h1,.form-card h2,.tree-card h2{margin:0;color:#142950}.page-heading p:not(.eyebrow){color:#71819e}.taxonomy-grid{display:grid;grid-template-columns:1.4fr .9fr;gap:18px}.tree-card,.form-card,.suggestions-card{min-height:330px;border:1px solid #e5ecf6;border-radius:18px}.tree-card h2,.form-card h2{font-size:20px;margin-bottom:20px}.alias-title{margin:0;color:#142950;font-weight:700}.empty-state{color:#71819e}.merge-preview{grid-column:1/-1;background:#fff8e8;color:#795d20}.error-banner{margin-bottom:14px;background:#fff3f2;color:#ae2f25}@media(max-width:800px){.taxonomy-page{padding:28px 16px}.page-heading{align-items:flex-start;flex-direction:column}.taxonomy-grid{grid-template-columns:1fr}}
+.taxonomy-page{max-width:1180px;margin:auto;padding:40px 32px}.page-heading{display:flex;justify-content:space-between;align-items:center;gap:24px;margin-bottom:24px}.eyebrow,.panel-eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.page-heading h1,.workspace-card h2,.tree-card h2{margin:0;color:#142950}.page-heading p:not(.eyebrow),.panel-copy,.tree-head p{margin:7px 0 0;color:#71819e}.header-actions{display:flex;align-items:center;gap:12px}.taxonomy-grid{display:grid;grid-template-columns:minmax(300px,.88fr) minmax(480px,1.12fr);gap:18px}.tree-card,.workspace-card{border:1px solid #e2eaf5;border-radius:18px;background:#fff;box-shadow:0 10px 28px rgba(38,64,110,.06)}.tree-head{display:flex;justify-content:space-between;gap:12px;padding-bottom:10px}.tree-head h2,.workspace-card h2{font-size:20px}.tree-tools{display:flex;gap:8px;padding-top:0}.tree-tools .q-input{flex:1}.tree-body{min-height:480px;padding-top:4px}.tree-label{display:flex;align-items:center;gap:8px}.workspace-tabs{min-height:56px;padding:0 12px}.workspace-panels{min-height:560px}.panel-copy{max-width:580px;margin-bottom:24px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.span-2{grid-column:1/-1}.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:4px}.review-list{border-radius:12px}.empty-state{display:grid;place-items:center;gap:4px;min-height:190px;text-align:center;color:#71819e}.empty-state p{margin:0}.error-banner{margin-bottom:14px;background:#fff3f2;color:#ae2f25}@media(max-width:850px){.taxonomy-page{padding:28px 16px}.page-heading{align-items:flex-start;flex-direction:column}.taxonomy-grid{grid-template-columns:1fr}.tree-body{min-height:300px}.workspace-panels{min-height:auto}}@media(max-width:520px){.header-actions{width:100%;justify-content:space-between}.form-grid{grid-template-columns:1fr}.span-2{grid-column:auto}.workspace-tabs :deep(.q-tab){padding:0 8px;font-size:11px}.form-actions{justify-content:stretch}.form-actions .q-btn{flex:1}}
 </style>

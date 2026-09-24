@@ -392,3 +392,11 @@ docker compose exec -T frontend npm run build
 - A página Performance usa o fluxo obrigatório `Page -> usePerformance -> UseCase -> Repository -> Axios -> API`, oferece seletor de edital e estados de carregamento, erro, vazio e amostra insuficiente.
 - Validações: PHPUnit aprovado com 37 testes e 94 assertions; `docker compose exec -T frontend npm run build` aprovado; `git diff --check` aprovado.
 - Próxima etapa autorizada: M5 — cadernos inteligentes e plano de estudos.
+
+## Entrega de interface — Taxonomia
+
+- A tela de Taxonomia foi padronizada a partir da referência visual recebida: cabeçalho administrativo, árvore pesquisável com seleção contextual, painel de trabalho com abas e feedback de revisão explícito.
+- A experiência usa somente o composable `useTaxonomy`; criação, edição, aliases, sugestões e fusão auditável continuam passando pelas camadas DDD existentes.
+- Foi criado `DESIGN_SYSTEM.md` com princípios, fundamentos, padrões administrativos e acessibilidade para orientar telas futuras.
+- Validação: `docker compose exec -T frontend npm run build` aprovado; `git diff --check` pendente da verificação final.
+- Próximo passo: aplicar os padrões gradualmente às demais áreas administrativas, sem alterar contratos de API.
