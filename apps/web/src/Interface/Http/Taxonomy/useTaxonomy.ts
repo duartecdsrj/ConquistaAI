@@ -14,6 +14,7 @@ export function useTaxonomy() {
   const error = ref('')
   const subjects = ref<readonly TaxonomySubject[]>([])
   const suggestions = ref<readonly import('../../../Domain/Taxonomy/TaxonomyRepository').TaxonomyDuplicateSuggestion[]>([])
+  const reconciliationProposals = ref<readonly import('../../../Domain/Taxonomy/TaxonomyRepository').TaxonomyReconciliationProposal[]>([])
 
   const tree = computed<TaxonomyTreeNode[]>(() => {
     const nodes = new Map(subjects.value.map((subject) => [subject.id, { id: subject.id, label: subject.name, children: [] as TaxonomyTreeNode[] }]))
@@ -33,6 +34,8 @@ export function useTaxonomy() {
     catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar a taxonomia.' }
     finally { loading.value = false }
   }
+
+  async function loadReconciliationProposals(): Promise<void> { try { reconciliationProposals.value = await taxonomyUseCases.reconciliationProposals.execute() } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar propostas.' } }
 
   async function loadSuggestions(): Promise<void> { try { suggestions.value = await taxonomyUseCases.duplicateSuggestions.execute() } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar sugestões.' } }
 
@@ -66,5 +69,5 @@ export function useTaxonomy() {
     } finally { saving.value = false }
   }
 
-  return { create, createAlias, merge, update, loadSuggestions, suggestions, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
+  return { create, createAlias, loadReconciliationProposals, merge, reconciliationProposals, update, loadSuggestions, suggestions, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
 }

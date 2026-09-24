@@ -15,7 +15,7 @@ import { AxiosStudyRepository } from './Study/AxiosStudyRepository'
 import { AxiosTaxonomyRepository } from './Taxonomy/AxiosTaxonomyRepository'
 import { AxiosEditorialRepository } from './Editorial/AxiosEditorialRepository'
 import { AssignEditorialQuestionTaxonomyUseCase, ListDraftQuestionsUseCase, PublishEditorialQuestionUseCase } from '../Application/Editorial/EditorialUseCases'
-import { CreateTaxonomySubjectAliasUseCase, CreateTaxonomySubjectUseCase, MergeTaxonomySubjectsUseCase, ListTaxonomySubjectsUseCase, ListTaxonomyDuplicateSuggestionsUseCase, UpdateTaxonomySubjectUseCase } from '../Application/Taxonomy/TaxonomyUseCases'
+import { CreateTaxonomySubjectAliasUseCase, CreateTaxonomySubjectUseCase, MergeTaxonomySubjectsUseCase, ListTaxonomyReconciliationProposalsUseCase, ListTaxonomySubjectsUseCase, ListTaxonomyDuplicateSuggestionsUseCase, UpdateTaxonomySubjectUseCase } from '../Application/Taxonomy/TaxonomyUseCases'
 
 const sessionStore = new BrowserSessionStore()
 configureAccessTokenProvider(() => sessionStore.accessToken())
@@ -37,7 +37,7 @@ export const studyUseCases = {
   finish: new FinishNotebookUseCase(studyRepository),
 }
 const taxonomyRepository = new AxiosTaxonomyRepository()
-export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), duplicateSuggestions: new ListTaxonomyDuplicateSuggestionsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository), createAlias: new CreateTaxonomySubjectAliasUseCase(taxonomyRepository), merge: new MergeTaxonomySubjectsUseCase(taxonomyRepository), update: new UpdateTaxonomySubjectUseCase(taxonomyRepository) }
+export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), duplicateSuggestions: new ListTaxonomyDuplicateSuggestionsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository), createAlias: new CreateTaxonomySubjectAliasUseCase(taxonomyRepository), merge: new MergeTaxonomySubjectsUseCase(taxonomyRepository), reconciliationProposals: new ListTaxonomyReconciliationProposalsUseCase(taxonomyRepository), update: new UpdateTaxonomySubjectUseCase(taxonomyRepository) }
 export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(new AxiosQuestionRepository()) }
 const performanceRepository = new AxiosPerformanceRepository()
 export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }

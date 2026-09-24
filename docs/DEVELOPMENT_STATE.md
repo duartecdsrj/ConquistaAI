@@ -182,3 +182,57 @@ docker compose exec -T frontend npm run build
 
 - Commit `c0735d7` concluiu sugestões, confirmação administrativa, reatribuição idempotente, desativação da origem e auditoria de fusões.
 - M0.5 está concluído. A próxima etapa do M0 é M0.6: interface de IA para reconciliação, com proposta auditável e revisão humana.
+
+## Avanço atual — M0.6 reconciliação auditável
+
+- Commit `2a8b357` registrou a conclusão de M0.5.
+- Pendentes de commit: porta `TaxonomyReconciliationAdvisorInterface` e DTO de proposta de reconciliação.
+- Nenhum provedor de IA foi escolhido; a decisão permanece bloqueada conforme cronograma.
+- Próximo passo: implementar um adaptador determinístico local para propostas revisáveis, sem chamadas externas.
+
+## Avanço atual — adaptador local de reconciliação
+
+- Pendentes de commit: adaptador `DeterministicTaxonomyReconciliationAdvisor` que propõe somente pares com confiança >= 0.85 e motivo reproduzível.
+- PHPUnit aprovado: 30 testes e 71 assertions.
+- Próximo passo: serviço de aplicação e tela de revisão das propostas; nenhuma proposta executará fusão automaticamente.
+
+## Avanço atual — caso de uso de propostas de reconciliação
+
+- Pendente de commit: `ListTaxonomyReconciliationProposalsService`, que converte propostas do adaptador em DTOs de revisão.
+- PHPUnit aprovado: 30 testes e 71 assertions.
+- Próximo passo: expor endpoint ADMIN e listar propostas na tela de Taxonomia; aprovação continuará sendo uma fusão explícita já auditada.
+
+## Avanço atual — controlador de propostas de reconciliação
+
+- Pendente de commit: `TaxonomyReconciliationController`, somente leitura e restrito a ADMIN.
+- A rota ainda deve ser registrada com o adaptador determinístico antes de chegar ao frontend.
+
+## Avanço atual — rota de propostas de reconciliação registrada
+
+- Pendente de commit: `GET /v1/admin/taxonomy/reconciliation-proposals`, ligado ao adaptador determinístico local.
+- PHPUnit aprovado: 30 testes e 71 assertions.
+- Próximo passo: documentar o contrato e criar o módulo frontend de revisão das propostas.
+
+## Avanço atual — contrato frontend de reconciliação
+
+- Pendentes de commit: contrato e repositório Axios para propostas de reconciliação, além da documentação API.
+- Build frontend aprovado.
+- Próximo passo: caso de uso, composable e card de revisão na tela Taxonomy; a única ação disponível continuará sendo a fusão administrativa explícita.
+
+## Avanço atual — caso de uso e composable de reconciliação
+
+- Pendentes de commit: caso de uso, container e composable de propostas de reconciliação.
+- Build frontend aprovado.
+- Próximo passo: card de revisão na Taxonomy exibindo confiança e justificativa, com ação de fusão já explícita e autorizada.
+
+## Avanço atual — card de revisão de reconciliação
+
+- Pendentes de commit: card Quasar de propostas determinísticas, com confiança e justificativa, além de toda a integração M0.6.
+- Build frontend aprovado.
+- Próximo passo: validar backend e frontend, atualizar cronograma como M0.6 concluído e criar o commit integrado.
+
+## Validação integrada — M0.6
+
+- PHPUnit aprovado: 30 testes e 71 assertions.
+- Build frontend aprovado.
+- M0.6 concluído com propostas determinísticas revisáveis; fusões continuam dependentes de confirmação ADMIN explícita.

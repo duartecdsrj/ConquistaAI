@@ -50,7 +50,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useTaxonomy } from './useTaxonomy'
 
-const { create, createAlias, error, loadSuggestions, merge, suggestions, update, load, loading, saving, subjects, tree } = useTaxonomy()
+const { create, createAlias, error, loadReconciliationProposals, loadSuggestions, merge, reconciliationProposals, suggestions, update, load, loading, saving, subjects, tree } = useTaxonomy()
 const name = ref('')
 const parentId = ref<string | null>(null)
 const description = ref('')
@@ -80,7 +80,7 @@ async function saveAlias(): Promise<void> {
   if (aliasSubjectId.value && await createAlias(aliasSubjectId.value, alias.value)) { alias.value = ''; aliasSubjectId.value = null }
 }
 
-onMounted(async () => { await load(); await loadSuggestions() })
+onMounted(async () => { await load(); await loadSuggestions(); await loadReconciliationProposals() })
 </script>
 
 <style scoped>
