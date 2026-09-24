@@ -32,10 +32,11 @@ Funcionalidades disponíveis: criar e listar assuntos, construir a árvore, cria
 
 ## Alterações pendentes no diretório de trabalho
 
-Ainda **não commitadas**:
+Em preparação para o próximo incremento:
 
 - Interface de sugestões administrativas de possíveis assuntos duplicados.
 - Rota `GET /api/v1/admin/taxonomy/duplicate-suggestions`.
+- Migration `006_question_taxonomy_subjects.sql`, que cria o vínculo N:N sem remover `question_subjects`.
 - A implementação compara até 1.000 assuntos, aplica similaridade normalizada com limiar de `0.72` e retorna somente candidatos para revisão humana.
 
 A API, o repositório Axios, o caso de uso, o composable e a tela Quasar foram concluídos; a próxima etapa é a proposta de fusão auditável.

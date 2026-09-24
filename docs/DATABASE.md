@@ -84,5 +84,8 @@ A migration `005_taxonomy_foundation.sql` introduz uma taxonomia global sem alte
 | `taxonomy_subjects` | assunto canônico global, com `parent_id` recursivo, `slug`, descrição, nível e estado ativo |
 | `taxonomy_subject_aliases` | sinônimos normalizados que resolvem para o assunto canônico |
 | `taxonomy_subject_merges` | auditoria de fusões administrativas, com origem, destino, autor e motivo |
+| `question_taxonomy_subjects` | ligação N:N entre questões e assuntos canônicos; coexistirá com `question_subjects` durante a migração explícita |
+
+A migration `006_question_taxonomy_subjects.sql` cria a associação paralela entre questões e taxonomia canônica. Ela não remove nem preenche automaticamente `question_subjects`; a migração de vínculos deve ser revisável e idempotente.
 
 A profundidade de `taxonomy_subjects` é ilimitada. O serviço de domínio do marco M0.2 impedirá ciclos, normalizará nomes/aliases e fará a reatribuição transacional de referências quando houver fusão. A IA poderá apenas propor reconciliações; decisões de baixa confiança exigem revisão humana.
