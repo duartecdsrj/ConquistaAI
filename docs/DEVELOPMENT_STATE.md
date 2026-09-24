@@ -449,3 +449,8 @@ docker compose exec -T frontend npm run build
 - A configuração é feita por `DISCOVERY_PROVIDER_BASE_URL` e `DISCOVERY_ALLOWED_HOSTS` no ambiente; base ausente ou host não permitido interrompe a consulta com erro seguro.
 - A migration `014_discovery_resources.sql` foi aplicada no MySQL local. Validações: PHPUnit (41 testes, 105 assertions), build frontend, sintaxe PHP e `git diff --check` aprovados.
 - O cronograma M0–M7 está concluído; a próxima fase requer planejamento explícito.
+
+## Integração OpenAI configurável
+
+- O assistente agora seleciona `AI_PROVIDER=openai` ou `local` por ambiente. `OpenAiAssistantProvider` chama a Responses API com `store: false`, `OPENAI_API_KEY` no servidor e `OPENAI_MODEL` configurável.
+- A OpenAI recebe somente pergunta e evidências recuperadas; a resposta continua persistindo provider, modelo e páginas usadas. Sem chave, a chamada falha com mensagem segura; `AI_PROVIDER=local` mantém o provider determinístico.

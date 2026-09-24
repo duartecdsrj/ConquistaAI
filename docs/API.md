@@ -108,6 +108,10 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 
 As respostas são produzidas por um provider desacoplado. A versão local determinística só resume evidências recuperadas, não inventa fontes e devolve as páginas utilizadas. Cada mensagem é imutável e sempre permanece restrita ao dono da conversa. Não há endpoint de geração editorial nesta entrega.
 
+### Configuração de provider de IA
+
+`AI_PROVIDER` seleciona o provider do assistente: `openai` ou `local` (fallback determinístico). Para OpenAI, defina `OPENAI_API_KEY` exclusivamente no ambiente do servidor e escolha o modelo em `OPENAI_MODEL` (padrão `gpt-5`). A chave nunca é exposta pela API ou frontend. A integração usa Responses API com `store: false`; somente pergunta e trechos recuperados do edital são enviados ao provider.
+
 ## Descoberta web controlada
 
 | Método e rota | Regra |

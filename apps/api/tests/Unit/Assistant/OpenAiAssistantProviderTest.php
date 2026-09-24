@@ -1,0 +1,2 @@
+<?php
+declare(strict_types=1);namespace App\Tests\Unit\Assistant;use App\Infrastructure\Assistant\OpenAiAssistantProvider;use PHPUnit\Framework\TestCase;final class OpenAiAssistantProviderTest extends TestCase{public function testRefusesMissingServerKeyBeforeNetworkCall():void{$this->expectException(\DomainException::class);$this->expectExceptionMessage('OPENAI_API_KEY');(new OpenAiAssistantProvider('','gpt-5'))->answer('Pergunta',[]);}}
