@@ -28,7 +28,7 @@ Atualizado em 23/09/2026. Cada marco só avança quando backend, frontend, docum
 - M0.2: domínio Taxonomy, slug/normalização, operações de árvore e prevenção de ciclo. **Em andamento: normalização, prevenção de ciclo e criação persistida concluídas.**
 - M0.3: API administrativa, testes e tela Quasar. **Em andamento: criação, listagem paginada e árvore administrativa conectadas; aliases concluídos; edição e movimentação de nós sem filhos conectadas; atualização recursiva de subárvores pendente.**
 - M0.4: árvore de assuntos, aliases, mover e editar no frontend.
-- M0.5: sugestões de duplicidade, proposta de fusão e reatribuição transacional.
+- M0.5: sugestões de duplicidade, proposta de fusão e reatribuição transacional. **Concluída: revisão administrativa, reatribuição idempotente, desativação da origem e auditoria.**
 - M0.6: interface de IA para reconciliação, execução auditável e revisão humana.
 
 Decisões que ficam bloqueadas até M2/M6: provider de IA, tecnologia de fila e backend S3/MinIO. A fundação relacional não depende delas.

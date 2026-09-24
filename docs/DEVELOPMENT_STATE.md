@@ -177,3 +177,8 @@ docker compose exec -T frontend npm run build
 - A operação chama a transação auditável, desativa a origem e reatribui aliases e vínculos canônicos.
 - Build frontend e PHPUnit backend aprovados.
 - Pendentes de commit: toda a entrega integrada de fusão e o aviso de impacto.
+
+## Commit de fusão auditável
+
+- Commit `c0735d7` concluiu sugestões, confirmação administrativa, reatribuição idempotente, desativação da origem e auditoria de fusões.
+- M0.5 está concluído. A próxima etapa do M0 é M0.6: interface de IA para reconciliação, com proposta auditável e revisão humana.
