@@ -10,6 +10,7 @@ use App\Application\QuestionBank\Port\TransactionManagerInterface;
 use App\Domain\QuestionBank\Entity\QuestionImport;
 use App\Domain\QuestionBank\Entity\QuestionImportRow;
 use App\Domain\QuestionBank\Repository\QuestionImportRepositoryInterface;
+use App\Domain\QuestionBank\Repository\QuestionDuplicateDetectorInterface;
 
 final class PreviewQuestionImportService
 {
@@ -18,6 +19,7 @@ final class PreviewQuestionImportService
         private readonly QuestionImportValidationService $validator,
         private readonly QuestionImportRepositoryInterface $imports,
         private readonly TransactionManagerInterface $transactions,
+        private readonly ?QuestionDuplicateDetectorInterface $duplicates = null,
         private readonly \DateTimeZone $utc = new \DateTimeZone('UTC'),
     ) {
     }
@@ -33,7 +35,8 @@ final class PreviewQuestionImportService
         }
 
         $rows = $this->reader->read($format, $request->content);
-        $report = $this->validator->validate($rows);
+        $statements = array_values(array_filter(array_map(static fn (array $row): string => is_string($row['statement'] ?? null) ? $row['statement'] : '', $rows)));
+        $report = $this->validator->validate($rows, $this->duplicates?->findExistingByStatements($statements) ?? []);
         $importId = $this->uuid();
 
         $this->transactions->transactional(function () use ($request, $format, $rows, $report, $importId): void {

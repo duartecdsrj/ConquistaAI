@@ -57,8 +57,9 @@ A resposta segue o envelope padrão e devolve `{ "id": "uuid", "document_sha256"
 { "format": "JSON", "content": "[...]" }
 ```
 
+Cada linha pode declarar opcionalmente `source`, `reference_url` e `origin` (`EXAM`, `ORIGINAL` ou `AI`). Essas informações são preservadas no rascunho criado na confirmação.
 ou `{ "format": "CSV", "content": "statement,options,correct_option\\n..." }`.
-A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a situacao e os erros. Uma linha repetida recebe `DUPLICATE_CANDIDATE`. O preview persiste o relatorio e cada linha, associado ao administrador que o enviou, mas nao cria questoes. A confirmacao posterior podera gravar somente linhas validas explicitamente aprovadas.
+A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a situacao e os erros. Uma linha repetida ou cujo enunciado normalizado já exista no banco recebe `DUPLICATE_CANDIDATE`, permanece no relatório persistido e não é criada na confirmação. O preview persiste o relatorio e cada linha, associado ao administrador que o enviou, mas nao cria questoes. A confirmacao posterior podera gravar somente linhas validas explicitamente aprovadas.
 `POST /api/v1/question-imports/{id}/commit` requer `ADMIN` e recebe `{ "syllabus_id": "uuid" }`. A operacao cria apenas as linhas validas como rascunhos, preserva as invalidas no relatorio e so pode ser executada uma vez.
 ## Cadernos, simulados e resolucao
 

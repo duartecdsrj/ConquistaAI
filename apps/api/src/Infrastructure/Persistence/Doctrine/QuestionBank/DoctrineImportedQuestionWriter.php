@@ -23,6 +23,9 @@ final class DoctrineImportedQuestionWriter implements ImportedQuestionWriterInte
             $question->difficulty = in_array($row['difficulty'] ?? null, ['EASY', 'MEDIUM', 'HARD'], true) ? $row['difficulty'] : 'MEDIUM';
             $question->board = is_string($row['board'] ?? null) ? $row['board'] : null;
             $question->examYear = is_int($row['year'] ?? null) ? $row['year'] : null;
+            $question->source = is_string($row['source'] ?? null) ? trim($row['source']) ?: null : null;
+            $question->referenceUrl = is_string($row['reference_url'] ?? null) ? trim($row['reference_url']) ?: null : null;
+            $question->origin = in_array($row['origin'] ?? null, ['EXAM', 'ORIGINAL', 'AI'], true) ? $row['origin'] : 'EXAM';
             $question->status = 'DRAFT';
             $question->createdBy = $createdBy;
             $question->createdAt = new \DateTimeImmutable('now');

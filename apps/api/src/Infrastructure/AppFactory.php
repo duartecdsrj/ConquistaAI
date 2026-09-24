@@ -31,6 +31,7 @@ use App\Infrastructure\Security\Sha256IpAddressHasher;
 use App\Infrastructure\Security\SystemClock;
 use App\Infrastructure\Import\JsonCsvQuestionImportReader;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionImportRepository;
+use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionDuplicateDetector;
 use App\Interface\Http\Identity\Controller\AuthController;
 use App\Interface\Http\Identity\IdentityRequestFactory;
 use App\Interface\Http\Catalog\CatalogRequestFactory;
@@ -229,6 +230,7 @@ $errorMiddleware = $app->addErrorMiddleware(false, true, true);
                 new \App\Application\QuestionBank\Service\QuestionImportValidationService(),
                 $repository,
                 new DoctrineTransactionManager($entityManager),
+                new DoctrineQuestionDuplicateDetector($entityManager),
             ),
             new GetQuestionImportService($repository),
             new CommitQuestionImportService($repository, new DoctrineImportedQuestionWriter($entityManager), new DoctrineTransactionManager($entityManager)),

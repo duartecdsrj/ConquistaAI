@@ -9,7 +9,7 @@ use App\Application\QuestionBank\DTO\Response\ImportValidationReportResponseDto;
 final class QuestionImportValidationService
 {
     /** @param list<array<string, mixed>> $rows */
-    public function validate(array $rows): ImportValidationReportResponseDto
+    public function validate(array $rows, array $existing = []): ImportValidationReportResponseDto
     {
         $result = [];
         $valid = 0;
@@ -27,6 +27,7 @@ final class QuestionImportValidationService
                 $errors[] = ['field' => 'statement', 'code' => 'REQUIRED', 'message' => 'Enunciado e obrigatorio.'];
             } else {
                 $fingerprint = $this->statementFingerprint($statement);
+                if (isset($existing[$fingerprint])) { $errors[] = ['field' => 'statement', 'code' => 'DUPLICATE_CANDIDATE', 'message' => 'Possível duplicidade da questão cadastrada ' . $existing[$fingerprint] . '.']; }
                 if (isset($statements[$fingerprint])) {
                     $errors[] = [
                         'field' => 'statement',
