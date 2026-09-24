@@ -12,7 +12,7 @@ final class SyllabusResponseMapper
     {
         return new SyllabusResponseDto(
             $syllabus->id,
-            $syllabus->positionId,
+            $syllabus->examId,
             $syllabus->name,
             $syllabus->publishedAt,
             $syllabus->sourceUrl,

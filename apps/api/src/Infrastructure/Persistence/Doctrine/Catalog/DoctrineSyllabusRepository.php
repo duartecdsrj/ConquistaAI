@@ -1,64 +1,13 @@
 <?php
 declare(strict_types=1);
-
 namespace App\Infrastructure\Persistence\Doctrine\Catalog;
-
-use App\Domain\Catalog\Entity\Syllabus;
-use App\Domain\Catalog\Repository\SyllabusRepositoryInterface;
-use App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SyllabusRecord;
-use Doctrine\ORM\EntityManagerInterface;
-
-final class DoctrineSyllabusRepository implements SyllabusRepositoryInterface
-{
-    public function __construct(private readonly EntityManagerInterface $entityManager) {}
-
-    public function save(Syllabus $syllabus): void
-    {
-        $record = $this->entityManager->find(SyllabusRecord::class, $syllabus->id);
-        $now = new \DateTimeImmutable('now');
-
-        if (!$record instanceof SyllabusRecord) {
-            $record = new SyllabusRecord();
-            $record->id = $syllabus->id;
-            $record->createdAt = $now;
-            $this->entityManager->persist($record);
-        }
-
-        $record->positionId = $syllabus->positionId;
-        $record->name = $syllabus->name;
-        $record->publishedAt = $syllabus->publishedAt === null ? null : new \DateTimeImmutable($syllabus->publishedAt);
-        $record->sourceUrl = $syllabus->sourceUrl;
-        $record->documentPath = $syllabus->documentPath;
-        $record->documentSha256 = $syllabus->documentSha256;
-        $record->documentOriginalName = $syllabus->documentOriginalName;
-        $record->documentMimeType = $syllabus->documentMimeType;
-        $record->documentSize = $syllabus->documentSize;
-        $record->updatedAt = $now;
-    }
-
-    public function findById(string $id): ?Syllabus
-    {
-        $record = $this->entityManager->find(SyllabusRecord::class, $id);
-        return $record instanceof SyllabusRecord ? $this->toDomain($record) : null;
-    }
-
-    public function existsById(string $id): bool
-    {
-        return (bool) $this->entityManager->createQueryBuilder()->select('COUNT(syllabus.id)')->from(SyllabusRecord::class, 'syllabus')->where('syllabus.id=:id')->setParameter('id', $id)->getQuery()->getSingleScalarResult();
-    }
-
-    public function existsForPosition(string $id, string $positionId): bool
-    {
-        return (bool) $this->entityManager->createQueryBuilder()->select('COUNT(syllabus.id)')->from(SyllabusRecord::class, 'syllabus')->where('syllabus.id=:id')->andWhere('syllabus.positionId=:positionId')->setParameter('id', $id)->setParameter('positionId', $positionId)->getQuery()->getSingleScalarResult();
-    }
-
-    public function listForPosition(string $positionId): array
-    {
-        return array_map(fn (SyllabusRecord $record): Syllabus => $this->toDomain($record), $this->entityManager->createQueryBuilder()->select('syllabus')->from(SyllabusRecord::class, 'syllabus')->where('syllabus.positionId=:positionId')->setParameter('positionId', $positionId)->orderBy('syllabus.name', 'ASC')->getQuery()->getResult());
-    }
-
-    private function toDomain(SyllabusRecord $record): Syllabus
-    {
-        return new Syllabus($record->id, $record->positionId, $record->name, $record->publishedAt?->format('Y-m-d'), $record->sourceUrl, $record->documentPath, $record->documentSha256, $record->documentOriginalName, $record->documentMimeType, $record->documentSize);
-    }
+use App\Domain\Catalog\Entity\Syllabus;use App\Domain\Catalog\Repository\SyllabusRepositoryInterface;use App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SyllabusRecord;use Doctrine\ORM\EntityManagerInterface;
+final class DoctrineSyllabusRepository implements SyllabusRepositoryInterface {
+ public function __construct(private readonly EntityManagerInterface $entityManager) {}
+ public function save(Syllabus $syllabus):void{$record=$this->entityManager->find(SyllabusRecord::class,$syllabus->id);$now=new \DateTimeImmutable('now');if(!$record instanceof SyllabusRecord){$record=new SyllabusRecord();$record->id=$syllabus->id;$record->createdAt=$now;$this->entityManager->persist($record);}$record->examId=$syllabus->examId;$record->name=$syllabus->name;$record->publishedAt=$syllabus->publishedAt===null?null:new \DateTimeImmutable($syllabus->publishedAt);$record->sourceUrl=$syllabus->sourceUrl;$record->documentPath=$syllabus->documentPath;$record->documentSha256=$syllabus->documentSha256;$record->documentOriginalName=$syllabus->documentOriginalName;$record->documentMimeType=$syllabus->documentMimeType;$record->documentSize=$syllabus->documentSize;$record->updatedAt=$now;}
+ public function findById(string $id):?Syllabus{$record=$this->entityManager->find(SyllabusRecord::class,$id);return $record instanceof SyllabusRecord?$this->toDomain($record):null;}
+ public function existsById(string $id):bool{return(bool)$this->entityManager->createQueryBuilder()->select('COUNT(syllabus.id)')->from(SyllabusRecord::class,'syllabus')->where('syllabus.id=:id')->setParameter('id',$id)->getQuery()->getSingleScalarResult();}
+ public function existsForExam(string $id,string $examId):bool{return(bool)$this->entityManager->createQueryBuilder()->select('COUNT(syllabus.id)')->from(SyllabusRecord::class,'syllabus')->where('syllabus.id=:id')->andWhere('syllabus.examId=:examId')->setParameter('id',$id)->setParameter('examId',$examId)->getQuery()->getSingleScalarResult();}
+ public function listForExam(string $examId):array{return array_map(fn(SyllabusRecord $record):Syllabus=>$this->toDomain($record),$this->entityManager->createQueryBuilder()->select('syllabus')->from(SyllabusRecord::class,'syllabus')->where('syllabus.examId=:examId')->setParameter('examId',$examId)->orderBy('syllabus.name','ASC')->getQuery()->getResult());}
+ private function toDomain(SyllabusRecord $record):Syllabus{return new Syllabus($record->id,$record->examId,$record->name,$record->publishedAt?->format('Y-m-d'),$record->sourceUrl,$record->documentPath,$record->documentSha256,$record->documentOriginalName,$record->documentMimeType,$record->documentSize);}
 }
