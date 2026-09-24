@@ -1,0 +1,2 @@
+<?php
+declare(strict_types=1);namespace App\Tests\Unit\Assistant;use App\Infrastructure\Assistant\GeminiAssistantProvider;use PHPUnit\Framework\TestCase;final class GeminiAssistantProviderTest extends TestCase{public function testRefusesMissingServerKeyBeforeNetworkCall():void{$this->expectException(\DomainException::class);$this->expectExceptionMessage('GEMINI_API_KEY');(new GeminiAssistantProvider('','gemini-2.5-flash'))->answer('Pergunta',[]);}}

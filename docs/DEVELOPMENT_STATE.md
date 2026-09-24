@@ -455,3 +455,10 @@ docker compose exec -T frontend npm run build
 - O assistente agora seleciona `AI_PROVIDER=openai` ou `local` por ambiente. `OpenAiAssistantProvider` chama a Responses API com `store: false`, `OPENAI_API_KEY` no servidor e `OPENAI_MODEL` configurável.
 - A OpenAI recebe somente pergunta e evidências recuperadas; a resposta continua persistindo provider, modelo e páginas usadas. Sem chave, a chamada falha com mensagem segura; `AI_PROVIDER=local` mantém o provider determinístico.
 - Com autorização explícita, a API foi conectada também à rede Docker `public` exclusivamente para egress HTTPS a providers externos; nenhuma porta foi publicada.
+
+## Adaptador Gemini configurável
+
+- `GeminiAssistantProvider` implementa a mesma porta do assistente e usa `generateContent` com instrução de responder apenas com as evidências RAG do edital.
+- Selecione `AI_PROVIDER=gemini` e configure `GEMINI_API_KEY` e, opcionalmente, `GEMINI_MODEL` (padrão `gemini-2.5-flash`). A chave permanece somente no ambiente do servidor.
+- Foram incluídas as variáveis no Compose e no `.env.example`, e um teste unitário garante que a ausência de chave não inicia chamada externa.
+- Próximo passo: inserir uma chave Gemini privada no `.env`, recriar o serviço `api` e realizar uma consulta real com um edital extraído.

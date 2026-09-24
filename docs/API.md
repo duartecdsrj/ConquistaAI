@@ -110,7 +110,7 @@ As respostas são produzidas por um provider desacoplado. A versão local determ
 
 ### Configuração de provider de IA
 
-`AI_PROVIDER` seleciona o provider do assistente: `openai` ou `local` (fallback determinístico). Para OpenAI, defina `OPENAI_API_KEY` exclusivamente no ambiente do servidor e escolha o modelo em `OPENAI_MODEL` (padrão `gpt-5`). A chave nunca é exposta pela API ou frontend. A integração usa Responses API com `store: false`; somente pergunta e trechos recuperados do edital são enviados ao provider.
+`AI_PROVIDER` seleciona o provider do assistente: `gemini`, `openai` ou `local` (fallback determinístico). Para Gemini, defina `GEMINI_API_KEY` exclusivamente no ambiente do servidor e escolha o modelo em `GEMINI_MODEL` (padrão `gemini-2.5-flash`). Para OpenAI, use `OPENAI_API_KEY` e `OPENAI_MODEL` (padrão `gpt-5`). Nenhuma chave é exposta pela API ou frontend. Ambos os providers recebem somente pergunta e trechos recuperados do edital; no Gemini, a chave segue exclusivamente no cabeçalho HTTPS da chamada ao endpoint `generateContent`.
 
 ## Descoberta web controlada
 
