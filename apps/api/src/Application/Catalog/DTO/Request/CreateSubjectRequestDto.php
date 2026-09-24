@@ -10,6 +10,9 @@ final readonly class CreateSubjectRequestDto
         public ?string $parentId,
         public string $name,
         public int $sortOrder,
-    ) {
-    }
+        public ?string $sourceExcerpt = null,
+        public ?int $sourcePage = null,
+        public ?int $sourceStartOffset = null,
+        public ?int $sourceEndOffset = null,
+    ) {}
 }

@@ -279,3 +279,23 @@ docker compose exec -T frontend npm run build
 - Validações deste incremento: PHPUnit host aprovado com 32 testes e 78 assertions; `docker compose exec -T frontend npm run build` aprovado; `git diff --check` aprovado.
 - Decisão: armazenamento local configurável por `SYLLABUS_DOCUMENT_DIRECTORY` até a definição de S3/MinIO no M2. O próximo recorte do M1 é modelar conteúdo programático por cargo, preservando origem e posição dentro do PDF para o processamento assíncrono do M2.
 - Correção de persistência: o compose monta o volume nomeado `syllabus_documents` em `/app/storage/syllabi`; portanto, PDFs já enviados sobrevivem à recriação do contêiner da API. `SYLLABUS_DOCUMENT_DIRECTORY` permite trocar o diretório sem alterar o código.
+
+## Commit de preservação de edital
+
+- Commit `e731c56` concluiu a primeira entrega do M1: upload administrativo de PDF, hash SHA-256 idempotente, volume Docker persistente, metadados seguros na API e interface Quasar responsiva.
+- A migration `007_syllabus_document_metadata.sql` já foi aplicada no ambiente local.
+- Próxima etapa autorizada: modelar trechos estruturados do conteúdo programático por cargo, com posição de origem no PDF. A extração automática permanece no M2; nesta etapa o modelo e o cadastro administrativo devem estar completos em backend, frontend, documentação e testes.
+
+## Em progresso — proveniência de conteúdo programático
+
+- A próxima entrega do M1 está em andamento e ainda não deve ser considerada concluída: migration `008_subject_source_provenance.sql`, domínio/DTOs/Doctrine e validação de trecho, página e offsets foram preparados para assuntos existentes.
+- O endpoint e o formulário ainda precisam expor os campos opcionais `source_excerpt`, `source_page`, `source_start_offset` e `source_end_offset`.
+- Ainda faltam o contrato e a edição paralela no frontend, testes específicos, aplicação da migration, documentação e validação integrada. Não iniciar M2 antes de concluir esses itens no mesmo ciclo.
+
+## Entrega concluída — proveniência de conteúdo programático
+
+- A migration `008_subject_source_provenance.sql` foi aplicada no ambiente local e mantém compatibilidade com assuntos existentes.
+- O fluxo DDD de `POST /subjects` recebeu Request DTO validado, controller fino, serviço, repositório Doctrine e mapper para `source_excerpt`, `source_page`, `source_start_offset` e `source_end_offset`.
+- O catálogo administrativo permite registrar página e trecho de origem, envia-os pelo módulo Axios e mostra a evidência como dica no assunto. Não há chamada HTTP direta na tela.
+- Documentação atualizada: API, frontend e banco. Validações: API 33 testes / 83 assertions; build Quasar aprovado; `git diff --check` aprovado.
+- Próximo passo autorizado: encerrar M1 com o vínculo explícito entre assuntos locais do edital e a Taxonomia canônica, sempre com revisão administrativa; só então iniciar M2.

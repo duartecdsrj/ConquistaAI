@@ -11,6 +11,9 @@ final readonly class SubjectResponseDto
         public ?string $parentId,
         public string $name,
         public int $sortOrder,
-    ) {
-    }
+        public ?string $sourceExcerpt,
+        public ?int $sourcePage,
+        public ?int $sourceStartOffset,
+        public ?int $sourceEndOffset,
+    ) {}
 }

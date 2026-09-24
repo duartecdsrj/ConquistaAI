@@ -60,4 +60,31 @@ final class CreateSubjectServiceTest extends TestCase
         (new CreateSubjectService($subjects, $syllabi, new SubjectResponseMapper(), $transactions))
             ->create(new CreateSubjectRequestDto('s1', 'foreign', 'Redes', 0));
     }
+
+    public function testPreservesSourceProvenance(): void
+    {
+        $subjects = new class implements SubjectRepositoryInterface {
+            public ?Subject $saved = null;
+            public function save(Subject $subject): void { $this->saved = $subject; }
+            public function existsForSyllabus(string $id, string $syllabusId): bool { return false; }
+            public function listForSyllabus(string $syllabusId): array { return []; }
+        };
+        $syllabi = new class implements SyllabusRepositoryInterface {
+            public function save(Syllabus $syllabus): void {}
+            public function findById(string $id): ?Syllabus { return null; }
+            public function existsById(string $id): bool { return $id === 's1'; }
+            public function existsForPosition(string $id, string $positionId): bool { return false; }
+            public function listForPosition(string $positionId): array { return []; }
+        };
+        $transactions = new class implements TransactionManagerInterface { public function transactional(callable $callback): mixed { return $callback(); } };
+
+        $result = (new CreateSubjectService($subjects, $syllabi, new SubjectResponseMapper(), $transactions))
+            ->create(new CreateSubjectRequestDto('s1', null, 'TCP/IP', 0, 'Protocolos de rede TCP/IP.', 12, 50, 78));
+
+        self::assertSame('Protocolos de rede TCP/IP.', $result->sourceExcerpt);
+        self::assertSame(12, $result->sourcePage);
+        self::assertSame(50, $result->sourceStartOffset);
+        self::assertSame(78, $result->sourceEndOffset);
+        self::assertSame('TCP/IP', $subjects->saved?->name);
+    }
 }

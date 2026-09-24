@@ -1,5 +1,41 @@
 <?php
 declare(strict_types=1);
+
 namespace App\Infrastructure\Persistence\Doctrine\Catalog;
-use App\Domain\Catalog\Entity\Subject;use App\Domain\Catalog\Repository\SubjectRepositoryInterface;use App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SubjectRecord;use Doctrine\ORM\EntityManagerInterface;
-final class DoctrineSubjectRepository implements SubjectRepositoryInterface {public function __construct(private readonly EntityManagerInterface $em){}public function save(Subject $subject):void{$r=new SubjectRecord();$r->id=$subject->id;$r->syllabusId=$subject->syllabusId;$r->parentId=$subject->parentId;$r->name=$subject->name;$r->sortOrder=$subject->sortOrder;$r->createdAt=new \DateTimeImmutable('now');$r->updatedAt=$r->createdAt;$this->em->persist($r);}public function existsForSyllabus(string $id,string $syllabusId):bool{return(bool)$this->em->createQueryBuilder()->select('COUNT(subject.id)')->from(SubjectRecord::class,'subject')->where('subject.id=:id')->andWhere('subject.syllabusId=:syllabusId')->setParameter('id',$id)->setParameter('syllabusId',$syllabusId)->getQuery()->getSingleScalarResult();}public function listForSyllabus(string $syllabusId):array{return array_map(static fn(SubjectRecord $r):Subject=>new Subject($r->id,$r->syllabusId,$r->parentId,$r->name,$r->sortOrder),$this->em->createQueryBuilder()->select('subject')->from(SubjectRecord::class,'subject')->where('subject.syllabusId=:id')->setParameter('id',$syllabusId)->orderBy('subject.sortOrder','ASC')->addOrderBy('subject.name','ASC')->getQuery()->getResult());}}
+
+use App\Domain\Catalog\Entity\Subject;
+use App\Domain\Catalog\Repository\SubjectRepositoryInterface;
+use App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SubjectRecord;
+use Doctrine\ORM\EntityManagerInterface;
+
+final class DoctrineSubjectRepository implements SubjectRepositoryInterface
+{
+    public function __construct(private readonly EntityManagerInterface $em) {}
+
+    public function save(Subject $subject): void
+    {
+        $record = new SubjectRecord();
+        $record->id = $subject->id;
+        $record->syllabusId = $subject->syllabusId;
+        $record->parentId = $subject->parentId;
+        $record->name = $subject->name;
+        $record->sortOrder = $subject->sortOrder;
+        $record->sourceExcerpt = $subject->sourceExcerpt;
+        $record->sourcePage = $subject->sourcePage;
+        $record->sourceStartOffset = $subject->sourceStartOffset;
+        $record->sourceEndOffset = $subject->sourceEndOffset;
+        $record->createdAt = new \DateTimeImmutable('now');
+        $record->updatedAt = $record->createdAt;
+        $this->em->persist($record);
+    }
+
+    public function existsForSyllabus(string $id, string $syllabusId): bool
+    {
+        return (bool) $this->em->createQueryBuilder()->select('COUNT(subject.id)')->from(SubjectRecord::class, 'subject')->where('subject.id=:id')->andWhere('subject.syllabusId=:syllabusId')->setParameter('id', $id)->setParameter('syllabusId', $syllabusId)->getQuery()->getSingleScalarResult();
+    }
+
+    public function listForSyllabus(string $syllabusId): array
+    {
+        return array_map(static fn (SubjectRecord $record): Subject => new Subject($record->id, $record->syllabusId, $record->parentId, $record->name, $record->sortOrder, $record->sourceExcerpt, $record->sourcePage, $record->sourceStartOffset, $record->sourceEndOffset), $this->em->createQueryBuilder()->select('subject')->from(SubjectRecord::class, 'subject')->where('subject.syllabusId=:id')->setParameter('id', $syllabusId)->orderBy('subject.sortOrder', 'ASC')->addOrderBy('subject.name', 'ASC')->getQuery()->getResult());
+    }
+}

@@ -10,12 +10,6 @@ final class SubjectResponseMapper
 {
     public function map(Subject $subject): SubjectResponseDto
     {
-        return new SubjectResponseDto(
-            $subject->id,
-            $subject->syllabusId,
-            $subject->parentId,
-            $subject->name,
-            $subject->sortOrder,
-        );
+        return new SubjectResponseDto($subject->id, $subject->syllabusId, $subject->parentId, $subject->name, $subject->sortOrder, $subject->sourceExcerpt, $subject->sourcePage, $subject->sourceStartOffset, $subject->sourceEndOffset);
     }
 }

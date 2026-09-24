@@ -112,3 +112,7 @@ Os services recebem Request DTOs e retornam Response DTOs; JWT, cookies, Argon2i
 ### Navegação de questões congeladas
 
 GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e devolve uma lista paginada de questões na ordem gravada em notebook_questions. A rota filtra o caderno pelo proprietário, preserva a seleção congelada e não repete os filtros usados na criação. Um caderno inexistente ou de outro usuário retorna 404 RESOURCE_NOT_FOUND.
+
+### Proveniência de conteúdo programático
+
+`POST /api/v1/subjects` aceita opcionalmente `source_excerpt`, `source_page`, `source_start_offset` e `source_end_offset` junto a `syllabus_id`, `name`, `parent_id` e `sort_order`. Esses campos registram a evidência do conteúdo dentro do PDF do edital e são retornados por `GET /api/v1/syllabi/{syllabusId}/subjects`. `source_page` começa em 1; offsets começam em 0 e o fim não pode anteceder o início.

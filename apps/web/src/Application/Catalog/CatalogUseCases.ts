@@ -1,4 +1,4 @@
-import type { CatalogRepository, Exam, Position, Subject, Syllabus, Tag } from '../../Domain/Catalog/CatalogRepository'
+import type { CatalogRepository, Exam, Position, Subject, SubjectProvenance, Syllabus, Tag } from '../../Domain/Catalog/CatalogRepository'
 
 export class CatalogUseCases {
   public constructor(private readonly repository: CatalogRepository) {}
@@ -13,7 +13,7 @@ export class CatalogUseCases {
     return this.repository.uploadSyllabusDocument(syllabusId, document)
   }
   public listSubjects(syllabusId: string): Promise<readonly Subject[]> { return this.repository.listSubjects(syllabusId) }
-  public createSubject(syllabusId: string, name: string): Promise<Subject> { return this.repository.createSubject(syllabusId, required(name, 'Informe o nome do assunto.')) }
+  public createSubject(syllabusId: string, name: string, provenance: SubjectProvenance = {}): Promise<Subject> { return this.repository.createSubject(syllabusId, required(name, 'Informe o nome do assunto.'), provenance) }
   public listTags(): Promise<readonly Tag[]> { return this.repository.listTags() }
   public createTag(name: string): Promise<Tag> { return this.repository.createTag(required(name, 'Informe o nome da tag.')) }
 }

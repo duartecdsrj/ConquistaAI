@@ -97,3 +97,7 @@ O nome da aplicação é **ConquistaAI**. O lema oficial é: **“Estude. Evolua
 - Em larguras menores que 900 px, o menu é um drawer sobreposto aberto pelo cabeçalho; em desktop ele permanece lateral.
 - O Vite aceita somente `conquistaai.app.br` e `www.conquistaai.app.br`, sem liberar hosts genéricos.
 - A execução de cadernos mantém controles compactos, cronômetro, pausa e alternativas com áreas de toque adequadas.
+
+## Proveniência de assuntos do edital
+
+O módulo Catalog permite ao administrador informar, ao criar um assunto, a página e o trecho correspondente do PDF. A página `CatalogPage.vue` encaminha o evento ao caso de uso `CatalogUseCases.createSubject`; o repositório Axios é o único responsável por serializar `source_excerpt` e `source_page` para a API. A tela nunca chama Axios diretamente.
