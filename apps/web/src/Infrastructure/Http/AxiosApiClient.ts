@@ -28,6 +28,7 @@ client.interceptors.response.use((response: AxiosResponse) => response, (error: 
 export async function getData<T>(url: string, config?: AxiosRequestConfig): Promise<T> { return (await client.get<ApiEnvelope<T>>(url, config)).data.data }
 export async function postData<TResponse, TRequest>(url: string, body?: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.post<ApiEnvelope<TResponse>>(url, body, config)).data.data }
 export async function patchData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.patch<ApiEnvelope<TResponse>>(url, body, config)).data.data }
+export async function putData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.put<ApiEnvelope<TResponse>>(url, body, config)).data.data }
 
 export async function getPage<T>(url: string, query: PageQuery = {}, filters: QueryParameters = {}): Promise<PageResult<T>> {
   const response = await client.get<ApiEnvelope<readonly T[]>>(url, { params: { ...paginationParams(query), ...withoutUndefined(filters) } })

@@ -96,3 +96,26 @@ docker compose exec -T frontend npm run build
 - Commit `0ad1b92` concluiu a rota de atribuição canônica.
 - Foi identificado que `Interface/Http/Editorial/EditorialPage.vue` consome Axios diretamente, contrariando `docs/FRONTEND.md`.
 - Próxima etapa: migrar Editorial para camadas Domain/Application/Infrastructure e só então adicionar o controle de atribuição canônica na tela.
+
+## Avanço atual — extração do módulo Editorial
+
+- Pendentes de commit: contratos Domain, casos de uso Application e repositório Axios Infrastructure do Editorial.
+- A tela ainda precisa ser migrada para um composable que use `editorialUseCases`; até isso ocorrer, não adicionar controles de Taxonomia nela.
+
+## Avanço atual — tela Editorial DDD
+
+- Pendentes de commit: módulo Editorial em Domain/Application/Infrastructure e composable `useEditorial`; `EditorialPage.vue` não chama mais Axios diretamente.
+- Build frontend aprovado.
+- Próximo passo: adicionar ao módulo Editorial o comando de atribuição de assuntos canônicos e o controle Quasar por questão.
+
+## Avanço atual — comando editorial de atribuição
+
+- Pendentes de commit: `putData` no cliente HTTP e `assignTaxonomy` nas camadas DDD do Editorial.
+- Build frontend aprovado.
+- Próximo passo: disponibilizar seleção de assuntos canônicos na interface editorial, usando o módulo Taxonomy sem chamadas Axios na tela.
+
+## Avanço atual — seleção editorial de Taxonomia
+
+- Pendentes de commit: seleção múltipla Quasar de assuntos canônicos por questão no Editorial e comando PUT via composable.
+- Build frontend aprovado.
+- Próximo passo: documentar o endpoint editorial e criar testes específicos de atribuição; depois iniciar a fusão auditável.
