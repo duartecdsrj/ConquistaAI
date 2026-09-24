@@ -1,6 +1,7 @@
 # Instrucoes obrigatorias para IA e contribuidores
 
 Antes de alterar codigo, leia `docs/ARCHITECTURE.md`, `docs/API.md` e este arquivo. Estas regras prevalecem sobre conveniencias locais.
+Também leia `docs/DEVELOPMENT_STATE.md`. Sempre que avançar o desenvolvimento, atualize esse arquivo no mesmo ciclo antes de iniciar a próxima etapa; registre entrega, pendências, validações, decisões e próximo passo.
 
 ## Arquitetura obrigatoria
 
