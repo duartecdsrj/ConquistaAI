@@ -1,0 +1,2 @@
+<?php
+declare(strict_types=1);namespace App\Application\Discovery\Service;use App\Application\Discovery\Mapper\DiscoveryResponseMapper;use App\Domain\Discovery\Repository\DiscoveryResourceRepositoryInterface;final class ListDiscoveryResourcesService{public function __construct(private readonly DiscoveryResourceRepositoryInterface $resources,private readonly DiscoveryResponseMapper $mapper){}public function list(?string $type):array{return array_map($this->mapper->resource(...),$this->resources->list($type));}}

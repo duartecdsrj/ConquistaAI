@@ -1,0 +1,2 @@
+<?php
+declare(strict_types=1);namespace App\Application\Discovery\Mapper;use App\Application\Discovery\DTO\Response\DiscoveryResourceResponseDto;use App\Domain\Discovery\Entity\DiscoveryResource;final class DiscoveryResponseMapper{public function resource(DiscoveryResource $r):DiscoveryResourceResponseDto{return new DiscoveryResourceResponseDto($r->id,$r->type,$r->title,$r->sourceUrl,$r->provider,$r->queryText,$r->discoveredAt->format(DATE_ATOM));}}

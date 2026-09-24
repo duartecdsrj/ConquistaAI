@@ -129,3 +129,7 @@ O módulo Study exibe o plano real de `GET /study-plan/me` e a meta de `GET /stu
 ## Assistente com evidências de edital
 
 O módulo Assistant usa `AssistantPage -> useAssistant -> UseCase -> Repository -> Axios -> API`. A conversa permite escolher um edital já extraído e exibe a resposta com páginas de evidência; a página não envia contexto, acessa Axios nem persiste transcrições diretamente.
+
+## Descoberta web controlada
+
+O módulo Discovery é administrativo e segue `DiscoveryPage -> useDiscovery -> UseCase -> Repository -> Axios -> API`. A tela envia somente consulta e tipo, exibe candidatos e respectivas URLs/proveniência; não realiza navegação HTTP direta nem baixa documentos.

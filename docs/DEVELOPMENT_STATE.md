@@ -435,3 +435,17 @@ docker compose exec -T frontend npm run build
 - A tela Assistant usa o fluxo obrigatório Page -> composable -> use case -> repository -> Axios -> API, permite escolher edital extraído e expande os trechos utilizados em cada resposta.
 - A migration `013_assistant_rag.sql` foi aplicada e confirmada no MySQL local. Validações: PHPUnit (40 testes, 102 assertions), build frontend e `git diff --check` aprovados; a rota sem credencial retorna envelope de erro, comprovando o registro e a proteção HTTP.
 - Próxima etapa autorizada: M7 — descoberta web por providers permitidos.
+
+## Início do M7 — descoberta web controlada
+
+- A descoberta será limitada a um provider HTTP configurado por ambiente e a hosts explicitamente permitidos; não haverá crawler livre, download automático ou acesso a URL arbitrária.
+- Cada candidato de prova ou gabarito preservará query, provider, URL de origem e data de descoberta para revisão administrativa.
+- Próximo passo: implementar contratos, persistência, rota ADMIN e módulo Quasar correspondente.
+
+## Encerramento do M7 — 24/09/2026
+
+- O Macro 7 está concluído: `POST /admin/discovery/searches` consulta somente o provider HTTP configurado, aceita apenas hosts em `DISCOVERY_ALLOWED_HOSTS`, limita a 10 candidatos e não baixa arquivos nem segue URLs de candidatos.
+- `GET /admin/discovery/resources` e a tela administrativa catalogam provas e gabaritos com título, tipo, URL de origem, provider, consulta e data de descoberta. A revisão humana permanece explícita.
+- A configuração é feita por `DISCOVERY_PROVIDER_BASE_URL` e `DISCOVERY_ALLOWED_HOSTS` no ambiente; base ausente ou host não permitido interrompe a consulta com erro seguro.
+- A migration `014_discovery_resources.sql` foi aplicada no MySQL local. Validações: PHPUnit (41 testes, 105 assertions), build frontend, sintaxe PHP e `git diff --check` aprovados.
+- O cronograma M0–M7 está concluído; a próxima fase requer planejamento explícito.

@@ -107,6 +107,15 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 | `POST /assistant/conversations/{id}/messages` | recebe `{ "content": "pergunta" }`, recupera páginas do edital e grava pergunta, resposta, provider, modelo e evidências |
 
 As respostas são produzidas por um provider desacoplado. A versão local determinística só resume evidências recuperadas, não inventa fontes e devolve as páginas utilizadas. Cada mensagem é imutável e sempre permanece restrita ao dono da conversa. Não há endpoint de geração editorial nesta entrega.
+
+## Descoberta web controlada
+
+| Método e rota | Regra |
+| --- | --- |
+| `GET /admin/discovery/resources` | lista candidatos de provas e gabaritos, com proveniência; requer ADMIN |
+| `POST /admin/discovery/searches` | recebe `{ "query": "...", "resource_type": "EXAM" }`, consulta somente o provider configurado e persiste no máximo 10 candidatos; requer ADMIN |
+
+O provider usa `DISCOVERY_PROVIDER_BASE_URL` e só aceita resposta JSON de hosts presentes em `DISCOVERY_ALLOWED_HOSTS`. A API limita consultas a 10 resultados por requisição, não segue URLs de candidatos, não baixa arquivos e registra provider, URL de origem, consulta e data de descoberta. Tipos válidos: `EXAM` e `ANSWER_KEY`.
 ## Codigos importantes
 
 `400` entrada invalida, `401` autenticacao ausente/expirada, `403` papel ou propriedade insuficiente, `404` recurso inexistente ou invisivel, `409` estado incompatível (por exemplo, concluir duas vezes), `422` validacao de dominio, `429` rate limit e `500` erro inesperado com request id.

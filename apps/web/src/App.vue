@@ -13,6 +13,7 @@
     <AssistantPage v-else-if="section === 'assistant'" />
     <PerformancePage v-else />
   </AppShell>
+    <DiscoveryPage v-else-if="section === 'discovery'" />
 </template>
 
 <script setup lang="ts">
@@ -27,6 +28,7 @@ import PerformancePage from './Interface/Http/Performance/PerformancePage.vue'
 import AssistantPage from './Interface/Http/Assistant/AssistantPage.vue'
 import CatalogPage from './Interface/Http/Catalog/CatalogPage.vue'
 import ImportPage from './Interface/Http/Import/ImportPage.vue'
+import DiscoveryPage from './Interface/Http/Discovery/DiscoveryPage.vue'
 import EditorialPage from './Interface/Http/Editorial/EditorialPage.vue'
 import TaxonomyPage from './Interface/Http/Taxonomy/TaxonomyPage.vue'
 import { useAuth } from './Interface/Http/Identity/useAuth'

@@ -1,3 +1,5 @@
+import { ListDiscoveryResourcesUseCase, SearchDiscoveryUseCase } from '../Application/Discovery/DiscoveryUseCases'
+import { AxiosDiscoveryRepository } from './Discovery/AxiosDiscoveryRepository'
 import { CreateAssistantConversationUseCase, ListAssistantConversationsUseCase, ListAssistantMessagesUseCase, ListAssistantSyllabiUseCase, SendAssistantMessageUseCase } from '../Application/Assistant/AssistantUseCases'
 import { AxiosAssistantRepository } from './Assistant/AxiosAssistantRepository'
 import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
@@ -21,6 +23,8 @@ import { CreateTaxonomySubjectAliasUseCase, CreateTaxonomySubjectUseCase, MergeT
 
 const sessionStore = new BrowserSessionStore()
 configureAccessTokenProvider(() => sessionStore.accessToken())
+const discoveryRepository = new AxiosDiscoveryRepository()
+export const discoveryUseCases = { list: new ListDiscoveryResourcesUseCase(discoveryRepository), search: new SearchDiscoveryUseCase(discoveryRepository) }
 const assistantRepository = new AxiosAssistantRepository()
 export const assistantUseCases = { syllabi: new ListAssistantSyllabiUseCase(assistantRepository), conversations: new ListAssistantConversationsUseCase(assistantRepository), create: new CreateAssistantConversationUseCase(assistantRepository), messages: new ListAssistantMessagesUseCase(assistantRepository), send: new SendAssistantMessageUseCase(assistantRepository) }
 
