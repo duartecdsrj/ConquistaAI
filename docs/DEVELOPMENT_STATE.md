@@ -12,7 +12,7 @@ Atualizado em 24/09/2026. Este é o registro de handoff obrigatório antes de in
 
 ## Marco ativo
 
-**M2 — Jobs e processamento de edital**, em andamento.
+**M2 — Jobs e processamento de edital**, concluído.
 
 A meta do marco foi entregar administração de concursos, cargos e editais, preservação idempotente de PDF, proveniência rastreável do conteúdo e associação explícita à taxonomia canônica. Consulte `docs/DEVELOPMENT_SCHEDULE.md` para os critérios completos.
 
@@ -353,3 +353,12 @@ docker compose exec -T frontend npm run build
 - O comando `php bin/process-syllabus-jobs.php` permite execução pontual em operação ou teste. O PDF permanece no volume persistente, sem provider externo.
 - Validação: PHPUnit aprovado com 35 testes e 86 assertions; sintaxe do worker aprovada; migration confirmada no banco local.
 - Próximo passo: M2.3/M2.4 — expor páginas e progresso, criar revisão administrativa no frontend e permitir reprocessamento explícito com resultados consistentes.
+
+## Encerramento do M2 — 24/09/2026
+
+- O Macro 2 está concluído: jobs persistidos no MySQL, worker Compose desacoplado e extração local por página via `pdftotext` preservam hash, offsets e conteúdo para revisão.
+- A API administrativa expõe o estado do job e `GET /api/v1/admin/syllabi/{id}/extractions`; a tela Catalog permite iniciar, atualizar o progresso, reprocessar explicitamente e revisar cada página expandida com os offsets de proveniência.
+- Reprocessamentos substituem extrações do mesmo hash de forma idempotente; nenhum assunto é criado ou publicado automaticamente.
+- Commits contextuais: `c0ec96a` (API e teste), `30edae7` (módulo Catalog) e este commit de cronograma/handoff.
+- Validações: PHPUnit com 36 testes e 90 assertions; build Quasar aprovado; `git diff --check` aprovado.
+- Próxima etapa autorizada: M3 — questões reais, fontes e deduplicação. Iniciar pelo contrato e inventário dos modelos de questão existentes.

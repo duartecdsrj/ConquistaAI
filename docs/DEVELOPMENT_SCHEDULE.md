@@ -6,7 +6,7 @@ Atualizado em 24/09/2026. Cada marco só avança quando backend, frontend, docum
 |---|---|---|---|---|
 | M0 | Taxonomia canônica: árvore, aliases, prevenção de ciclos e revisão de duplicidade | Nenhuma | assunto global, aliases e auditoria funcionais | Concluído |
 | M1 | Concursos, cargos e editais estruturados | M0 | PDF preservado, hash idempotente e conteúdo por cargo | Concluído |
-| M2 | Jobs e processamento de edital | M1 | extração assíncrona com progresso e proveniência | Planejado |
+| M2 | Jobs e processamento de edital | M1 | extração assíncrona com progresso e proveniência | Concluído |
 | M3 | Questões reais, fontes e deduplicação | M0, M1 | importação idempotente e revisão de candidatos | Planejado |
 | M4 | Estatísticas hierárquicas e dashboard por edital | M0, M3 | agregação por descendentes e dados insuficientes | Planejado |
 | M5 | Cadernos inteligentes e plano de estudos | M4 | seleção e recomendação explicáveis | Planejado |
@@ -45,10 +45,10 @@ Decisões que ficam bloqueadas até M2/M6: provider de IA, tecnologia de fila e 
 
 ## M2 — sequência planejada
 
-- M2.1: fila/worker desacoplado e estado de processamento do edital. **Em andamento: fila persistida no MySQL, sem dependência de provider externo.**
-- M2.2: extração de texto do PDF com páginas, offsets e hash de entrada. **Concluída localmente com `pdftotext` e worker separado.**
-- M2.3: persistência de resultados e erros com progresso consultável.
-- M2.4: revisão administrativa do conteúdo extraído e reprocessamento idempotente.
+- M2.1: fila/worker desacoplado e estado de processamento do edital. **Concluída — fila persistida no MySQL e worker Compose independente.**
+- M2.2: extração de texto do PDF com páginas, offsets e hash de entrada. **Concluída com `pdftotext`, hash e proveniência por página.**
+- M2.3: persistência de resultados e erros com progresso consultável. **Concluída.**
+- M2.4: revisão administrativa do conteúdo extraído e reprocessamento idempotente. **Concluída.**
 
 ## M3 a M7 — sequências planejadas
 
