@@ -1,4 +1,4 @@
-import type { CatalogRepository, Exam, Position, Subject, SubjectProvenance, Syllabus, Tag } from '../../Domain/Catalog/CatalogRepository'
+import type { CatalogRepository, Exam, Position, Subject, SubjectProvenance, Syllabus, SyllabusDocumentExtraction, SyllabusProcessingJob, Tag } from '../../Domain/Catalog/CatalogRepository'
 
 export class CatalogUseCases {
   public constructor(private readonly repository: CatalogRepository) {}
@@ -12,6 +12,9 @@ export class CatalogUseCases {
     if (document.type !== 'application/pdf') throw new Error('Selecione um arquivo PDF.')
     return this.repository.uploadSyllabusDocument(syllabusId, document)
   }
+  public queueSyllabusProcessing(syllabusId: string, reprocess = false): Promise<SyllabusProcessingJob> { return this.repository.queueSyllabusProcessing(syllabusId, reprocess) }
+  public getLatestSyllabusProcessing(syllabusId: string): Promise<SyllabusProcessingJob> { return this.repository.getLatestSyllabusProcessing(syllabusId) }
+  public listSyllabusExtractions(syllabusId: string): Promise<readonly SyllabusDocumentExtraction[]> { return this.repository.listSyllabusExtractions(syllabusId) }
   public listSubjects(syllabusId: string): Promise<readonly Subject[]> { return this.repository.listSubjects(syllabusId) }
   public createSubject(syllabusId: string, name: string, provenance: SubjectProvenance = {}): Promise<Subject> { return this.repository.createSubject(syllabusId, required(name, 'Informe o nome do assunto.'), provenance) }
   public assignTaxonomySubjects(subjectId: string, taxonomySubjectIds: readonly string[]): Promise<void> { if (!subjectId) throw new Error('Selecione o assunto do edital.'); return this.repository.assignTaxonomySubjects(subjectId, taxonomySubjectIds) }

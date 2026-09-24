@@ -105,3 +105,7 @@ O módulo Catalog permite ao administrador informar, ao criar um assunto, a pág
 ## Associação canônica no catálogo
 
 A tela administrativa de catálogo carrega assuntos canônicos ativos pelo caso de uso de Taxonomy e permite ao administrador associá-los explicitamente ao assunto local selecionado. O comando passa por `CatalogUseCases.assignTaxonomySubjects` e `AxiosCatalogRepository`; a página não consome HTTP diretamente. A associação não sugere nem efetiva fusões.
+
+## Processamento de editais
+
+O módulo Catalog oferece revisão administrativa do processamento de PDF: o administrador enfileira ou reprocessa explicitamente um edital, consulta o progresso persistido e expande as páginas extraídas com seus offsets. A página usa somente `useCatalog`; jobs e extrações passam por `CatalogUseCases` e `AxiosCatalogRepository`.
