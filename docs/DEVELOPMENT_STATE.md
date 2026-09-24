@@ -119,3 +119,8 @@ docker compose exec -T frontend npm run build
 - Pendentes de commit: seleção múltipla Quasar de assuntos canônicos por questão no Editorial e comando PUT via composable.
 - Build frontend aprovado.
 - Próximo passo: documentar o endpoint editorial e criar testes específicos de atribuição; depois iniciar a fusão auditável.
+
+## Commit de integração editorial
+
+- Commit `002440e` concluiu a refatoração DDD do Editorial e a atribuição canônica pela interface.
+- Próxima etapa autorizada: proposta de fusão auditável entre assuntos canônicos, precedida de contrato, transação, auditoria e revisão humana.
