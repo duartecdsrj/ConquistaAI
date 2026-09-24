@@ -30,7 +30,7 @@ import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import type { AuthenticatedUser } from '../../../Domain/Identity/AuthRepository'
 
-export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'catalog' | 'import' | 'editorial' | 'taxonomy'
+export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'assistant' | 'catalog' | 'import' | 'editorial' | 'taxonomy'
 
 const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection; readonly canManage: boolean }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection]; logout: [] }>()
@@ -39,6 +39,7 @@ const drawer = ref(!$q.screen.lt.md)
 const initials = computed(() => props.user.name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase())
 const navigationItems = computed<readonly { id: ApplicationSection; label: string; caption: string }[]>(() => [
   { id: 'home', label: 'Início', caption: 'Visão geral' },
+  { id: 'assistant', label: 'Assistente', caption: 'Pergunte ao edital' },
   { id: 'notebooks', label: 'Cadernos', caption: 'Monte e retome estudos' },
   { id: 'questions', label: 'Questões', caption: 'Banco publicado' },
   { id: 'performance', label: 'Desempenho', caption: 'Resultados reais' },

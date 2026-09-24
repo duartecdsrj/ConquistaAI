@@ -97,13 +97,16 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 
 | Metodo e rota | Regra |
 | --- | --- |
-| `POST /assistant/conversations` | inicia conversa com escopo permitido |
-| `POST /assistant/conversations/{id}/messages` | envia pergunta e gera resposta contextualizada |
-| `GET /assistant/conversations` | lista apenas conversas do usuario |
-| `POST /assistant/questions/generate` | gera rascunhos editoriais, somente `ADMIN` |
+## Assistente com RAG de editais
 
-O endpoint contextual de questao recebe `question_id` e `attempt_id`. Para simulado aberto em modo prova, a API aplica politica de contexto restrito antes de chamar o provider.
+| Método e rota | Regra |
+| --- | --- |
+| `GET /assistant/conversations` | lista somente as conversas do usuário autenticado |
+| `GET /assistant/syllabi` | lista editais com páginas extraídas disponíveis para consulta |
+| `POST /assistant/conversations` | cria conversa com `syllabus_id` e título opcional; o edital precisa ter páginas extraídas |
+| `POST /assistant/conversations/{id}/messages` | recebe `{ "content": "pergunta" }`, recupera páginas do edital e grava pergunta, resposta, provider, modelo e evidências |
 
+As respostas são produzidas por um provider desacoplado. A versão local determinística só resume evidências recuperadas, não inventa fontes e devolve as páginas utilizadas. Cada mensagem é imutável e sempre permanece restrita ao dono da conversa. Não há endpoint de geração editorial nesta entrega.
 ## Codigos importantes
 
 `400` entrada invalida, `401` autenticacao ausente/expirada, `403` papel ou propriedade insuficiente, `404` recurso inexistente ou invisivel, `409` estado incompatível (por exemplo, concluir duas vezes), `422` validacao de dominio, `429` rate limit e `500` erro inesperado com request id.

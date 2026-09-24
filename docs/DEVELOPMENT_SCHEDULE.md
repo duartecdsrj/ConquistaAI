@@ -10,7 +10,7 @@ Atualizado em 24/09/2026. Cada marco só avança quando backend, frontend, docum
 | M3 | Questões reais, fontes e deduplicação | M0, M1 | importação idempotente e revisão de candidatos | Concluído |
 | M4 | Estatísticas hierárquicas e dashboard por edital | M0, M3 | agregação por descendentes e dados insuficientes | Concluído |
 | M5 | Cadernos inteligentes e plano de estudos | M4 | seleção e recomendação explicáveis | Concluído |
-| M6 | IA auditável e RAG de editais | M1, M2, M5 | IA desacoplada, evidenciada e revisável | Planejado |
+| M6 | IA auditável e RAG de editais | M1, M2, M5 | IA desacoplada, evidenciada e revisável | Concluído |
 | M7 | Descoberta web por providers permitidos | M1, M3 | proveniência, limites de acesso e jobs | Planejado |
 
 ## Cadência por marco
@@ -55,5 +55,6 @@ Decisões que ficam bloqueadas até M2/M6: provider de IA, tecnologia de fila e 
 - **M3:** fontes de questões, importação idempotente, candidatos duplicados, revisão e publicação. **Concluído.**
 - **M4:** agregações hierárquicas por assunto, dashboard por edital e indicação de dados insuficientes. **Concluído em 24/09/2026.**
 - **M5:** cadernos inteligentes, filtros explicáveis, metas e plano de estudo. **Concluído em 24/09/2026:** recomendações baseadas em tentativas finais, confirmação explícita para congelar seleções e meta semanal persistida.
+- **M6:** assistente RAG de edital com provider desacoplado, evidências por página e mensagens imutáveis auditáveis. **Concluído em 24/09/2026.**
 - **M7:** providers permitidos de descoberta web, catálogo de provas/gabaritos, proveniência e limites operacionais.
-- Próxima etapa autorizada: M6 — IA auditável e RAG de editais.
+- Próxima etapa autorizada: M7 — descoberta web por providers permitidos.

@@ -421,3 +421,17 @@ docker compose exec -T frontend npm run build
 - `GET` e `PUT /api/v1/study-goals/me` fornecem uma meta semanal isolada por usuário, limitada a 1–500 respostas. A migration `012_study_goals.sql` foi aplicada e confirmada no MySQL local.
 - Validações: `docker compose exec -T api vendor/bin/phpunit` aprovado (38 testes, 98 assertions); `docker compose exec -T frontend npm run build` aprovado; `git diff --check` aprovado.
 - Próxima etapa autorizada: M6 — IA auditável e RAG de editais.
+
+## Início do M6 — assistente auditável com RAG
+
+- O M6 começa com um provider local determinístico e substituível, sem credenciais externas nem acesso direto a repositórios pelo provider.
+- O escopo inicial é conversa individual sobre páginas extraídas de um edital, com resposta ancorada em evidências, isolamento por usuário e trilha imutável de auditoria.
+- Próximo passo: criar a persistência e os contratos de Assistant, expor as rotas autenticadas e entregar o módulo Quasar correspondente.
+
+## Encerramento do M6 — 24/09/2026
+
+- O Macro 6 está concluído com o contexto Assistant: conversas e mensagens imutáveis, isoladas pelo usuário, são persistidas com provider, modelo e evidências por página.
+- `GET /assistant/syllabi`, conversas e mensagens autenticadas entregam o RAG sobre páginas extraídas. O provider `DeterministicSyllabusAssistantProvider` é uma implementação local e substituível de `AssistantProviderInterface`; ele não acessa repositórios e responde somente com conteúdo recuperado.
+- A tela Assistant usa o fluxo obrigatório Page -> composable -> use case -> repository -> Axios -> API, permite escolher edital extraído e expande os trechos utilizados em cada resposta.
+- A migration `013_assistant_rag.sql` foi aplicada e confirmada no MySQL local. Validações: PHPUnit (40 testes, 102 assertions), build frontend e `git diff --check` aprovados; a rota sem credencial retorna 401, comprovando o registro e a proteção HTTP.
+- Próxima etapa autorizada: M7 — descoberta web por providers permitidos.

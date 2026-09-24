@@ -1,0 +1,11 @@
+import { readonly, ref } from 'vue'
+import type { AssistantConversation, AssistantMessage, AssistantSyllabus } from '../../../Domain/Assistant/AssistantRepository'
+import { assistantUseCases } from '../../../Infrastructure/Container'
+export function useAssistant() {
+  const loading=ref(false), sending=ref(false), error=ref(''), syllabi=ref<readonly AssistantSyllabus[]>([]), conversations=ref<readonly AssistantConversation[]>([]), messages=ref<readonly AssistantMessage[]>([]), active=ref<AssistantConversation|null>(null)
+  async function load():Promise<void>{loading.value=true;error.value='';try{[syllabi.value,conversations.value]=await Promise.all([assistantUseCases.syllabi.execute(),assistantUseCases.conversations.execute()])}catch(e){error.value=e instanceof Error?e.message:'Não foi possível carregar o assistente.'}finally{loading.value=false}}
+  async function select(c:AssistantConversation):Promise<void>{active.value=c;try{messages.value=await assistantUseCases.messages.execute(c.id)}catch(e){error.value=e instanceof Error?e.message:'Não foi possível abrir a conversa.'}}
+  async function create(syllabusId:string,title?:string):Promise<void>{error.value='';try{const c=await assistantUseCases.create.execute(syllabusId,title);conversations.value=[c,...conversations.value];await select(c)}catch(e){error.value=e instanceof Error?e.message:'Não foi possível iniciar a conversa.'}}
+  async function send(content:string):Promise<void>{if(!active.value)return;sending.value=true;error.value='';const user:AssistantMessage={id:'pending',conversationId:active.value.id,role:'USER',content,provider:null,model:null,evidence:[],createdAt:new Date().toISOString()};try{messages.value=[...messages.value,user];const answer=await assistantUseCases.send.execute(active.value.id,content);messages.value=[...messages.value,answer]}catch(e){messages.value=messages.value.filter(m=>m.id!=='pending');error.value=e instanceof Error?e.message:'Não foi possível consultar o edital.'}finally{sending.value=false}}
+  return { active:readonly(active), conversations:readonly(conversations), create, error:readonly(error), load, loading:readonly(loading), messages:readonly(messages), select, sending:readonly(sending), send, syllabi:readonly(syllabi) }
+}

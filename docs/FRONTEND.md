@@ -125,3 +125,7 @@ O módulo Performance consulta `GET /dashboard/me` pelas camadas Domain, Applica
 ## Plano inteligente de estudos
 
 O módulo Study exibe o plano real de `GET /study-plan/me` e a meta de `GET /study-goals/me` pelo fluxo Domain, Application, Infrastructure e `useNotebooks`. Cada prioridade explica a evidência que a originou e pode apenas preencher a criação de um caderno; a seleção congelada só é criada após confirmação do usuário. A meta semanal é atualizada por `PUT /study-goals/me`, sem HTTP direto na página.
+
+## Assistente com evidências de edital
+
+O módulo Assistant usa `AssistantPage -> useAssistant -> UseCase -> Repository -> Axios -> API`. A conversa permite escolher um edital já extraído e exibe a resposta com páginas de evidência; a página não envia contexto, acessa Axios nem persiste transcrições diretamente.

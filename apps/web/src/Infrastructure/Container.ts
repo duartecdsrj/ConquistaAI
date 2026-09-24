@@ -1,3 +1,5 @@
+import { CreateAssistantConversationUseCase, ListAssistantConversationsUseCase, ListAssistantMessagesUseCase, ListAssistantSyllabiUseCase, SendAssistantMessageUseCase } from '../Application/Assistant/AssistantUseCases'
+import { AxiosAssistantRepository } from './Assistant/AxiosAssistantRepository'
 import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
@@ -19,6 +21,8 @@ import { CreateTaxonomySubjectAliasUseCase, CreateTaxonomySubjectUseCase, MergeT
 
 const sessionStore = new BrowserSessionStore()
 configureAccessTokenProvider(() => sessionStore.accessToken())
+const assistantRepository = new AxiosAssistantRepository()
+export const assistantUseCases = { syllabi: new ListAssistantSyllabiUseCase(assistantRepository), conversations: new ListAssistantConversationsUseCase(assistantRepository), create: new CreateAssistantConversationUseCase(assistantRepository), messages: new ListAssistantMessagesUseCase(assistantRepository), send: new SendAssistantMessageUseCase(assistantRepository) }
 
 const studyRepository = new AxiosStudyRepository()
 export const identityUseCases = {

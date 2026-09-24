@@ -40,6 +40,7 @@ use App\Interface\Http\Catalog\CatalogRouteRegistrar;
 use App\Interface\Http\Catalog\TagRouteRegistrar;
 use App\Interface\Http\Catalog\SubjectRouteRegistrar;
 use App\Interface\Http\QuestionBank\Controller\QuestionImportController;
+use App\Interface\Http\Assistant\AssistantRouteRegistrar;
 use App\Interface\Http\QuestionBank\QuestionImportRequestFactory;
 use App\Interface\Http\Study\StudyRouteRegistrar;
 use App\Interface\Http\QuestionBank\PublishedQuestionRouteRegistrar;
@@ -62,6 +63,7 @@ final class AppFactory
         $auth = self::authController($responses);
         $catalogRequests = new CatalogRequestFactory();
         $catalog = self::catalogController($responses, self::authService());
+        (new AssistantRouteRegistrar($responses, self::authService()))->register($app);
         (new CatalogRouteRegistrar($responses, self::authService()))->register($app);
         (new TagRouteRegistrar($responses, self::authService()))->register($app);
         (new SubjectRouteRegistrar($responses, self::authService()))->register($app);

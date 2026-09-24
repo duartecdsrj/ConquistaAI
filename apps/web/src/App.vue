@@ -10,6 +10,7 @@
     <ImportPage v-else-if="section === 'import'" />
     <EditorialPage v-else-if="section === 'editorial'" />
     <TaxonomyPage v-else-if="section === 'taxonomy'" />
+    <AssistantPage v-else-if="section === 'assistant'" />
     <PerformancePage v-else />
   </AppShell>
 </template>
@@ -23,6 +24,7 @@ import NotebooksPage from './Interface/Http/Study/NotebooksPage.vue'
 import NotebookExecutionPage from './Interface/Http/Study/NotebookExecutionPage.vue'
 import QuestionsPage from './Interface/Http/QuestionBank/QuestionsPage.vue'
 import PerformancePage from './Interface/Http/Performance/PerformancePage.vue'
+import AssistantPage from './Interface/Http/Assistant/AssistantPage.vue'
 import CatalogPage from './Interface/Http/Catalog/CatalogPage.vue'
 import ImportPage from './Interface/Http/Import/ImportPage.vue'
 import EditorialPage from './Interface/Http/Editorial/EditorialPage.vue'

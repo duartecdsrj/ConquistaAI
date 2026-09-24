@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\Assistant\DTO\Response;
+final readonly class AvailableAssistantSyllabusResponseDto { public function __construct(public string $id,public string $name) {} }
