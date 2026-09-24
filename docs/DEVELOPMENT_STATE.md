@@ -124,3 +124,56 @@ docker compose exec -T frontend npm run build
 
 - Commit `002440e` concluiu a refatoração DDD do Editorial e a atribuição canônica pela interface.
 - Próxima etapa autorizada: proposta de fusão auditável entre assuntos canônicos, precedida de contrato, transação, auditoria e revisão humana.
+
+## Avanço atual — auditoria de fusão
+
+- Pendentes de commit: entidade e contrato de persistência para `taxonomy_subject_merges`.
+- A implementação ainda não executa fusões nem altera referências; isso só ocorrerá após o serviço transacional e revisão administrativa.
+
+## Avanço atual — persistência de auditoria de fusão
+
+- Pendentes de commit: repositório Doctrine `DoctrineTaxonomySubjectMergeRepository` e os contratos/entidades de auditoria criados anteriormente.
+- PHPUnit aprovado: 30 testes e 71 assertions.
+- Próximo passo: desenhar a reatribuição transacional de aliases, filhos e vínculos `question_taxonomy_subjects` antes de expor uma confirmação de fusão.
+
+## Decisão de integridade — fusão de assuntos
+
+- O assunto de origem de uma fusão não será removido, pois `taxonomy_subject_merges` mantém chaves estrangeiras para origem e destino.
+- A estratégia será reatribuir vínculos canônicos permitidos, converter o assunto de origem em inativo e persistir a auditoria na mesma transação.
+- A fusão deverá recusar fonte com filhos até existir atualização recursiva de níveis; isso evita corromper a árvore.
+
+## Avanço atual — serviço de fusão transacional
+
+- Pendentes de commit: DTO e serviço `MergeTaxonomySubjectsService`, dependente da porta `TaxonomySubjectMergeApplierInterface`.
+- O endpoint permanece não exposto até a implementação Doctrine reatribuir aliases e vínculos de questões de modo idempotente.
+
+## Avanço atual — reatribuição idempotente de fusão
+
+- Pendente de commit: `DoctrineTaxonomySubjectMergeApplier`.
+- Antes de mover os vínculos de questões, remove apenas associações de origem que já existam no destino; depois move associações restantes e aliases.
+- PHPUnit aprovado: 30 testes e 71 assertions.
+- Próximo passo: registrar o serviço no endpoint administrativo de confirmação de fusão e documentar o contrato.
+
+## Avanço atual — controlador de confirmação de fusão
+
+- Pendente de commit: `TaxonomySubjectMergeController`, que exige ADMIN, destino e motivo não vazio.
+- A rota ainda deve ser registrada em `TaxonomyRouteRegistrar` com as dependências Doctrine antes de estar acessível.
+
+## Avanço atual — rota de confirmação de fusão
+
+- Pendente de commit: `POST /v1/admin/taxonomy/subjects/{id}/merge`, conectado ao serviço transacional, reatribuição idempotente e auditoria.
+- PHPUnit aprovado: 30 testes e 71 assertions.
+- Próximo passo: documentar contrato, consumir pelo frontend de Taxonomia e exigir confirmação explícita de administrador.
+
+## Avanço atual — contrato frontend de fusão
+
+- Pendentes de commit: contrato, repositório Axios e caso de uso de fusão no módulo Taxonomy; contrato HTTP documentado.
+- Build frontend aprovado.
+- Próximo passo: inserir confirmação Quasar na tela Taxonomy, depois validar e commitar a entrega integrada.
+
+## Avanço atual — confirmação administrativa de fusão habilitada
+
+- Com autorização explícita do responsável, a tela Taxonomy agora permite confirmar fusão com origem, destino e motivo.
+- A operação chama a transação auditável, desativa a origem e reatribui aliases e vínculos canônicos.
+- Build frontend e PHPUnit backend aprovados.
+- Pendentes de commit: toda a entrega integrada de fusão e o aviso de impacto.

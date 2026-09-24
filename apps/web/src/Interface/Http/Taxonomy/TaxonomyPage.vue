@@ -50,13 +50,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { useTaxonomy } from './useTaxonomy'
 
-const { create, createAlias, error, loadSuggestions, suggestions, update, load, loading, saving, subjects, tree } = useTaxonomy()
+const { create, createAlias, error, loadSuggestions, merge, suggestions, update, load, loading, saving, subjects, tree } = useTaxonomy()
 const name = ref('')
 const parentId = ref<string | null>(null)
 const description = ref('')
 const editingId = ref<string | null>(null)
 const alias = ref('')
 const aliasSubjectId = ref<string | null>(null)
+const mergeSource = ref<string | null>(null); const mergeTarget = ref<string | null>(null); const mergeReason = ref('')
 const parentOptions = computed(() => subjects.value.map((subject) => ({
   label: '· '.repeat(subject.level) + subject.name,
   value: subject.id,
@@ -73,6 +74,8 @@ async function save(): Promise<void> {
   }
 }
 
+async function confirmMerge(): Promise<void> { if (mergeSource.value && mergeTarget.value && await merge(mergeSource.value, mergeTarget.value, mergeReason.value)) { mergeSource.value = null; mergeTarget.value = null; mergeReason.value = '' } }
+
 async function saveAlias(): Promise<void> {
   if (aliasSubjectId.value && await createAlias(aliasSubjectId.value, alias.value)) { alias.value = ''; aliasSubjectId.value = null }
 }
@@ -81,5 +84,5 @@ onMounted(async () => { await load(); await loadSuggestions() })
 </script>
 
 <style scoped>
-.taxonomy-page{max-width:1180px;margin:auto;padding:42px 34px}.page-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:24px}.eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.page-heading h1,.form-card h2,.tree-card h2{margin:0;color:#142950}.page-heading p:not(.eyebrow){color:#71819e}.taxonomy-grid{display:grid;grid-template-columns:1.4fr .9fr;gap:18px}.tree-card,.form-card,.suggestions-card{min-height:330px;border:1px solid #e5ecf6;border-radius:18px}.tree-card h2,.form-card h2{font-size:20px;margin-bottom:20px}.alias-title{margin:0;color:#142950;font-weight:700}.empty-state{color:#71819e}.error-banner{margin-bottom:14px;background:#fff3f2;color:#ae2f25}@media(max-width:800px){.taxonomy-page{padding:28px 16px}.page-heading{align-items:flex-start;flex-direction:column}.taxonomy-grid{grid-template-columns:1fr}}
+.taxonomy-page{max-width:1180px;margin:auto;padding:42px 34px}.page-heading{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:24px}.eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.page-heading h1,.form-card h2,.tree-card h2{margin:0;color:#142950}.page-heading p:not(.eyebrow){color:#71819e}.taxonomy-grid{display:grid;grid-template-columns:1.4fr .9fr;gap:18px}.tree-card,.form-card,.suggestions-card{min-height:330px;border:1px solid #e5ecf6;border-radius:18px}.tree-card h2,.form-card h2{font-size:20px;margin-bottom:20px}.alias-title{margin:0;color:#142950;font-weight:700}.empty-state{color:#71819e}.merge-preview{grid-column:1/-1;background:#fff8e8;color:#795d20}.error-banner{margin-bottom:14px;background:#fff3f2;color:#ae2f25}@media(max-width:800px){.taxonomy-page{padding:28px 16px}.page-heading{align-items:flex-start;flex-direction:column}.taxonomy-grid{grid-template-columns:1fr}}
 </style>

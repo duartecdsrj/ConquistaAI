@@ -44,6 +44,8 @@ export function useTaxonomy() {
     finally { saving.value = false }
   }
 
+  async function merge(sourceSubjectId: string, targetSubjectId: string, reason: string): Promise<boolean> { saving.value = true; error.value = ''; try { await taxonomyUseCases.merge.execute({ sourceSubjectId, targetSubjectId, reason }); await load(); return true } catch (cause) { error.value = cause instanceof Error ? cause.message : 'Não foi possível confirmar a fusão.'; return false } finally { saving.value = false } }
+
   async function update(id: string, name: string, parentId: string | null, description: string | null): Promise<boolean> {
     saving.value = true
     error.value = ''
@@ -64,5 +66,5 @@ export function useTaxonomy() {
     } finally { saving.value = false }
   }
 
-  return { create, createAlias, update, loadSuggestions, suggestions, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
+  return { create, createAlias, merge, update, loadSuggestions, suggestions, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
 }

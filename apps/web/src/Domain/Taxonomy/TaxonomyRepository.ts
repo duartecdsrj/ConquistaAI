@@ -4,5 +4,6 @@ export interface TaxonomySubject { readonly id:string; readonly parentId:string|
 export interface TaxonomySubjectAlias { readonly id:string; readonly subjectId:string; readonly alias:string }
 export interface UpdateTaxonomySubject { readonly id:string; readonly name:string; readonly parentId:string|null; readonly description:string|null }
 export interface CreateTaxonomySubject { readonly name:string; readonly parentId:string|null; readonly description:string|null }
+export interface MergeTaxonomySubjects { readonly sourceSubjectId:string; readonly targetSubjectId:string; readonly reason:string }
 export interface CreateTaxonomySubjectAlias { readonly subjectId:string; readonly alias:string }
-export interface TaxonomyRepository { list(query?:PageQuery):Promise<PageResult<TaxonomySubject>>; duplicateSuggestions():Promise<readonly TaxonomyDuplicateSuggestion[]>; create(input:CreateTaxonomySubject):Promise<TaxonomySubject>; update(input:UpdateTaxonomySubject):Promise<TaxonomySubject>; createAlias(input:CreateTaxonomySubjectAlias):Promise<TaxonomySubjectAlias> }
+export interface TaxonomyRepository { list(query?:PageQuery):Promise<PageResult<TaxonomySubject>>; duplicateSuggestions():Promise<readonly TaxonomyDuplicateSuggestion[]>; create(input:CreateTaxonomySubject):Promise<TaxonomySubject>; update(input:UpdateTaxonomySubject):Promise<TaxonomySubject>; createAlias(input:CreateTaxonomySubjectAlias):Promise<TaxonomySubjectAlias>; merge(input:MergeTaxonomySubjects):Promise<void> }
