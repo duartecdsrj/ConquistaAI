@@ -360,5 +360,22 @@ docker compose exec -T frontend npm run build
 - A API administrativa expõe o estado do job e `GET /api/v1/admin/syllabi/{id}/extractions`; a tela Catalog permite iniciar, atualizar o progresso, reprocessar explicitamente e revisar cada página expandida com os offsets de proveniência.
 - Reprocessamentos substituem extrações do mesmo hash de forma idempotente; nenhum assunto é criado ou publicado automaticamente.
 - Commits contextuais: `c0ec96a` (API e teste), `30edae7` (módulo Catalog) e este commit de cronograma/handoff.
+- Commits contextuais: `8c7d5d9` (backend de proveniência e candidatos) e `b7dbf0d` (revisão administrativa no frontend).
 - Validações: PHPUnit com 36 testes e 90 assertions; build Quasar aprovado; `git diff --check` aprovado.
 - Próxima etapa autorizada: M3 — questões reais, fontes e deduplicação. Iniciar pelo contrato e inventário dos modelos de questão existentes.
+
+## Início do M3 — inventário e proveniência
+
+- O inventário confirmou que preview, confirmação em rascunho e publicação já existiam, mas não completavam o critério do M3: a origem importada ainda não era persistida na questão e candidatos entre importações não eram revisáveis.
+- Foi iniciada a correção de proveniência: o writer Doctrine passa a preservar `source`, `reference_url` e `origin` declarados na linha importada, usando somente os valores de origem permitidos.
+- O preview agora consulta as questões existentes por enunciado normalizado e registra `DUPLICATE_CANDIDATE` no relatório persistido, bloqueando sua criação no commit até revisão administrativa.
+- Próximo passo: introduzir a detecção persistida de candidatos contra questões já cadastradas, expor revisão administrativa e garantir confirmação idempotente sem criação automática de duplicatas.
+
+## Encerramento do M3 — 24/09/2026
+
+- O Macro 3 está concluído: importações preservam fonte, URL de referência e origem; o preview detecta repetição no arquivo e candidatos contra enunciados já cadastrados usando normalização reproduzível.
+- Candidatos ficam persistidos no relatório de importação como `DUPLICATE_CANDIDATE`, são exibidos explicitamente para revisão na interface administrativa e não são criados na confirmação. A confirmação é idempotente pelo estado `VALIDATED`/`COMMITTED` e cria somente rascunhos válidos; a publicação administrativa existente mantém a revisão humana.
+- A tela de importação foi migrada para `Page -> useImport -> Application -> Domain <- Infrastructure`; não chama Axios nem o container diretamente.
+- Commits contextuais: `8c7d5d9` (backend de proveniência e candidatos) e `b7dbf0d` (revisão administrativa no frontend).
+- Validações: PHPUnit com 36 testes e 90 assertions; build Quasar aprovado; `git diff --check` aprovado.
+- Próxima etapa autorizada: M4 — estatísticas hierárquicas e dashboard por edital.
