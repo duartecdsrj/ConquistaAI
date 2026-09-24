@@ -83,6 +83,7 @@ A marca oficial do produto está em apps/web/public/images/concursos-study-mark.
 - Editorial: listagem de rascunhos e publicação administrativa de questões validadas.
 - Taxonomy: árvore de assuntos canônicos e criação de nós administrativos; a tela consome a lista paginada da API e não contém regras de negócio.
   A criação de aliases seleciona o assunto canônico e envia apenas o comando tipado ao caso de uso; a normalização e a prevenção de duplicidade permanecem no backend.
+  A edição seleciona um assunto existente e envia o comando PATCH pelo caso de uso; a API bloqueia a troca de pai quando o assunto ainda possui filhos.
 
 Cada módulo mantém Domain, Application, Infrastructure e Interface separados; páginas Quasar somente coordenam composables e eventos.
 

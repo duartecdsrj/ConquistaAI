@@ -41,6 +41,14 @@ export function useTaxonomy() {
     finally { saving.value = false }
   }
 
+  async function update(id: string, name: string, parentId: string | null, description: string | null): Promise<boolean> {
+    saving.value = true
+    error.value = ''
+    try { const updated = await taxonomyUseCases.update.execute({ id, name, parentId, description }); subjects.value = subjects.value.map((subject) => subject.id === id ? updated : subject); return true }
+    catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível atualizar o assunto.'; return false }
+    finally { saving.value = false }
+  }
+
   async function create(name: string, parentId: string | null, description: string | null): Promise<boolean> {
     saving.value = true
     error.value = ''
@@ -53,5 +61,5 @@ export function useTaxonomy() {
     } finally { saving.value = false }
   }
 
-  return { create, createAlias, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
+  return { create, createAlias, update, error: readonly(error), load, loading: readonly(loading), saving: readonly(saving), subjects: readonly(subjects), tree }
 }

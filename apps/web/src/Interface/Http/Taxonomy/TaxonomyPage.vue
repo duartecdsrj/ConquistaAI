@@ -25,11 +25,12 @@
         <q-card-section>
           <p class="eyebrow">NOVO ASSUNTO</p>
           <h2>Adicionar à árvore</h2>
+          <q-select v-model="editingId" outlined clearable emit-value map-options :options="parentOptions" label="Editar assunto existente" @update:model-value="selectSubject" />
           <q-form class="q-gutter-md" @submit.prevent="save">
             <q-input v-model="name" outlined label="Nome" :rules="[(value) => !!value || 'Informe o nome do assunto.']" />
             <q-select v-model="parentId" outlined clearable emit-value map-options :options="parentOptions" label="Assunto pai (opcional)" />
             <q-input v-model="description" outlined type="textarea" label="Descrição (opcional)" />
-            <q-btn unelevated no-caps color="primary" type="submit" label="Criar assunto" :loading="saving" />
+            <q-btn unelevated no-caps color="primary" type="submit"  :label="editingId ? 'Salvar alterações' : 'Criar assunto'" :loading="saving" />
           </q-form>
           <q-separator class="q-my-lg" />
           <q-form class="q-gutter-md" @submit.prevent="saveAlias">
@@ -48,10 +49,11 @@
 import { computed, onMounted, ref } from 'vue'
 import { useTaxonomy } from './useTaxonomy'
 
-const { create, createAlias, error, load, loading, saving, subjects, tree } = useTaxonomy()
+const { create, createAlias, error, update, load, loading, saving, subjects, tree } = useTaxonomy()
 const name = ref('')
 const parentId = ref<string | null>(null)
 const description = ref('')
+const editingId = ref<string | null>(null)
 const alias = ref('')
 const aliasSubjectId = ref<string | null>(null)
 const parentOptions = computed(() => subjects.value.map((subject) => ({
@@ -59,8 +61,11 @@ const parentOptions = computed(() => subjects.value.map((subject) => ({
   value: subject.id,
 })))
 
+function selectSubject(id: string | null): void { const subject = subjects.value.find((item) => item.id === id); if (subject) { name.value = subject.name; parentId.value = subject.parentId; description.value = subject.description ?? '' } }
+
 async function save(): Promise<void> {
-  if (await create(name.value, parentId.value, description.value || null)) {
+  if (editingId.value ? await update(editingId.value, name.value, parentId.value, description.value || null) : await create(name.value, parentId.value, description.value || null)) {
+    editingId.value = null
     name.value = ''
     parentId.value = null
     description.value = ''
