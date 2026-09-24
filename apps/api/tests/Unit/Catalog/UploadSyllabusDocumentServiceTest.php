@@ -22,8 +22,8 @@ final class UploadSyllabusDocumentServiceTest extends TestCase
             public function save(Syllabus $syllabus): void { $this->saved = $syllabus; }
             public function findById(string $id): ?Syllabus { return $id === $this->syllabus->id ? $this->syllabus : null; }
             public function existsById(string $id): bool { return $this->findById($id) !== null; }
-            public function existsForPosition(string $id, string $positionId): bool { return false; }
-            public function listForPosition(string $positionId): array { return []; }
+            public function existsForExam(string $id, string $positionId): bool { return false; }
+            public function listForExam(string $positionId): array { return []; }
         };
         $storage = new class implements SyllabusDocumentStorageInterface {
             public string $storedHash = '';
@@ -51,8 +51,8 @@ final class UploadSyllabusDocumentServiceTest extends TestCase
             public function save(Syllabus $syllabus): void {}
             public function findById(string $id): ?Syllabus { return null; }
             public function existsById(string $id): bool { return false; }
-            public function existsForPosition(string $id, string $positionId): bool { return false; }
-            public function listForPosition(string $positionId): array { return []; }
+            public function existsForExam(string $id, string $positionId): bool { return false; }
+            public function listForExam(string $positionId): array { return []; }
         };
         $storage = new class implements SyllabusDocumentStorageInterface {
             public function store(string $sha256, string $originalName, string $contents): string { return '/never'; }

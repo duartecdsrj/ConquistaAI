@@ -27,8 +27,8 @@ final class CreateSubjectServiceTest extends TestCase
             public function save(Syllabus $syllabus): void {}
             public function findById(string $id): ?Syllabus { return null; }
             public function existsById(string $id): bool { return false; }
-            public function existsForPosition(string $id, string $positionId): bool { return false; }
-            public function listForPosition(string $positionId): array { return []; }
+            public function existsForExam(string $id, string $positionId): bool { return false; }
+            public function listForExam(string $positionId): array { return []; }
         };
         $transactions = new class implements TransactionManagerInterface {
             public function transactional(callable $callback): mixed { return $callback(); }
@@ -51,8 +51,8 @@ final class CreateSubjectServiceTest extends TestCase
             public function save(Syllabus $syllabus): void {}
             public function findById(string $id): ?Syllabus { return null; }
             public function existsById(string $id): bool { return true; }
-            public function existsForPosition(string $id, string $positionId): bool { return false; }
-            public function listForPosition(string $positionId): array { return []; }
+            public function existsForExam(string $id, string $positionId): bool { return false; }
+            public function listForExam(string $positionId): array { return []; }
         };
         $transactions = new class implements TransactionManagerInterface {
             public function transactional(callable $callback): mixed { return $callback(); }
@@ -76,8 +76,8 @@ final class CreateSubjectServiceTest extends TestCase
             public function save(Syllabus $syllabus): void {}
             public function findById(string $id): ?Syllabus { return null; }
             public function existsById(string $id): bool { return $id === 's1'; }
-            public function existsForPosition(string $id, string $positionId): bool { return false; }
-            public function listForPosition(string $positionId): array { return []; }
+            public function existsForExam(string $id, string $positionId): bool { return false; }
+            public function listForExam(string $positionId): array { return []; }
         };
         $transactions = new class implements TransactionManagerInterface { public function transactional(callable $callback): mixed { return $callback(); } };
 
