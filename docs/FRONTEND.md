@@ -109,3 +109,7 @@ A tela administrativa de catálogo carrega assuntos canônicos ativos pelo caso 
 ## Processamento de editais
 
 O módulo Catalog oferece revisão administrativa do processamento de PDF: o administrador enfileira ou reprocessa explicitamente um edital, consulta o progresso persistido e expande as páginas extraídas com seus offsets. A página usa somente `useCatalog`; jobs e extrações passam por `CatalogUseCases` e `AxiosCatalogRepository`.
+
+## Importação e revisão de duplicidades
+
+A tela Import usa `useImport` como adaptador de interface. Ela carrega concurso, cargo e edital pelo composable, apresenta as linhas bloqueadas como revisão necessária e destaca candidatos `DUPLICATE_CANDIDATE`; somente linhas válidas podem ser confirmadas como rascunhos.
