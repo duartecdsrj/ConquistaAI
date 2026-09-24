@@ -34,15 +34,15 @@ Funcionalidades disponíveis: criar e listar assuntos, construir a árvore, cria
 
 Ainda **não commitadas**:
 
-- DTO, serviço e controller para sugestões administrativas de possíveis assuntos duplicados.
+- Interface de sugestões administrativas de possíveis assuntos duplicados.
 - Rota `GET /api/v1/admin/taxonomy/duplicate-suggestions`.
 - A implementação compara até 1.000 assuntos, aplica similaridade normalizada com limiar de `0.72` e retorna somente candidatos para revisão humana.
 
-Essas alterações passaram no PHPUnit, mas não possuem ainda contrato em `docs/API.md`, repositório Axios, caso de uso, composable ou tela Quasar. Portanto, não iniciar uma nova funcionalidade antes de concluir essa entrega paralela backend/frontend ou desfazer essas alterações de modo consciente.
+A API, o repositório Axios, o caso de uso, o composable e a tela Quasar foram concluídos; a próxima etapa é a proposta de fusão auditável.
 
 ## Próxima etapa autorizada
 
-Concluir **M0.5 — sugestões de duplicidade** nesta ordem:
+Concluir **M0.5 — proposta de fusão auditável** nesta ordem:
 
 1. Documentar o endpoint e seu formato de resposta em `docs/API.md`.
 2. Criar contrato de domínio, repositório Axios, caso de uso e composable no frontend.
