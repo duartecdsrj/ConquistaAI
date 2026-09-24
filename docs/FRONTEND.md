@@ -101,3 +101,7 @@ O nome da aplicação é **ConquistaAI**. O lema oficial é: **“Estude. Evolua
 ## Proveniência de assuntos do edital
 
 O módulo Catalog permite ao administrador informar, ao criar um assunto, a página e o trecho correspondente do PDF. A página `CatalogPage.vue` encaminha o evento ao caso de uso `CatalogUseCases.createSubject`; o repositório Axios é o único responsável por serializar `source_excerpt` e `source_page` para a API. A tela nunca chama Axios diretamente.
+
+## Associação canônica no catálogo
+
+A tela administrativa de catálogo carrega assuntos canônicos ativos pelo caso de uso de Taxonomy e permite ao administrador associá-los explicitamente ao assunto local selecionado. O comando passa por `CatalogUseCases.assignTaxonomySubjects` e `AxiosCatalogRepository`; a página não consome HTTP diretamente. A associação não sugere nem efetiva fusões.

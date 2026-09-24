@@ -14,6 +14,7 @@ export interface CatalogRepository {
   uploadSyllabusDocument(syllabusId: string, document: File): Promise<void>
   listSubjects(syllabusId: string): Promise<readonly Subject[]>
   createSubject(syllabusId: string, name: string, provenance?: SubjectProvenance): Promise<Subject>
+  assignTaxonomySubjects(subjectId: string, taxonomySubjectIds: readonly string[]): Promise<void>
   listTags(): Promise<readonly Tag[]>
   createTag(name: string): Promise<Tag>
 }

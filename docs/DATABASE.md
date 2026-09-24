@@ -95,3 +95,5 @@ A profundidade de `taxonomy_subjects` é ilimitada. O serviço de domínio do ma
 No ambiente Docker, o diretório de PDFs do edital usa o volume nomeado `syllabus_documents`, montado em `/app/storage/syllabi`. A variável `SYLLABUS_DOCUMENT_DIRECTORY` pode redirecionar o adaptador local sem alterar o domínio ou o serviço de aplicação.
 
 A migration `008_subject_source_provenance.sql` adiciona aos `subjects` os campos opcionais `source_excerpt`, `source_page`, `source_start_offset` e `source_end_offset`. Eles preservam a proveniência manual ou futura extração automática do conteúdo programático sem alterar as relações existentes.
+
+A migration `009_subject_taxonomy_assignments.sql` cria a associação N:N revisável entre um assunto local de edital e um ou mais assuntos canônicos. Ela não substitui `subjects`, não altera questões e não executa fusões de taxonomia.

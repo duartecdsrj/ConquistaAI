@@ -5,14 +5,18 @@ namespace App\Interface\Http\Catalog;
 
 use App\Application\Catalog\Mapper\SubjectResponseMapper;
 use App\Application\Catalog\Service\CreateSubjectService;
+use App\Application\Catalog\Service\AssignSubjectTaxonomySubjectsService;
 use App\Application\Catalog\Service\ListSubjectsService;
 use App\Application\Identity\Service\AuthService;
 use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineSubjectRepository;
+use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineSubjectTaxonomyAssignmentRepository;
+use App\Infrastructure\Persistence\Doctrine\Taxonomy\DoctrineTaxonomySubjectRepository;
 use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineSyllabusRepository;
 use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Interface\Http\Catalog\Controller\CreateSubjectController;
+use App\Interface\Http\Catalog\Controller\SubjectTaxonomyAssignmentController;
 use App\Interface\Http\Identity\IdentityRequestFactory;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
@@ -31,6 +35,8 @@ final class SubjectRouteRegistrar
         $create = new CreateSubjectController($this->auth, new CreateSubjectService($repository, new DoctrineSyllabusRepository($em), $mapper, new DoctrineTransactionManager($em)), $this->responses);
         $identity = new IdentityRequestFactory();
         $factory = new SubjectRequestFactory();
+        $taxonomyFactory = new SubjectTaxonomyRequestFactory();
+        $assign = new SubjectTaxonomyAssignmentController($this->auth, new AssignSubjectTaxonomySubjectsService($repository, new DoctrineTaxonomySubjectRepository($em), new DoctrineSubjectTaxonomyAssignmentRepository($em), new DoctrineTransactionManager($em)), $this->responses);
         $responses = $this->responses;
         $auth = $this->auth;
 
@@ -42,5 +48,6 @@ final class SubjectRouteRegistrar
             try { return $create->create($request, $response, $identity->accessToken($request), $factory->create($request)); }
             catch (InvalidArgumentException) { return $responses->problem($response, 'VALIDATION_FAILED', 'Um ou mais campos sao invalidos.', 422, (string) $request->getAttribute('request_id')); }
         });
+        $app->put('/v1/admin/subjects/{id}/taxonomy-subjects', static function (ServerRequestInterface $request, ResponseInterface $response, array $args) use ($identity, $taxonomyFactory, $assign, $responses): ResponseInterface { try { return $assign->assign($request, $response, $identity->accessToken($request), $taxonomyFactory->assign($request, (string) $args['id'])); } catch (InvalidArgumentException) { return $responses->problem($response, 'VALIDATION_FAILED', 'Um ou mais campos sao invalidos.', 422, (string) $request->getAttribute('request_id')); } });
     }
 }

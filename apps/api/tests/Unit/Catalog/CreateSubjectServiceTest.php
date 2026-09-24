@@ -19,6 +19,7 @@ final class CreateSubjectServiceTest extends TestCase
     {
         $subjects = new class implements SubjectRepositoryInterface {
             public function save(Subject $subject): void {}
+            public function exists(string $id): bool { return false; }
             public function existsForSyllabus(string $id, string $syllabusId): bool { return false; }
             public function listForSyllabus(string $syllabusId): array { return []; }
         };
@@ -42,6 +43,7 @@ final class CreateSubjectServiceTest extends TestCase
     {
         $subjects = new class implements SubjectRepositoryInterface {
             public function save(Subject $subject): void {}
+            public function exists(string $id): bool { return false; }
             public function existsForSyllabus(string $id, string $syllabusId): bool { return false; }
             public function listForSyllabus(string $syllabusId): array { return []; }
         };
@@ -66,6 +68,7 @@ final class CreateSubjectServiceTest extends TestCase
         $subjects = new class implements SubjectRepositoryInterface {
             public ?Subject $saved = null;
             public function save(Subject $subject): void { $this->saved = $subject; }
+            public function exists(string $id): bool { return false; }
             public function existsForSyllabus(string $id, string $syllabusId): bool { return false; }
             public function listForSyllabus(string $syllabusId): array { return []; }
         };

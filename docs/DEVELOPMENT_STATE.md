@@ -12,7 +12,7 @@ Atualizado em 23/09/2026. Este é o registro de handoff obrigatório antes de in
 
 ## Marco ativo
 
-**M0 — Taxonomia canônica**, ainda em andamento.
+**M1 — Concursos, cargos e editais estruturados**, em andamento.
 
 A meta do marco é entregar árvore global de assuntos, aliases, prevenção de ciclos, revisão de duplicidade e auditoria de fusões. Consulte `docs/DEVELOPMENT_SCHEDULE.md` para os critérios completos.
 
@@ -299,3 +299,26 @@ docker compose exec -T frontend npm run build
 - O catálogo administrativo permite registrar página e trecho de origem, envia-os pelo módulo Axios e mostra a evidência como dica no assunto. Não há chamada HTTP direta na tela.
 - Documentação atualizada: API, frontend e banco. Validações: API 33 testes / 83 assertions; build Quasar aprovado; `git diff --check` aprovado.
 - Próximo passo autorizado: encerrar M1 com o vínculo explícito entre assuntos locais do edital e a Taxonomia canônica, sempre com revisão administrativa; só então iniciar M2.
+
+## Commit de proveniência de conteúdo
+
+- Commit `e26952b` concluiu o segundo recorte do M1: proveniência de assuntos por edital no backend, frontend, documentação e testes.
+- Próxima etapa autorizada: associação explícita e revisável entre `subjects` do edital e `taxonomy_subjects` canônicos. A associação não pode executar fusões, criar taxonomia automaticamente ou alterar vínculos de questões.
+
+## Em progresso — vínculo de assunto local com taxonomia canônica
+
+- Foram criados, ainda sem endpoint nem interface, a migration `009_subject_taxonomy_assignments.sql`, a porta de domínio e o repositório Doctrine de associação N:N.
+- A associação substituirá apenas os vínculos do assunto selecionado em uma transação, validará assunto local e assuntos canônicos ativos, e será sempre uma ação ADMIN explícita.
+- Pendências obrigatórias antes de M2: DTOs, serviço e controller; rota e contrato API; módulo DDD/Quasar no Catalog; testes; migration aplicada; documentação e validação integrada.
+
+## Correção de cronograma
+
+- `docs/DEVELOPMENT_SCHEDULE.md` agora detalha M1.1 a M1.5, define explicitamente o critério de saída do M1 e registra a sequência planejada de M2 a M7. M0.2 e M0.3 foram corrigidos para concluídos, removendo estados históricos contraditórios.
+
+## Entrega concluída — vínculo canônico do conteúdo programático
+
+- A migration `009_subject_taxonomy_assignments.sql` foi aplicada no ambiente local e cria a associação N:N sem remover assuntos, taxonomia nem vínculos de questões.
+- `PUT /v1/admin/subjects/{id}/taxonomy-subjects` exige ADMIN, valida o assunto local e assuntos canônicos ativos, substitui somente as associações daquele assunto e responde por Response DTO.
+- O catálogo Quasar carrega apenas assuntos canônicos ativos e permite salvar a associação de modo explícito. A implementação segue as camadas Domain/Application/Infrastructure; a tela não chama Axios.
+- Validações: PHPUnit aprovado com 34 testes e 84 assertions; build Quasar aprovado; migration aplicada; `git diff --check` aprovado.
+- Decisão: associações canônicas são revisáveis e não dispararam fusão, criação automática ou alteração de questões. M1.4 está concluído; falta somente a validação de saída M1.5 antes de M2.

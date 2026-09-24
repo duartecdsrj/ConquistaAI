@@ -14,6 +14,7 @@ export class CatalogUseCases {
   }
   public listSubjects(syllabusId: string): Promise<readonly Subject[]> { return this.repository.listSubjects(syllabusId) }
   public createSubject(syllabusId: string, name: string, provenance: SubjectProvenance = {}): Promise<Subject> { return this.repository.createSubject(syllabusId, required(name, 'Informe o nome do assunto.'), provenance) }
+  public assignTaxonomySubjects(subjectId: string, taxonomySubjectIds: readonly string[]): Promise<void> { if (!subjectId) throw new Error('Selecione o assunto do edital.'); return this.repository.assignTaxonomySubjects(subjectId, taxonomySubjectIds) }
   public listTags(): Promise<readonly Tag[]> { return this.repository.listTags() }
   public createTag(name: string): Promise<Tag> { return this.repository.createTag(required(name, 'Informe o nome da tag.')) }
 }

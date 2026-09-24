@@ -29,6 +29,8 @@ final class DoctrineSubjectRepository implements SubjectRepositoryInterface
         $this->em->persist($record);
     }
 
+    public function exists(string $id): bool { return (bool) $this->em->createQueryBuilder()->select('COUNT(subject.id)')->from(SubjectRecord::class, 'subject')->where('subject.id = :id')->setParameter('id', $id)->getQuery()->getSingleScalarResult(); }
+
     public function existsForSyllabus(string $id, string $syllabusId): bool
     {
         return (bool) $this->em->createQueryBuilder()->select('COUNT(subject.id)')->from(SubjectRecord::class, 'subject')->where('subject.id=:id')->andWhere('subject.syllabusId=:syllabusId')->setParameter('id', $id)->setParameter('syllabusId', $syllabusId)->getQuery()->getSingleScalarResult();

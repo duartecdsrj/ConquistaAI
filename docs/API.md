@@ -20,7 +20,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Concursos | `GET, POST /exams`; `GET, PUT, DELETE /exams/{id}` |
 | Cargos | `GET, POST /exams/{examId}/positions`; `PATCH, DELETE /positions/{id}` |
 | Editais | `GET, POST /positions/{positionId}/syllabi`; `POST /admin/syllabi/{id}/document` (multipart PDF); `PATCH, DELETE /syllabi/{id}` |
-| Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `GET, PATCH, DELETE /subjects/{id}` |
+| Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `PUT /admin/subjects/{id}/taxonomy-subjects`; `GET, PATCH, DELETE /subjects/{id}` |
 | Tags | `GET, POST /tags` |
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
 | Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit` |
@@ -116,3 +116,7 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 ### Proveniência de conteúdo programático
 
 `POST /api/v1/subjects` aceita opcionalmente `source_excerpt`, `source_page`, `source_start_offset` e `source_end_offset` junto a `syllabus_id`, `name`, `parent_id` e `sort_order`. Esses campos registram a evidência do conteúdo dentro do PDF do edital e são retornados por `GET /api/v1/syllabi/{syllabusId}/subjects`. `source_page` começa em 1; offsets começam em 0 e o fim não pode anteceder o início.
+
+### Associação canônica de assuntos do edital
+
+`PUT /api/v1/admin/subjects/{id}/taxonomy-subjects` requer `ADMIN` e recebe `{ "taxonomy_subject_ids": ["uuid"] }`. A operação substitui, em transação, somente as associações canônicas do assunto local informado. Cada assunto canônico precisa existir e estar ativo. Ela não cria taxonomia, não executa fusões e não modifica associações de questões. A resposta devolve `subjectId` e `taxonomySubjectIds` no envelope padrão.

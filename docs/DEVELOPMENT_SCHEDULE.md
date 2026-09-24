@@ -25,10 +25,35 @@ Atualizado em 23/09/2026. Cada marco só avança quando backend, frontend, docum
 ## M0 — sequência detalhada
 
 - M0.1: tabelas canônicas, aliases e auditoria de fusão. **Concluída nesta entrega inicial.**
-- M0.2: domínio Taxonomy, slug/normalização, operações de árvore e prevenção de ciclo. **Em andamento: normalização, prevenção de ciclo e criação persistida concluídas.**
-- M0.3: API administrativa, testes e tela Quasar. **Em andamento: criação, listagem paginada e árvore administrativa conectadas; aliases concluídos; edição e movimentação de nós sem filhos conectadas; atualização recursiva de subárvores pendente.**
+- M0.2: domínio Taxonomy, slug/normalização, operações de árvore e prevenção de ciclo. **Concluída.**
+- M0.3: API administrativa, testes e tela Quasar. **Concluída.**
 - M0.4: árvore de assuntos, aliases, mover e editar no frontend.
 - M0.5: sugestões de duplicidade, proposta de fusão e reatribuição transacional. **Concluída: revisão administrativa, reatribuição idempotente, desativação da origem e auditoria.**
 - M0.6: interface de IA para reconciliação, execução auditável e revisão humana. **Concluída com adaptador determinístico local, propostas revisáveis e fusão administrativa auditada.**
 
 Decisões que ficam bloqueadas até M2/M6: provider de IA, tecnologia de fila e backend S3/MinIO. A fundação relacional não depende delas.
+
+## M1 — sequência detalhada
+
+- M1.1: concursos, cargos e editais administrativos. **Concluída anteriormente.**
+- M1.2: preservação do PDF do edital, metadados seguros, hash SHA-256 idempotente e volume persistente. **Concluída — commit `e731c56`.**
+- M1.3: conteúdo programático por assunto, com trecho, página e offsets de proveniência. **Concluída — commit `e26952b`.**
+- M1.4: vínculo explícito e revisável entre `subjects` locais e `taxonomy_subjects` canônicos. **Em andamento.** Não cria assuntos, não funde taxonomia e não altera questões.
+- M1.5: validação final do catálogo: migrations aplicadas, contratos, testes de API, build Quasar e fluxo administrativo em dispositivo móvel.
+
+**Critério de saída do M1:** um administrador cria concurso/cargo/edital, preserva o PDF, estrutura assuntos com origem rastreável e os associa conscientemente à taxonomia canônica. Só então M2 pode processar conteúdo automaticamente.
+
+## M2 — sequência planejada
+
+- M2.1: fila/worker desacoplado e estado de processamento do edital.
+- M2.2: extração de texto do PDF com páginas, offsets e hash de entrada.
+- M2.3: persistência de resultados e erros com progresso consultável.
+- M2.4: revisão administrativa do conteúdo extraído e reprocessamento idempotente.
+
+## M3 a M7 — sequências planejadas
+
+- **M3:** fontes de questões, importação idempotente, candidatos duplicados, revisão e publicação.
+- **M4:** agregações hierárquicas por assunto, dashboard por edital e indicação de dados insuficientes.
+- **M5:** cadernos inteligentes, filtros explicáveis, metas e plano de estudo.
+- **M6:** providers de IA desacoplados, RAG de edital, evidências e revisão humana.
+- **M7:** providers permitidos de descoberta web, catálogo de provas/gabaritos, proveniência e limites operacionais.
