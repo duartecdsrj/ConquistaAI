@@ -54,9 +54,11 @@ services:
       JWT_ISSUER: ${JWT_ISSUER:-concursos-api}
       ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-900}
       REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-2592000}
+      SYLLABUS_DOCUMENT_DIRECTORY: ${SYLLABUS_DOCUMENT_DIRECTORY:-/app/storage/syllabi}
     volumes:
       - ./apps/api:/app
       - api_vendor:/app/vendor
+      - syllabus_documents:/app/storage/syllabi
     depends_on:
       mysql:
         condition: service_healthy
@@ -95,3 +97,4 @@ volumes:
   mysql_data:
   api_vendor:
   web_node_modules:
+  syllabus_documents:

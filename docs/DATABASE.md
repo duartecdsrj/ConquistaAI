@@ -86,6 +86,10 @@ A migration `005_taxonomy_foundation.sql` introduz uma taxonomia global sem alte
 | `taxonomy_subject_merges` | auditoria de fusões administrativas, com origem, destino, autor e motivo |
 | `question_taxonomy_subjects` | ligação N:N entre questões e assuntos canônicos; coexistirá com `question_subjects` durante a migração explícita |
 
+A migration `007_syllabus_document_metadata.sql` adiciona ao edital metadados de arquivo, hash SHA-256 e caminho de armazenamento para ingestão idempotente de PDFs, sem remover `source_url`.
+
 A migration `006_question_taxonomy_subjects.sql` cria a associação paralela entre questões e taxonomia canônica. Ela não remove nem preenche automaticamente `question_subjects`; a migração de vínculos deve ser revisável e idempotente.
 
 A profundidade de `taxonomy_subjects` é ilimitada. O serviço de domínio do marco M0.2 impedirá ciclos, normalizará nomes/aliases e fará a reatribuição transacional de referências quando houver fusão. A IA poderá apenas propor reconciliações; decisões de baixa confiança exigem revisão humana.
+
+No ambiente Docker, o diretório de PDFs do edital usa o volume nomeado `syllabus_documents`, montado em `/app/storage/syllabi`. A variável `SYLLABUS_DOCUMENT_DIRECTORY` pode redirecionar o adaptador local sem alterar o domínio ou o serviço de aplicação.

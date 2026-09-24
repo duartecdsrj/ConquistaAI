@@ -27,6 +27,7 @@ client.interceptors.response.use((response: AxiosResponse) => response, (error: 
 
 export async function getData<T>(url: string, config?: AxiosRequestConfig): Promise<T> { return (await client.get<ApiEnvelope<T>>(url, config)).data.data }
 export async function postData<TResponse, TRequest>(url: string, body?: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.post<ApiEnvelope<TResponse>>(url, body, config)).data.data }
+export async function postFormData<TResponse>(url: string, body: FormData, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.post<ApiEnvelope<TResponse>>(url, body, { ...config, headers: { ...config?.headers, 'Content-Type': undefined } })).data.data }
 export async function patchData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.patch<ApiEnvelope<TResponse>>(url, body, config)).data.data }
 export async function putData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.put<ApiEnvelope<TResponse>>(url, body, config)).data.data }
 

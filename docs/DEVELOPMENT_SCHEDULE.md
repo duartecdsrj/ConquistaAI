@@ -4,8 +4,8 @@ Atualizado em 23/09/2026. Cada marco só avança quando backend, frontend, docum
 
 | Marco | Entrega integrada | Dependências | Critério de aceite | Situação |
 |---|---|---|---|---|
-| M0 | Taxonomia canônica: árvore, aliases, prevenção de ciclos e revisão de duplicidade | Nenhuma | assunto global, aliases e auditoria funcionais | Em andamento |
-| M1 | Concursos, cargos e editais estruturados | M0 | PDF preservado, hash idempotente e conteúdo por cargo | Planejado |
+| M0 | Taxonomia canônica: árvore, aliases, prevenção de ciclos e revisão de duplicidade | Nenhuma | assunto global, aliases e auditoria funcionais | Concluído |
+| M1 | Concursos, cargos e editais estruturados | M0 | PDF preservado, hash idempotente e conteúdo por cargo | Em andamento |
 | M2 | Jobs e processamento de edital | M1 | extração assíncrona com progresso e proveniência | Planejado |
 | M3 | Questões reais, fontes e deduplicação | M0, M1 | importação idempotente e revisão de candidatos | Planejado |
 | M4 | Estatísticas hierárquicas e dashboard por edital | M0, M3 | agregação por descendentes e dados insuficientes | Planejado |

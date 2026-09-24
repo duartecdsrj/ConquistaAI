@@ -241,3 +241,41 @@ docker compose exec -T frontend npm run build
 
 - Commit `7d40e04` concluiu M0.6 e, com isso, o marco M0 de Taxonomia canônica.
 - Próxima etapa autorizada: M1 — concursos, cargos e editais estruturados; iniciar pelo inventário dos contratos e persistência existentes antes de alterar código.
+
+## Avanço atual — metadados de documento de edital
+
+- Pendentes de commit: migration `007_syllabus_document_metadata.sql` e documentação do hash SHA-256 para PDFs.
+- A migration é aditiva e preserva editais e URLs existentes.
+- Próximo passo: estender entidade/repositório/serviço de edital e criar upload administrativo com armazenamento local.
+
+## Avanço atual — modelo de documento de edital
+
+- Pendentes de commit: metadados opcionais de PDF no domínio `Syllabus`, registro Doctrine e repositório.
+- Próximo passo: porta de armazenamento local e caso de uso de upload idempotente, acompanhado de interface administrativa.
+
+## Avanço atual — armazenamento local idempotente de PDF
+
+- Pendentes de commit: porta `SyllabusDocumentStorageInterface` e adaptador local que usa SHA-256 como nome de arquivo.
+- O adaptador só grava quando o arquivo ainda não existe.
+- Próximo passo: caso de uso administrativo que valida PDF, calcula hash e atualiza o edital com os metadados.
+
+## Avanço atual — caso de uso de upload de edital
+
+- Pendentes de commit: `UploadSyllabusDocumentService`, DTO e consulta de edital por ID.
+- O serviço aceita somente PDF com assinatura `%PDF-`, calcula SHA-256 e grava via porta local idempotente.
+- Próximo passo: expor endpoint multipart administrativo, retornar metadados no DTO e criar upload no frontend Catalog.
+
+## Avanço atual — controller multipart de edital
+
+- Pendente de commit: `SyllabusDocumentController`, que exige ADMIN e lê o arquivo `document` multipart.
+- A rota ainda precisa ser registrada com armazenamento local configurado antes de estar acessível.
+
+## Avanço atual — PDF de edital preservado
+
+- A migration `007_syllabus_document_metadata.sql` foi aplicada no ambiente local. Ela acrescenta metadados opcionais ao edital e um índice de SHA-256, sem apagar `source_url` nem registros existentes.
+- O backend agora oferece `POST /api/v1/admin/syllabi/{id}/document`: recebe somente PDF multipart, valida a assinatura `%PDF-`, calcula SHA-256, reutiliza o arquivo local quando o hash já existe e atualiza o edital dentro de transação.
+- O retorno público de editais passou a incluir somente metadados seguros do documento; caminhos internos de armazenamento continuam privados.
+- O catálogo administrativo recebeu o fluxo responsivo de seleção e envio de PDF, por meio das camadas Domain/Application/Infrastructure. A tela não acessa Axios diretamente.
+- Validações deste incremento: PHPUnit host aprovado com 32 testes e 78 assertions; `docker compose exec -T frontend npm run build` aprovado; `git diff --check` aprovado.
+- Decisão: armazenamento local configurável por `SYLLABUS_DOCUMENT_DIRECTORY` até a definição de S3/MinIO no M2. O próximo recorte do M1 é modelar conteúdo programático por cargo, preservando origem e posição dentro do PDF para o processamento assíncrono do M2.
+- Correção de persistência: o compose monta o volume nomeado `syllabus_documents` em `/app/storage/syllabi`; portanto, PDFs já enviados sobrevivem à recriação do contêiner da API. `SYLLABUS_DOCUMENT_DIRECTORY` permite trocar o diretório sem alterar o código.
