@@ -12,7 +12,7 @@ Atualizado em 24/09/2026. Este é o registro de handoff obrigatório antes de in
 
 ## Marco ativo
 
-**M1 — Concursos, cargos e editais estruturados**, concluído.
+**M2 — Jobs e processamento de edital**, em andamento.
 
 A meta do marco foi entregar administração de concursos, cargos e editais, preservação idempotente de PDF, proveniência rastreável do conteúdo e associação explícita à taxonomia canônica. Consulte `docs/DEVELOPMENT_SCHEDULE.md` para os critérios completos.
 
@@ -331,3 +331,17 @@ docker compose exec -T frontend npm run build
 - Validações executadas: `docker compose exec -T api vendor/bin/phpunit` — OK, 34 testes e 84 assertions; `docker compose exec -T frontend npm run build` — OK; `git diff --check` — OK.
 - Responsividade: o catálogo transforma controles de documento, níveis e associação canônica em coluna única até 600 px; o frontend foi renderizado com Chromium headless em viewport de 390 × 844 px sem falha de carregamento.
 - Próxima etapa autorizada: M2.1 — definir fila/worker desacoplado e estado de processamento do edital. Não escolher provider de IA nem backend S3/MinIO antes da decisão prevista no cronograma.
+
+## Início do M2 — fila persistida
+
+- Contrato inicial documentado para enfileirar e consultar o último job de processamento de um edital, sempre restrito a ADMIN.
+- Decisão: usar fila persistida no MySQL e um processo worker independente no M2. Isso permite retentativas e progresso consultável sem acoplar o domínio a Redis, a um provider de fila ou a S3/MinIO.
+- Próximo passo: migration, entidade, repositório Doctrine, caso de uso e worker para os estados `PENDING`, `PROCESSING`, `COMPLETED` e `FAILED`; a extração de páginas será conectada somente depois dessa fundação.
+
+## Avanço M2.1 — jobs persistidos
+
+- Migration `010_syllabus_processing_jobs.sql` aplicada no MySQL local. Ela registra hash de entrada, estado, progresso, erro seguro e tempos do job, sem alterar PDFs ou assuntos existentes.
+- O backend expõe o enfileiramento ADMIN e a consulta do último job. A criação é idempotente para o mesmo hash enquanto o job estiver pendente, em processamento ou concluído; uma reexecução exige `reprocess=true`.
+- O repositório Doctrine faz claim pessimista para impedir que dois workers processem o mesmo job.
+- Validação: PHPUnit aprovado com 35 testes e 86 assertions; sintaxe dos adaptadores novos aprovada; migration confirmada no banco local.
+- Próximo passo: M2.2, implementar o worker desacoplado e a extração local por página com `pdftotext`, preservando hash e offsets antes de marcar jobs como concluídos.

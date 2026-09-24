@@ -39,6 +39,12 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 
 A resposta segue o envelope padrão e devolve `{ "id": "uuid", "document_sha256": "..." }`. A listagem de editais inclui `documentSha256`, `documentOriginalName`, `documentMimeType` e `documentSize`; não expõe o caminho interno do arquivo.
 
+### Processamento de edital
+
+`POST /api/v1/admin/syllabi/{id}/processing-jobs` requer `ADMIN` e recebe opcionalmente `{ "reprocess": false }`. O edital precisa possuir um PDF preservado. A operação cria, ou reutiliza enquanto pendente/em processamento, um job persistido e devolve `{ "id", "syllabusId", "documentSha256", "status", "progress", "errorMessage", "createdAt", "startedAt", "finishedAt" }` no envelope padrão. `reprocess=true` agenda nova execução explícita para o mesmo PDF; a deduplicação dos resultados é responsabilidade do worker.
+
+`GET /api/v1/admin/syllabi/{id}/processing-jobs/latest` requer `ADMIN` e retorna o último job do edital ou `404 RESOURCE_NOT_FOUND`. Estados possíveis: `PENDING`, `PROCESSING`, `COMPLETED` e `FAILED`. O campo `progress` varia de 0 a 100 e `errorMessage` só contém mensagem segura para administração.
+
 
 
 ### Preview de importacao

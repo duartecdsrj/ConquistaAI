@@ -45,7 +45,7 @@ Decisões que ficam bloqueadas até M2/M6: provider de IA, tecnologia de fila e 
 
 ## M2 — sequência planejada
 
-- M2.1: fila/worker desacoplado e estado de processamento do edital.
+- M2.1: fila/worker desacoplado e estado de processamento do edital. **Em andamento: fila persistida no MySQL, sem dependência de provider externo.**
 - M2.2: extração de texto do PDF com páginas, offsets e hash de entrada.
 - M2.3: persistência de resultados e erros com progresso consultável.
 - M2.4: revisão administrativa do conteúdo extraído e reprocessamento idempotente.

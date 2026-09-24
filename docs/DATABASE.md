@@ -97,3 +97,7 @@ No ambiente Docker, o diretório de PDFs do edital usa o volume nomeado `syllabu
 A migration `008_subject_source_provenance.sql` adiciona aos `subjects` os campos opcionais `source_excerpt`, `source_page`, `source_start_offset` e `source_end_offset`. Eles preservam a proveniência manual ou futura extração automática do conteúdo programático sem alterar as relações existentes.
 
 A migration `009_subject_taxonomy_assignments.sql` cria a associação N:N revisável entre um assunto local de edital e um ou mais assuntos canônicos. Ela não substitui `subjects`, não altera questões e não executa fusões de taxonomia.
+
+## Processamento de editais
+
+A migration `010_syllabus_processing_jobs.sql` adiciona a fila persistida de processamento. Cada job referencia um edital e o SHA-256 do PDF de entrada, registra estado, progresso, mensagem segura de erro e tempos de execução. O conteúdo extraído será persistido em tabelas aditivas do M2.2/M2.3.
