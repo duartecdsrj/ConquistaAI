@@ -345,3 +345,11 @@ docker compose exec -T frontend npm run build
 - O repositório Doctrine faz claim pessimista para impedir que dois workers processem o mesmo job.
 - Validação: PHPUnit aprovado com 35 testes e 86 assertions; sintaxe dos adaptadores novos aprovada; migration confirmada no banco local.
 - Próximo passo: M2.2, implementar o worker desacoplado e a extração local por página com `pdftotext`, preservando hash e offsets antes de marcar jobs como concluídos.
+
+## Avanço M2.2 — extração paginada
+
+- Migration `011_syllabus_document_extractions.sql` aplicada no MySQL local. As páginas são identificadas pelo hash do PDF e número de página, com offsets globais de início e fim.
+- O worker `syllabus-worker` é um processo Compose separado. Ele faz claim transacional de jobs pendentes, executa `pdftotext -layout`, substitui de modo idempotente as páginas do mesmo hash e conclui o job; falhas são convertidas em mensagem administrativa segura.
+- O comando `php bin/process-syllabus-jobs.php` permite execução pontual em operação ou teste. O PDF permanece no volume persistente, sem provider externo.
+- Validação: PHPUnit aprovado com 35 testes e 86 assertions; sintaxe do worker aprovada; migration confirmada no banco local.
+- Próximo passo: M2.3/M2.4 — expor páginas e progresso, criar revisão administrativa no frontend e permitir reprocessamento explícito com resultados consistentes.

@@ -101,3 +101,5 @@ A migration `009_subject_taxonomy_assignments.sql` cria a associação N:N revis
 ## Processamento de editais
 
 A migration `010_syllabus_processing_jobs.sql` adiciona a fila persistida de processamento. Cada job referencia um edital e o SHA-256 do PDF de entrada, registra estado, progresso, mensagem segura de erro e tempos de execução. O conteúdo extraído será persistido em tabelas aditivas do M2.2/M2.3.
+
+`011_syllabus_document_extractions.sql` persiste o texto extraído por página com offsets globais e uma chave única `(document_sha256, page_number)`. Reprocessar o mesmo arquivo substitui as páginas anteriores, sem duplicar conteúdo.

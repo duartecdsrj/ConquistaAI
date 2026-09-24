@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Infrastructure\Extraction;
+use App\Application\Catalog\Port\PdfTextExtractorInterface;
+final class PdftotextPdfTextExtractor implements PdfTextExtractorInterface { public function extractPages(string $path):array{if(!is_file($path))throw new \RuntimeException('Documento de origem indisponivel.');$command='pdftotext -layout '.escapeshellarg($path).' -';$pipes=[];$process=proc_open($command,[1=>['pipe','w'],2=>['pipe','w']],$pipes);if(!is_resource($process))throw new \RuntimeException('Extrator indisponivel.');$output=stream_get_contents($pipes[1]);$error=stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);if(proc_close($process)!==0)throw new \RuntimeException('Nao foi possivel extrair o PDF.');$pages=array_values(array_filter(preg_split('/\f/u',$output?:'')?:[],static fn(string $page):bool=>trim($page)!==''));if($pages===[])throw new \RuntimeException($error!==''?'O PDF nao possui texto extraivel.':'O PDF nao possui texto extraivel.');return array_map(static fn(string $page):string=>trim($page),$pages);} }

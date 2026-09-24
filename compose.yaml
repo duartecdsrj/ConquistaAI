@@ -69,6 +69,26 @@ services:
       timeout: 3s
       retries: 15
 
+  syllabus-worker:
+    build: ./apps/api
+    command: ["sh", "-c", "while true; do php bin/process-syllabus-jobs.php; sleep 5; done"]
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-concursos}
+      DB_USER: ${DB_USER:-concursos}
+      DB_PASSWORD: ${DB_PASSWORD:-change-me}
+    volumes:
+      - ./apps/api:/app
+      - api_vendor:/app/vendor
+      - syllabus_documents:/app/storage/syllabi
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [internal]
+
   mysql:
     dns:
       - 8.8.8.8

@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+use App\Application\Catalog\Service\ProcessSyllabusJobService;use App\Infrastructure\Extraction\PdftotextPdfTextExtractor;use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineSyllabusDocumentExtractionRepository;use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineSyllabusProcessingJobRepository;use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineSyllabusRepository;use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
+require __DIR__.'/../vendor/autoload.php';
+$em=DoctrineEntityManagerFactory::create();$service=new ProcessSyllabusJobService(new DoctrineSyllabusProcessingJobRepository($em),new DoctrineSyllabusRepository($em),new DoctrineSyllabusDocumentExtractionRepository($em),new PdftotextPdfTextExtractor(),new DoctrineTransactionManager($em));$processed=0;while($service->processNext()){$em->flush();$em->clear();$processed++;}fwrite(STDOUT,"Processed {$processed} syllabus job(s)\n");
