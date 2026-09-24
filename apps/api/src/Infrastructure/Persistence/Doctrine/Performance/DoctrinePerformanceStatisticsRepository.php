@@ -7,6 +7,7 @@ use App\Domain\Performance\Repository\PerformanceStatisticsRepositoryInterface;
 use App\Domain\Performance\ValueObject\SyllabusCompletedAnswer;
 use App\Domain\Performance\ValueObject\SyllabusOption;
 use App\Domain\Performance\ValueObject\TaxonomyHierarchyNode;
+use App\Domain\Performance\ValueObject\StudyPlanAnswer;
 use App\Infrastructure\Persistence\Doctrine\Catalog\Entity\ExamRecord;
 use App\Infrastructure\Persistence\Doctrine\Catalog\Entity\PositionRecord;
 use App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SyllabusRecord;
@@ -75,5 +76,12 @@ final class DoctrinePerformanceStatisticsRepository implements PerformanceStatis
     {
         $rows = $this->entityManager->createQueryBuilder()->select('taxonomy.id AS id, taxonomy.parentId AS parentId, taxonomy.name AS name')->from(TaxonomySubjectRecord::class, 'taxonomy')->where('taxonomy.active = true')->getQuery()->getArrayResult();
         return array_map(static fn (array $row): TaxonomyHierarchyNode => new TaxonomyHierarchyNode((string) $row['id'], $row['parentId'] === null ? null : (string) $row['parentId'], (string) $row['name']), $rows);
+
+    }
+    public function completedPlanAnswersForUser(string $userId): array
+    {
+        $firstSubject = $this->entityManager->createQueryBuilder()->select('MIN(subjectSelection.subjectId)')->from(QuestionSubjectRecord::class, 'subjectSelection')->where('subjectSelection.questionId = question.id');
+        $rows = $this->entityManager->createQueryBuilder()->select('answer.optionId AS optionId, question.correctOptionId AS correctOptionId, attempt.completedAt AS completedAt')->addSelect(sprintf('(%s) AS subjectId', $firstSubject->getDQL()))->from(AnswerRecord::class, 'answer')->innerJoin(AttemptRecord::class, 'attempt', 'WITH', 'attempt.id = answer.attemptId')->innerJoin(QuestionRecord::class, 'question', 'WITH', 'question.id = attempt.questionId')->where('attempt.userId = :userId')->andWhere('attempt.completedAt IS NOT NULL')->andWhere('attempt.finalAnswerId = answer.id')->setParameter('userId', $userId)->orderBy('attempt.completedAt', 'ASC')->getQuery()->getArrayResult();
+        return array_map(static fn (array $row): StudyPlanAnswer => new StudyPlanAnswer((string) ($row['subjectId'] ?? 'unclassified'), isset($row['correctOptionId']) && $row['optionId'] === $row['correctOptionId'], $row['completedAt']), $rows);
     }
 }

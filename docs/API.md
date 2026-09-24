@@ -133,3 +133,11 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 ### Dashboard por edital
 
 `GET /api/v1/dashboard/me?syllabus_id={uuid}` requer autenticação. Sem `syllabus_id`, seleciona o primeiro edital no qual o usuário tenha tentativas concluídas. A resposta retorna os editais disponíveis, totais únicos de respostas finais e métricas por assunto canônico. Cada resposta classificada contribui também para seus ancestrais; `sufficientData` só é verdadeiro com pelo menos 10 respostas em 3 dias distintos.
+
+### Plano de estudos inteligente
+
+`GET /api/v1/study-plan/me` requer autenticação e retorna um plano calculado a partir de tentativas finais do usuário. Cada prioridade contém o assunto, a taxa de acerto, tamanho da amostra, dias distintos, uma explicação observável e uma ação sugerida. Uma prioridade só recebe classificação de fragilidade quando tem ao menos 10 respostas em 3 dias distintos; dados menores são apresentados como insuficientes. O plano devolve de 0 a 5 prioridades e nunca cria cadernos automaticamente.
+
+### Meta semanal de estudo
+
+`GET /api/v1/study-goals/me` retorna a meta semanal do usuário autenticado, com alvo de respostas concluídas, progresso na janela atual de sete dias e percentual. `PUT /api/v1/study-goals/me` recebe `{ "weekly_question_goal": 20 }`, exige inteiro entre 1 e 500 e cria ou atualiza exclusivamente a meta do próprio usuário.

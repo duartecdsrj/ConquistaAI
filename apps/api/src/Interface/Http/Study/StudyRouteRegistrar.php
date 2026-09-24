@@ -16,12 +16,16 @@ use App\Application\Study\Service\GetNotebookService;
 use App\Application\Study\Service\ListNotebookQuestionsService;
 use App\Application\Study\Service\ListNotebooksService;
 use App\Application\Study\Service\StartNotebookService;
+use App\Application\Study\Service\GetStudyGoalService;
+use App\Application\Study\Service\UpdateStudyGoalService;
 use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrinePublishedQuestionRepository;
+use App\Infrastructure\Persistence\Doctrine\Study\DoctrineStudyGoalRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookProgressReader;
+use App\Interface\Http\Study\Controller\StudyGoalController;
 use App\Interface\Http\Identity\IdentityRequestFactory;
 use App\Interface\Http\Study\Controller\StudyController;
 use InvalidArgumentException;
@@ -53,9 +57,32 @@ final class StudyRouteRegistrar
             new GetNotebookStatisticsService($notebooks, new DoctrineNotebookProgressReader($entityManager)),
             $this->responses,
         );
+        $goals = new DoctrineStudyGoalRepository($entityManager);
+        $goalReader = new GetStudyGoalService($goals);
+        $goalController = new StudyGoalController(
+            $this->authentication,
+            $goalReader,
+            new UpdateStudyGoalService($goals, $goalReader),
+            $this->responses,
+        );
         $requests = new StudyRequestFactory();
         $identity = new IdentityRequestFactory();
         $responses = $this->responses;
+
+        $app->get('/v1/study-goals/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($goalController, $identity, $responses): ResponseInterface {
+            try {
+                return $goalController->get($request, $response, $identity->accessToken($request));
+            } catch (InvalidArgumentException $exception) {
+                return self::invalidRequest($responses, $request, $response, $exception);
+            }
+        });
+        $app->put('/v1/study-goals/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($goalController, $identity, $requests, $responses): ResponseInterface {
+            try {
+                return $goalController->update($request, $response, $identity->accessToken($request), $requests->updateGoal($request));
+            } catch (InvalidArgumentException $exception) {
+                return self::invalidRequest($responses, $request, $response, $exception);
+            }
+        });
 
         $app->post('/v1/notebooks/{id}/start', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($controller, $identity, $responses): ResponseInterface {
             try {

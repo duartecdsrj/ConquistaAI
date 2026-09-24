@@ -400,3 +400,24 @@ docker compose exec -T frontend npm run build
 - Foi criado `DESIGN_SYSTEM.md` com princípios, fundamentos, padrões administrativos e acessibilidade para orientar telas futuras.
 - Validação: `docker compose exec -T frontend npm run build` aprovado; `git diff --check` pendente da verificação final.
 - Próximo passo: aplicar os padrões gradualmente às demais áreas administrativas, sem alterar contratos de API.
+
+## Início do M5 — plano explicável
+
+- O contrato inicial do plano de estudos foi documentado. O plano será calculado apenas com tentativas finais do usuário e não criará cadernos automaticamente.
+- A primeira entrega combina prioridade por desempenho, explicação observável, indicação de dados insuficientes e criação confirmada de seleção congelada.
+- Próximo passo: implementar a leitura de desempenho e o caso de uso backend, seguido do módulo Study e tela Quasar correspondente.
+
+## Avanço M5 — prioridades e prática confirmada
+
+- `GET /study-plan/me` calcula até cinco prioridades por assunto local a partir de tentativas finais, com percentual, amostra, dias distintos, justificativa e ação sugerida.
+- A tela de Cadernos exibe o plano real e transfere uma prioridade para o formulário como filtro de assunto; a API só congela a seleção após confirmação explícita do estudante.
+- Validações parciais: PHPUnit aprovado com 38 testes e 98 assertions; build Quasar aprovado; `git diff --check` aprovado.
+- Pendente para concluir M5: metas persistidas e visão consolidada do plano semanal, com os mesmos limites de usuário autenticado.
+
+## Encerramento do M5 — 24/09/2026
+
+- O Macro 5 está concluído: `GET /api/v1/study-plan/me` calcula até cinco prioridades por assunto local exclusivamente com tentativas finais do usuário, retorna taxa de acerto, amostra, dias distintos, explicação e ação sugerida; fragilidade exige ao menos 10 respostas em 3 dias distintos.
+- A tela Quasar de Cadernos exibe as recomendações, mas somente preenche o filtro de assunto. O estudante confirma a criação para congelar a seleção, sem automação implícita.
+- `GET` e `PUT /api/v1/study-goals/me` fornecem uma meta semanal isolada por usuário, limitada a 1–500 respostas. A migration `012_study_goals.sql` foi aplicada e confirmada no MySQL local.
+- Validações: `docker compose exec -T api vendor/bin/phpunit` aprovado (38 testes, 98 assertions); `docker compose exec -T frontend npm run build` aprovado; `git diff --check` aprovado.
+- Próxima etapa autorizada: M6 — IA auditável e RAG de editais.

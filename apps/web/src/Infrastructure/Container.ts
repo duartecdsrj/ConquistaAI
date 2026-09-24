@@ -1,7 +1,7 @@
 import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
-import { CreateNotebookUseCase, FinishNotebookUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase } from '../Application/Study/StudyUseCases'
+import { CreateNotebookUseCase, FinishNotebookUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
 import { CatalogUseCases } from '../Application/Catalog/CatalogUseCases'
@@ -35,6 +35,9 @@ export const studyUseCases = {
   pause: new PauseNotebookUseCase(studyRepository),
   statistics: new GetNotebookStatisticsUseCase(studyRepository),
   finish: new FinishNotebookUseCase(studyRepository),
+  plan: new GetStudyPlanUseCase(studyRepository),
+  goal: new GetStudyGoalUseCase(studyRepository),
+  updateGoal: new UpdateStudyGoalUseCase(studyRepository),
 }
 const taxonomyRepository = new AxiosTaxonomyRepository()
 export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), duplicateSuggestions: new ListTaxonomyDuplicateSuggestionsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository), createAlias: new CreateTaxonomySubjectAliasUseCase(taxonomyRepository), merge: new MergeTaxonomySubjectsUseCase(taxonomyRepository), reconciliationProposals: new ListTaxonomyReconciliationProposalsUseCase(taxonomyRepository), update: new UpdateTaxonomySubjectUseCase(taxonomyRepository) }

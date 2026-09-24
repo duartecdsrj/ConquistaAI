@@ -10,6 +10,7 @@ use App\Application\Performance\Service\BasicStatisticsService;
 use App\Application\Performance\Service\GetBasicStatisticsService;
 use App\Application\Performance\Service\StartAttemptService;
 use App\Application\Performance\Service\GetSyllabusDashboardService;
+use App\Application\Performance\Service\GetStudyPlanService;
 use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
@@ -47,6 +48,7 @@ final class PerformanceRouteRegistrar
         $statistics = new DoctrinePerformanceStatisticsRepository($entityManager);
         $statisticsController = new StatisticsController(
             $this->authentication,
+            new GetStudyPlanService($statistics),
             new GetSyllabusDashboardService($statistics),
             new GetBasicStatisticsService($statistics, new BasicStatisticsService()),
             $this->responses,
@@ -65,7 +67,17 @@ final class PerformanceRouteRegistrar
                 $query = $request->getQueryParams();
                 $syllabusId = isset($query['syllabus_id']) && is_string($query['syllabus_id']) && $query['syllabus_id'] !== '' ? $query['syllabus_id'] : null;
                 return $statisticsController->dashboard($request, $response, $identity->accessToken($request), new \App\Application\Performance\DTO\Request\GetSyllabusDashboardRequestDto($syllabusId));
-            } catch (InvalidArgumentException $exception) { return self::unauthenticated($responses, $request, $response, $exception); }
+            } catch (InvalidArgumentException $exception) {
+                return self::unauthenticated($responses, $request, $response, $exception);
+            }
+        });
+
+        $app->get('/v1/study-plan/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($statisticsController, $identity, $responses): ResponseInterface {
+            try {
+                return $statisticsController->studyPlan($request, $response, $identity->accessToken($request));
+            } catch (InvalidArgumentException $exception) {
+                return self::unauthenticated($responses, $request, $response, $exception);
+            }
         });
 
         $app->post('/v1/notebooks/{notebookId}/questions/{questionId}/attempts', static function (

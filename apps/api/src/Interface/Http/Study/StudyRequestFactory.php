@@ -38,6 +38,16 @@ final class StudyRequestFactory
         return new CreateNotebookInputRequestDto($name, $mode, $quantity, $filters);
     }
 
+    public function updateGoal(ServerRequestInterface $request): \App\Application\Study\DTO\Request\UpdateStudyGoalRequestDto
+    {
+        $payload = $this->json($request);
+        $goal = $payload['weekly_question_goal'] ?? null;
+        if (!is_int($goal) || $goal < 1 || $goal > 500) {
+            throw new InvalidArgumentException('Meta semanal invalida.');
+        }
+        return new \App\Application\Study\DTO\Request\UpdateStudyGoalRequestDto($goal);
+    }
+
     private function positiveInteger(mixed $value, string $field): int
     {
         if (is_int($value)) return $value;

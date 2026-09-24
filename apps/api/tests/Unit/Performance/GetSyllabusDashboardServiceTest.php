@@ -16,6 +16,7 @@ final class GetSyllabusDashboardServiceTest extends TestCase {
    public function syllabiWithCompletedAnswersForUser(string $userId): array { return [new SyllabusOption('s','Edital','Cargo','Concurso')]; }
    public function completedAnswersForUserAndSyllabus(string $userId,string $syllabusId): array { return [new SyllabusCompletedAnswer(true,12,new \DateTimeImmutable('2026-09-20'),['child'])]; }
    public function taxonomyHierarchyForSyllabus(string $syllabusId): array { return [new TaxonomyHierarchyNode('root',null,'Raiz'),new TaxonomyHierarchyNode('child','root','Filho')]; }
+   public function completedPlanAnswersForUser(string $userId): array { return []; }
   };
   $result=(new GetSyllabusDashboardService($repository))->getForUser('u',new GetSyllabusDashboardRequestDto('s'));
   self::assertSame(1,$result->total);self::assertFalse($result->sufficientData);self::assertSame('root',$result->subjects[1]['id']);self::assertSame(1,$result->subjects[1]['total']);

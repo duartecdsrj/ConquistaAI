@@ -121,3 +121,7 @@ O módulo Performance consulta `GET /dashboard/me` pelas camadas Domain, Applica
 ## Design system administrativo e Taxonomia
 
 `DESIGN_SYSTEM.md` registra os fundamentos e padrões administrativos derivados da referência visual aprovada: superfícies claras, hierarquia azul, cartões arredondados, árvore pesquisável e área de trabalho com abas. A tela `TaxonomyPage.vue` aplica esses padrões com os fluxos reais de criação, edição, aliases, sugestões e confirmação de fusão; não introduz chamadas HTTP fora de `useTaxonomy`.
+
+## Plano inteligente de estudos
+
+O módulo Study exibe o plano real de `GET /study-plan/me` e a meta de `GET /study-goals/me` pelo fluxo Domain, Application, Infrastructure e `useNotebooks`. Cada prioridade explica a evidência que a originou e pode apenas preencher a criação de um caderno; a seleção congelada só é criada após confirmação do usuário. A meta semanal é atualizada por `PUT /study-goals/me`, sem HTTP direto na página.

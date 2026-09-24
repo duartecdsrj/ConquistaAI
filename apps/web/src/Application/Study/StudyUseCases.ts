@@ -1,11 +1,15 @@
 import type { PublishedQuestion } from '../../Domain/QuestionBank/QuestionRepository'
-import type { CreateNotebookCommand, Notebook, NotebookStatistics, StudyRepository } from '../../Domain/Study/StudyRepository'
+import type { CreateNotebookCommand, Notebook, NotebookStatistics, StudyGoal, StudyPlan, StudyRepository } from '../../Domain/Study/StudyRepository'
 import type { PageQuery, PageResult } from '../../Infrastructure/Http/AxiosApiClient'
 
 export class ListNotebooksUseCase {
   public constructor(private readonly repository: StudyRepository) {}
   public execute(query?: PageQuery): Promise<PageResult<Notebook>> { return this.repository.list(query) }
 }
+
+export class GetStudyGoalUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(): Promise<StudyGoal> { return this.repository.getGoal() } }
+export class UpdateStudyGoalUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(weeklyQuestionGoal: number): Promise<StudyGoal> { if (!Number.isInteger(weeklyQuestionGoal) || weeklyQuestionGoal < 1 || weeklyQuestionGoal > 500) return Promise.reject(new Error('A meta semanal deve estar entre 1 e 500 questões.')); return this.repository.updateGoal(weeklyQuestionGoal) } }
+export class GetStudyPlanUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(): Promise<StudyPlan> { return this.repository.plan() } }
 
 export class GetNotebookUseCase {
   public constructor(private readonly repository: StudyRepository) {}
