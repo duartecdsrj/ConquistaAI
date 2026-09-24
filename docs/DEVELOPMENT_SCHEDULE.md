@@ -8,7 +8,7 @@ Atualizado em 24/09/2026. Cada marco só avança quando backend, frontend, docum
 | M1 | Concursos, cargos e editais estruturados | M0 | PDF preservado, hash idempotente e conteúdo por cargo | Concluído |
 | M2 | Jobs e processamento de edital | M1 | extração assíncrona com progresso e proveniência | Concluído |
 | M3 | Questões reais, fontes e deduplicação | M0, M1 | importação idempotente e revisão de candidatos | Concluído |
-| M4 | Estatísticas hierárquicas e dashboard por edital | M0, M3 | agregação por descendentes e dados insuficientes | Planejado |
+| M4 | Estatísticas hierárquicas e dashboard por edital | M0, M3 | agregação por descendentes e dados insuficientes | Concluído |
 | M5 | Cadernos inteligentes e plano de estudos | M4 | seleção e recomendação explicáveis | Planejado |
 | M6 | IA auditável e RAG de editais | M1, M2, M5 | IA desacoplada, evidenciada e revisável | Planejado |
 | M7 | Descoberta web por providers permitidos | M1, M3 | proveniência, limites de acesso e jobs | Planejado |
@@ -53,7 +53,6 @@ Decisões que ficam bloqueadas até M2/M6: provider de IA, tecnologia de fila e 
 ## M3 a M7 — sequências planejadas
 
 - **M3:** fontes de questões, importação idempotente, candidatos duplicados, revisão e publicação. **Concluído.**
-- **M4:** agregações hierárquicas por assunto, dashboard por edital e indicação de dados insuficientes.
+- **M4:** agregações hierárquicas por assunto, dashboard por edital e indicação de dados insuficientes. **Concluído em 24/09/2026.**
 - **M5:** cadernos inteligentes, filtros explicáveis, metas e plano de estudo.
-- **M6:** providers de IA desacoplados, RAG de edital, evidências e revisão humana.
 - **M7:** providers permitidos de descoberta web, catálogo de provas/gabaritos, proveniência e limites operacionais.

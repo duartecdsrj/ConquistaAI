@@ -1,5 +1,5 @@
 import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
-import { GetMyStatisticsUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
+import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
 import { CreateNotebookUseCase, FinishNotebookUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider } from './Http/AxiosApiClient'
@@ -40,7 +40,7 @@ const taxonomyRepository = new AxiosTaxonomyRepository()
 export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), duplicateSuggestions: new ListTaxonomyDuplicateSuggestionsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository), createAlias: new CreateTaxonomySubjectAliasUseCase(taxonomyRepository), merge: new MergeTaxonomySubjectsUseCase(taxonomyRepository), reconciliationProposals: new ListTaxonomyReconciliationProposalsUseCase(taxonomyRepository), update: new UpdateTaxonomySubjectUseCase(taxonomyRepository) }
 export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(new AxiosQuestionRepository()) }
 const performanceRepository = new AxiosPerformanceRepository()
-export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }
+export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), getDashboard: new GetSyllabusDashboardUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }
 export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())
 export const importUseCases = new ImportUseCases(new AxiosImportRepository())
 const editorialRepository = new AxiosEditorialRepository()

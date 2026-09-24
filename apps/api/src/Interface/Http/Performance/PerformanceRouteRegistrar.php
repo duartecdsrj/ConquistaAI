@@ -9,6 +9,7 @@ use App\Application\Performance\Service\CompleteAttemptService;
 use App\Application\Performance\Service\BasicStatisticsService;
 use App\Application\Performance\Service\GetBasicStatisticsService;
 use App\Application\Performance\Service\StartAttemptService;
+use App\Application\Performance\Service\GetSyllabusDashboardService;
 use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
@@ -43,27 +44,28 @@ final class PerformanceRouteRegistrar
             new CompleteAttemptService($attempts, $transactions),
             $this->responses,
         );
+        $statistics = new DoctrinePerformanceStatisticsRepository($entityManager);
         $statisticsController = new StatisticsController(
             $this->authentication,
-            new GetBasicStatisticsService(
-                new DoctrinePerformanceStatisticsRepository($entityManager),
-                new BasicStatisticsService(),
-            ),
+            new GetSyllabusDashboardService($statistics),
+            new GetBasicStatisticsService($statistics, new BasicStatisticsService()),
             $this->responses,
         );
         $identity = new IdentityRequestFactory();
         $answers = new AnswerRequestFactory();
         $responses = $this->responses;
 
-        $app->get('/v1/statistics/me', static function (
-            ServerRequestInterface $request,
-            ResponseInterface $response,
-        ) use ($statisticsController, $identity, $responses): ResponseInterface {
+        $app->get('/v1/statistics/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($statisticsController, $identity, $responses): ResponseInterface {
+            try { return $statisticsController->mine($request, $response, $identity->accessToken($request)); }
+            catch (InvalidArgumentException $exception) { return self::unauthenticated($responses, $request, $response, $exception); }
+        });
+
+        $app->get('/v1/dashboard/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($statisticsController, $identity, $responses): ResponseInterface {
             try {
-                return $statisticsController->mine($request, $response, $identity->accessToken($request));
-            } catch (InvalidArgumentException $exception) {
-                return self::unauthenticated($responses, $request, $response, $exception);
-            }
+                $query = $request->getQueryParams();
+                $syllabusId = isset($query['syllabus_id']) && is_string($query['syllabus_id']) && $query['syllabus_id'] !== '' ? $query['syllabus_id'] : null;
+                return $statisticsController->dashboard($request, $response, $identity->accessToken($request), new \App\Application\Performance\DTO\Request\GetSyllabusDashboardRequestDto($syllabusId));
+            } catch (InvalidArgumentException $exception) { return self::unauthenticated($responses, $request, $response, $exception); }
         });
 
         $app->post('/v1/notebooks/{notebookId}/questions/{questionId}/attempts', static function (

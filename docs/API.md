@@ -84,7 +84,7 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 
 | Metodo e rota | Regra |
 | --- | --- |
-| `GET /dashboard/me` | resumo semanal, fortes, prioridades e revisoes |
+| `GET /dashboard/me` | dashboard por edital, com agregação hierárquica e amostra de dados |
 | `GET /statistics/me` | totais e metricas gerais |
 | `GET /statistics/me/subjects` | desempenho por assunto, com amostra e confianca |
 | `GET /statistics/me/evolution` | serie temporal, com agrupamento configuravel |
@@ -129,3 +129,7 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 ### Associação canônica de assuntos do edital
 
 `PUT /api/v1/admin/subjects/{id}/taxonomy-subjects` requer `ADMIN` e recebe `{ "taxonomy_subject_ids": ["uuid"] }`. A operação substitui, em transação, somente as associações canônicas do assunto local informado. Cada assunto canônico precisa existir e estar ativo. Ela não cria taxonomia, não executa fusões e não modifica associações de questões. A resposta devolve `subjectId` e `taxonomySubjectIds` no envelope padrão.
+
+### Dashboard por edital
+
+`GET /api/v1/dashboard/me?syllabus_id={uuid}` requer autenticação. Sem `syllabus_id`, seleciona o primeiro edital no qual o usuário tenha tentativas concluídas. A resposta retorna os editais disponíveis, totais únicos de respostas finais e métricas por assunto canônico. Cada resposta classificada contribui também para seus ancestrais; `sufficientData` só é verdadeiro com pelo menos 10 respostas em 3 dias distintos.

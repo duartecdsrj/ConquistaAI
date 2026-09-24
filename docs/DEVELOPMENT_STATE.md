@@ -379,3 +379,16 @@ docker compose exec -T frontend npm run build
 - Commits contextuais: `8c7d5d9` (backend de proveniência e candidatos) e `b7dbf0d` (revisão administrativa no frontend).
 - Validações: PHPUnit com 36 testes e 90 assertions; build Quasar aprovado; `git diff --check` aprovado.
 - Próxima etapa autorizada: M4 — estatísticas hierárquicas e dashboard por edital.
+
+## Histórico — início do M4
+
+- Os contratos iniciais de Performance foram preparados para dashboard por edital, respostas finais e nós canônicos.
+- A entrega foi concluída no registro de encerramento abaixo, incluindo interface Quasar, teste específico e validação integrada.
+
+## Encerramento do M4 — 24/09/2026
+
+- O Macro 4 está concluído: `GET /api/v1/dashboard/me` devolve métricas do usuário por edital, usando apenas respostas finais e totais sem dupla contagem.
+- Classificações canônicas são propagadas para ancestrais ativos; o dashboard distingue dados suficientes de insuficientes pelo limiar de 10 respostas em 3 dias distintos.
+- A página Performance usa o fluxo obrigatório `Page -> usePerformance -> UseCase -> Repository -> Axios -> API`, oferece seletor de edital e estados de carregamento, erro, vazio e amostra insuficiente.
+- Validações: PHPUnit aprovado com 37 testes e 94 assertions; `docker compose exec -T frontend npm run build` aprovado; `git diff --check` aprovado.
+- Próxima etapa autorizada: M5 — cadernos inteligentes e plano de estudos.

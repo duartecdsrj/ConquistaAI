@@ -113,3 +113,7 @@ O módulo Catalog oferece revisão administrativa do processamento de PDF: o adm
 ## Importação e revisão de duplicidades
 
 A tela Import usa `useImport` como adaptador de interface. Ela carrega concurso, cargo e edital pelo composable, apresenta as linhas bloqueadas como revisão necessária e destaca candidatos `DUPLICATE_CANDIDATE`; somente linhas válidas podem ser confirmadas como rascunhos.
+
+## Dashboard de desempenho por edital
+
+O módulo Performance consulta `GET /dashboard/me` pelas camadas Domain, Application, Infrastructure e `usePerformance`. A tela Quasar permite selecionar um edital com tentativas concluídas, lista métricas por assunto canônico incluindo descendentes e indica explicitamente quando a amostra ainda não alcançou 10 respostas em 3 dias distintos.
