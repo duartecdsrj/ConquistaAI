@@ -39,24 +39,22 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { catalogUseCases, taxonomyUseCases } from '../../../Infrastructure/Container'
 import { useCatalog } from './useCatalog'
 
-const { chooseExam, choosePosition, chooseSyllabus, error, exams, loadExams, loading, positions, save, saving, subjects, syllabi, tags } = useCatalog()
-const selectedExam = ref(''); const selectedPosition = ref(''); const selectedSyllabus = ref(''); const activeSubjectId = ref(''); const selectedTaxonomyIds = ref<string[]>([]); const taxonomyOptions = ref<readonly { value: string; label: string }[]>([])
+const { assignTaxonomySubjects, chooseExam, choosePosition, chooseSyllabus, createExam, createPosition, createSubject, createSyllabus, createTag, error, exams, loadExams, loading, loadTaxonomyOptions, positions, saving, subjects, syllabi, tags, taxonomyOptions, uploadSyllabusDocument } = useCatalog()
+const selectedExam = ref(''); const selectedPosition = ref(''); const selectedSyllabus = ref(''); const activeSubjectId = ref(''); const selectedTaxonomyIds = ref<string[]>([])
 const examName = ref(''); const positionName = ref(''); const syllabusName = ref(''); const subjectName = ref(''); const sourceExcerpt = ref(''); const sourcePage = ref<number | null>(null); const tagName = ref(''); const documentFile = ref<File | null>(null)
 async function selectExam(id: string): Promise<void> { selectedExam.value = id; selectedPosition.value = ''; selectedSyllabus.value = ''; await chooseExam(id) }
 async function selectPosition(id: string): Promise<void> { selectedPosition.value = id; selectedSyllabus.value = ''; documentFile.value = null; await choosePosition(id) }
 async function selectSyllabus(id: string): Promise<void> { selectedSyllabus.value = id; activeSubjectId.value = ''; selectedTaxonomyIds.value = []; documentFile.value = null; await chooseSyllabus(id) }
-async function addExam(): Promise<void> { await save(async () => { const item = await catalogUseCases.createExam(examName.value, '', null); examName.value = ''; await loadExams(); await selectExam(item.id) }) }
-async function addPosition(): Promise<void> { await save(async () => { await catalogUseCases.createPosition(selectedExam.value, positionName.value, ''); positionName.value = ''; await chooseExam(selectedExam.value) }) }
-async function addSyllabus(): Promise<void> { await save(async () => { await catalogUseCases.createSyllabus(selectedPosition.value, syllabusName.value); syllabusName.value = ''; await choosePosition(selectedPosition.value) }) }
-async function uploadDocument(): Promise<void> { if (!documentFile.value) return; await save(async () => { await catalogUseCases.uploadSyllabusDocument(selectedSyllabus.value, documentFile.value as File); documentFile.value = null; await choosePosition(selectedPosition.value); await chooseSyllabus(selectedSyllabus.value) }) }
-async function addSubject(): Promise<void> { await save(async () => { await catalogUseCases.createSubject(selectedSyllabus.value, subjectName.value, { sourceExcerpt: sourceExcerpt.value.trim() || undefined, sourcePage: sourcePage.value || undefined }); subjectName.value = ''; sourceExcerpt.value = ''; sourcePage.value = null; await chooseSyllabus(selectedSyllabus.value) }) }
-async function assignTaxonomy(): Promise<void> { await save(async () => { await catalogUseCases.assignTaxonomySubjects(activeSubjectId.value, selectedTaxonomyIds.value) }) }
-async function loadTaxonomy(): Promise<void> { const page = await taxonomyUseCases.list.execute({ perPage: 100 }); taxonomyOptions.value = page.items.filter((item) => item.active).map((item) => ({ value: item.id, label: item.name })) }
-async function addTag(): Promise<void> { await save(async () => { await catalogUseCases.createTag(tagName.value); tagName.value = ''; await loadExams() }) }
-onMounted(async () => { await Promise.all([loadExams(), loadTaxonomy()]) })
+async function addExam(): Promise<void> { const item = await createExam(examName.value); if (item) { examName.value = ''; await selectExam(item.id) } }
+async function addPosition(): Promise<void> { if (await createPosition(selectedExam.value, positionName.value)) positionName.value = '' }
+async function addSyllabus(): Promise<void> { if (await createSyllabus(selectedPosition.value, syllabusName.value)) syllabusName.value = '' }
+async function uploadDocument(): Promise<void> { if (!documentFile.value) return; if (await uploadSyllabusDocument(selectedSyllabus.value, selectedPosition.value, documentFile.value)) documentFile.value = null }
+async function addSubject(): Promise<void> { if (await createSubject(selectedSyllabus.value, subjectName.value, { sourceExcerpt: sourceExcerpt.value.trim() || undefined, sourcePage: sourcePage.value || undefined })) { subjectName.value = ''; sourceExcerpt.value = ''; sourcePage.value = null } }
+async function assignTaxonomy(): Promise<void> { await assignTaxonomySubjects(activeSubjectId.value, selectedTaxonomyIds.value) }
+async function addTag(): Promise<void> { if (await createTag(tagName.value)) tagName.value = '' }
+onMounted(async () => { await Promise.all([loadExams(), loadTaxonomyOptions()]) })
 </script>
 
 <style scoped>

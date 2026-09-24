@@ -1,6 +1,6 @@
 # Estado de desenvolvimento — ConquistaAI
 
-Atualizado em 23/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
+Atualizado em 24/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
 
 ## Como retomar em outro ambiente
 > **Regra obrigatória para IAs e contribuidores:** sempre que houver avanço de desenvolvimento — criação, alteração, validação, commit, descoberta de bloqueio ou mudança de próxima etapa — atualize este arquivo no mesmo ciclo, antes de iniciar outra funcionalidade. Não dependa somente do histórico da conversa ou de commits para transmitir contexto.
@@ -12,9 +12,9 @@ Atualizado em 23/09/2026. Este é o registro de handoff obrigatório antes de in
 
 ## Marco ativo
 
-**M1 — Concursos, cargos e editais estruturados**, em andamento.
+**M1 — Concursos, cargos e editais estruturados**, concluído.
 
-A meta do marco é entregar árvore global de assuntos, aliases, prevenção de ciclos, revisão de duplicidade e auditoria de fusões. Consulte `docs/DEVELOPMENT_SCHEDULE.md` para os critérios completos.
+A meta do marco foi entregar administração de concursos, cargos e editais, preservação idempotente de PDF, proveniência rastreável do conteúdo e associação explícita à taxonomia canônica. Consulte `docs/DEVELOPMENT_SCHEDULE.md` para os critérios completos.
 
 ## Entregue e versionado
 
@@ -322,3 +322,12 @@ docker compose exec -T frontend npm run build
 - O catálogo Quasar carrega apenas assuntos canônicos ativos e permite salvar a associação de modo explícito. A implementação segue as camadas Domain/Application/Infrastructure; a tela não chama Axios.
 - Validações: PHPUnit aprovado com 34 testes e 84 assertions; build Quasar aprovado; migration aplicada; `git diff --check` aprovado.
 - Decisão: associações canônicas são revisáveis e não dispararam fusão, criação automática ou alteração de questões. M1.4 está concluído; falta somente a validação de saída M1.5 antes de M2.
+
+## Encerramento do M1 — 24/09/2026
+
+- O commit `ac4d826` concluiu M1.4: associação administrativa explícita entre assunto local e taxonomia canônica, sem fusão, criação automática ou alteração de questões.
+- A auditoria final corrigiu `CatalogPage.vue`: a página não importa mais o container nem casos de uso; cada ação passa por `useCatalog`, preservando o fluxo obrigatório `Page -> Composable -> Application -> Domain <- Infrastructure`.
+- Migrations confirmadas no MySQL local: metadados de documento em `syllabi`, proveniência em `subjects` e a tabela `subject_taxonomy_assignments`.
+- Validações executadas: `docker compose exec -T api vendor/bin/phpunit` — OK, 34 testes e 84 assertions; `docker compose exec -T frontend npm run build` — OK; `git diff --check` — OK.
+- Responsividade: o catálogo transforma controles de documento, níveis e associação canônica em coluna única até 600 px; o frontend foi renderizado com Chromium headless em viewport de 390 × 844 px sem falha de carregamento.
+- Próxima etapa autorizada: M2.1 — definir fila/worker desacoplado e estado de processamento do edital. Não escolher provider de IA nem backend S3/MinIO antes da decisão prevista no cronograma.

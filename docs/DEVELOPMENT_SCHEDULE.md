@@ -1,11 +1,11 @@
 # Cronograma de desenvolvimento — ConquistaAI
 
-Atualizado em 23/09/2026. Cada marco só avança quando backend, frontend, documentação e testes proporcionais estiverem concluídos.
+Atualizado em 24/09/2026. Cada marco só avança quando backend, frontend, documentação e testes proporcionais estiverem concluídos.
 
 | Marco | Entrega integrada | Dependências | Critério de aceite | Situação |
 |---|---|---|---|---|
 | M0 | Taxonomia canônica: árvore, aliases, prevenção de ciclos e revisão de duplicidade | Nenhuma | assunto global, aliases e auditoria funcionais | Concluído |
-| M1 | Concursos, cargos e editais estruturados | M0 | PDF preservado, hash idempotente e conteúdo por cargo | Em andamento |
+| M1 | Concursos, cargos e editais estruturados | M0 | PDF preservado, hash idempotente e conteúdo por cargo | Concluído |
 | M2 | Jobs e processamento de edital | M1 | extração assíncrona com progresso e proveniência | Planejado |
 | M3 | Questões reais, fontes e deduplicação | M0, M1 | importação idempotente e revisão de candidatos | Planejado |
 | M4 | Estatísticas hierárquicas e dashboard por edital | M0, M3 | agregação por descendentes e dados insuficientes | Planejado |
@@ -38,8 +38,8 @@ Decisões que ficam bloqueadas até M2/M6: provider de IA, tecnologia de fila e 
 - M1.1: concursos, cargos e editais administrativos. **Concluída anteriormente.**
 - M1.2: preservação do PDF do edital, metadados seguros, hash SHA-256 idempotente e volume persistente. **Concluída — commit `e731c56`.**
 - M1.3: conteúdo programático por assunto, com trecho, página e offsets de proveniência. **Concluída — commit `e26952b`.**
-- M1.4: vínculo explícito e revisável entre `subjects` locais e `taxonomy_subjects` canônicos. **Em andamento.** Não cria assuntos, não funde taxonomia e não altera questões.
-- M1.5: validação final do catálogo: migrations aplicadas, contratos, testes de API, build Quasar e fluxo administrativo em dispositivo móvel.
+- M1.4: vínculo explícito e revisável entre `subjects` locais e `taxonomy_subjects` canônicos. **Concluída — commit `ac4d826`.** Não cria assuntos, não funde taxonomia e não altera questões.
+- M1.5: validação final do catálogo. **Concluída em 24/09/2026:** migrations `007` a `009` confirmadas no MySQL local, contrato documentado, PHPUnit com 34 testes e 84 assertions, build Quasar aprovado e layout do catálogo adaptado para uma coluna até 600 px.
 
 **Critério de saída do M1:** um administrador cria concurso/cargo/edital, preserva o PDF, estrutura assuntos com origem rastreável e os associa conscientemente à taxonomia canônica. Só então M2 pode processar conteúdo automaticamente.
 

@@ -1,14 +1,23 @@
 import { readonly, ref } from 'vue'
-import type { Exam, Position, Subject, Syllabus, Tag } from '../../../Domain/Catalog/CatalogRepository'
-import { catalogUseCases } from '../../../Infrastructure/Container'
+import type { Exam, Position, Subject, SubjectProvenance, Syllabus, Tag } from '../../../Domain/Catalog/CatalogRepository'
+import { catalogUseCases, taxonomyUseCases } from '../../../Infrastructure/Container'
 export function useCatalog() {
   const loading = ref(false); const saving = ref(false); const error = ref('')
   const exams = ref<readonly Exam[]>([]); const positions = ref<readonly Position[]>([]); const syllabi = ref<readonly Syllabus[]>([]); const subjects = ref<readonly Subject[]>([]); const tags = ref<readonly Tag[]>([])
+  const taxonomyOptions = ref<readonly { value: string; label: string }[]>([])
   async function run(action: () => Promise<void>): Promise<void> { loading.value = true; error.value = ''; try { await action() } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar o catálogo.' } finally { loading.value = false } }
   async function loadExams(): Promise<void> { await run(async () => { exams.value = await catalogUseCases.listExams(); tags.value = await catalogUseCases.listTags() }) }
   async function chooseExam(id: string): Promise<void> { await run(async () => { positions.value = await catalogUseCases.listPositions(id); syllabi.value = []; subjects.value = [] }) }
   async function choosePosition(id: string): Promise<void> { await run(async () => { syllabi.value = await catalogUseCases.listSyllabi(id); subjects.value = [] }) }
   async function chooseSyllabus(id: string): Promise<void> { await run(async () => { subjects.value = await catalogUseCases.listSubjects(id) }) }
-  async function save(action: () => Promise<void>): Promise<void> { saving.value = true; error.value = ''; try { await action() } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível salvar.' } finally { saving.value = false } }
-  return { loading: readonly(loading), saving: readonly(saving), error: readonly(error), exams: readonly(exams), positions: readonly(positions), syllabi: readonly(syllabi), subjects: readonly(subjects), tags: readonly(tags), loadExams, chooseExam, choosePosition, chooseSyllabus, save }
+  async function save(action: () => Promise<void>): Promise<boolean> { saving.value = true; error.value = ''; try { await action(); return true } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível salvar.'; return false } finally { saving.value = false } }
+  async function createExam(name: string): Promise<Exam | null> { let exam: Exam | null = null; return await save(async () => { exam = await catalogUseCases.createExam(name, '', null); await loadExams() }) ? exam : null }
+  function createPosition(examId: string, name: string): Promise<boolean> { return save(async () => { await catalogUseCases.createPosition(examId, name, ''); await chooseExam(examId) }) }
+  function createSyllabus(positionId: string, name: string): Promise<boolean> { return save(async () => { await catalogUseCases.createSyllabus(positionId, name); await choosePosition(positionId) }) }
+  function uploadSyllabusDocument(syllabusId: string, positionId: string, document: File): Promise<boolean> { return save(async () => { await catalogUseCases.uploadSyllabusDocument(syllabusId, document); await choosePosition(positionId); await chooseSyllabus(syllabusId) }) }
+  function createSubject(syllabusId: string, name: string, provenance: SubjectProvenance): Promise<boolean> { return save(async () => { await catalogUseCases.createSubject(syllabusId, name, provenance); await chooseSyllabus(syllabusId) }) }
+  function assignTaxonomySubjects(subjectId: string, taxonomySubjectIds: readonly string[]): Promise<boolean> { return save(async () => { await catalogUseCases.assignTaxonomySubjects(subjectId, taxonomySubjectIds) }) }
+  async function loadTaxonomyOptions(): Promise<void> { await run(async () => { const page = await taxonomyUseCases.list.execute({ page: 1, perPage: 100 }); taxonomyOptions.value = page.items.filter((item) => item.active).map((item) => ({ value: item.id, label: item.name })) }) }
+  function createTag(name: string): Promise<boolean> { return save(async () => { await catalogUseCases.createTag(name); await loadExams() }) }
+  return { loading: readonly(loading), saving: readonly(saving), error: readonly(error), exams: readonly(exams), positions: readonly(positions), syllabi: readonly(syllabi), subjects: readonly(subjects), tags: readonly(tags), taxonomyOptions: readonly(taxonomyOptions), loadExams, chooseExam, choosePosition, chooseSyllabus, createExam, createPosition, createSyllabus, uploadSyllabusDocument, createSubject, assignTaxonomySubjects, loadTaxonomyOptions, createTag }
 }
