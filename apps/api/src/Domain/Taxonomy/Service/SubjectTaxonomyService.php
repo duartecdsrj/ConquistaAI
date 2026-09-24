@@ -31,6 +31,15 @@ final class SubjectTaxonomyService
         return $slug;
     }
 
+    public function similarity(string $left, string $right): float
+    {
+        $leftNormalized = $this->slug($left);
+        $rightNormalized = $this->slug($right);
+        if ($leftNormalized === $rightNormalized) { return 1.0; }
+        $length = max(strlen($leftNormalized), strlen($rightNormalized));
+        return $length === 0 ? 0.0 : 1 - (levenshtein($leftNormalized, $rightNormalized) / $length);
+    }
+
     public function assertMoveDoesNotCreateCycle(string $subjectId, ?string $newParentId, TaxonomyHierarchyRepositoryInterface $hierarchy): void
     {
         if ($newParentId === null) {
