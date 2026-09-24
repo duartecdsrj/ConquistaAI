@@ -454,3 +454,4 @@ docker compose exec -T frontend npm run build
 
 - O assistente agora seleciona `AI_PROVIDER=openai` ou `local` por ambiente. `OpenAiAssistantProvider` chama a Responses API com `store: false`, `OPENAI_API_KEY` no servidor e `OPENAI_MODEL` configurável.
 - A OpenAI recebe somente pergunta e evidências recuperadas; a resposta continua persistindo provider, modelo e páginas usadas. Sem chave, a chamada falha com mensagem segura; `AI_PROVIDER=local` mantém o provider determinístico.
+- Com autorização explícita, a API foi conectada também à rede Docker `public` exclusivamente para egress HTTPS a providers externos; nenhuma porta foi publicada.
