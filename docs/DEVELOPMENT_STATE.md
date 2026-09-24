@@ -90,3 +90,9 @@ docker compose exec -T frontend npm run build
 - O payload requer `taxonomy_subject_ids` como lista de strings e chama o caso de uso transacional.
 - PHPUnit aprovado: 30 testes, 71 assertions.
 - Próximo passo: documentar o contrato, criar o adaptador Axios e expor o controle na tela editorial.
+
+## Avanço atual — refatoração editorial obrigatória
+
+- Commit `0ad1b92` concluiu a rota de atribuição canônica.
+- Foi identificado que `Interface/Http/Editorial/EditorialPage.vue` consome Axios diretamente, contrariando `docs/FRONTEND.md`.
+- Próxima etapa: migrar Editorial para camadas Domain/Application/Infrastructure e só então adicionar o controle de atribuição canônica na tela.
