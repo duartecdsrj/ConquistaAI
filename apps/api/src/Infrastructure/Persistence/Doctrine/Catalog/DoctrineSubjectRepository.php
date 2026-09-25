@@ -20,6 +20,10 @@ final class DoctrineSubjectRepository implements SubjectRepositoryInterface
         $record->parentId = $subject->parentId;
         $record->name = $subject->name;
         $record->sortOrder = $subject->sortOrder;
+        $record->selectionWeight = number_format($subject->selectionWeight, 4, '.', '');
+        $record->weightSource = $subject->weightSource;
+        $record->weightConfidence = number_format($subject->weightConfidence, 4, '.', '');
+        $record->weightCalculatedAt = $subject->weightCalculatedAt === null ? null : new \DateTimeImmutable($subject->weightCalculatedAt);
         $record->sourceExcerpt = $subject->sourceExcerpt;
         $record->sourcePage = $subject->sourcePage;
         $record->sourceStartOffset = $subject->sourceStartOffset;
@@ -38,6 +42,6 @@ final class DoctrineSubjectRepository implements SubjectRepositoryInterface
 
     public function listForSyllabus(string $syllabusId): array
     {
-        return array_map(static fn (SubjectRecord $record): Subject => new Subject($record->id, $record->syllabusId, $record->parentId, $record->name, $record->sortOrder, $record->sourceExcerpt, $record->sourcePage, $record->sourceStartOffset, $record->sourceEndOffset), $this->em->createQueryBuilder()->select('subject')->from(SubjectRecord::class, 'subject')->where('subject.syllabusId=:id')->setParameter('id', $syllabusId)->orderBy('subject.sortOrder', 'ASC')->addOrderBy('subject.name', 'ASC')->getQuery()->getResult());
+        return array_map(static fn (SubjectRecord $record): Subject => new Subject($record->id, $record->syllabusId, $record->parentId, $record->name, $record->sortOrder, $record->sourceExcerpt, $record->sourcePage, $record->sourceStartOffset, $record->sourceEndOffset, (float) $record->selectionWeight, $record->weightSource, (float) $record->weightConfidence, $record->weightCalculatedAt?->format(DATE_ATOM)), $this->em->createQueryBuilder()->select('subject')->from(SubjectRecord::class, 'subject')->where('subject.syllabusId=:id')->setParameter('id', $syllabusId)->orderBy('subject.sortOrder', 'ASC')->addOrderBy('subject.name', 'ASC')->getQuery()->getResult());
     }
 }

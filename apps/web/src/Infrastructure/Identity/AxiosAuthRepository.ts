@@ -15,6 +15,8 @@ export class AxiosAuthRepository implements AuthRepository {
     return { accessToken: response.access_token, user: response.user }
   }
 
+  public async refresh(): Promise<AuthSession> { const response = await postData<LoginApiResponse, { device_name: string }>('/auth/refresh', { device_name: 'web' }); return { accessToken: response.access_token, user: response.user } }
+
   public currentUser(): Promise<AuthenticatedUser> {
     return getData<AuthenticatedUser>('/auth/me')
   }

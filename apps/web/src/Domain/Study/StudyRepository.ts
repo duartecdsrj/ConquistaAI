@@ -25,7 +25,7 @@ export interface CreateNotebookCommand {
   readonly name: string
   readonly mode: NotebookMode
   readonly quantity: number
-  readonly filters: Readonly<{ subjectId?: string; board?: string; year?: number; difficulty?: 'EASY' | 'MEDIUM' | 'HARD' }>
+  readonly filters: Readonly<{ subjectId?: string; syllabusId?: string; board?: string; year?: number; difficulty?: 'EASY' | 'MEDIUM' | 'HARD' }>
 }
 
 export interface StudyRepository {

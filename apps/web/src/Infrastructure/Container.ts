@@ -6,7 +6,7 @@ import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Applicati
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
 import { CreateNotebookUseCase, FinishNotebookUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
-import { configureAccessTokenProvider } from './Http/AxiosApiClient'
+import { configureAccessTokenProvider, configureRefreshHandler } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
 import { CatalogUseCases } from '../Application/Catalog/CatalogUseCases'
 import { AxiosCatalogRepository } from './Catalog/AxiosCatalogRepository'
@@ -23,6 +23,8 @@ import { CreateTaxonomySubjectAliasUseCase, CreateTaxonomySubjectUseCase, MergeT
 
 const sessionStore = new BrowserSessionStore()
 configureAccessTokenProvider(() => sessionStore.accessToken())
+const authRepository = new AxiosAuthRepository()
+configureRefreshHandler(async () => { try { const session = await authRepository.refresh(); sessionStore.save(session); return session.accessToken } catch { sessionStore.clear(); return null } })
 const discoveryRepository = new AxiosDiscoveryRepository()
 export const discoveryUseCases = { list: new ListDiscoveryResourcesUseCase(discoveryRepository), search: new SearchDiscoveryUseCase(discoveryRepository) }
 const assistantRepository = new AxiosAssistantRepository()
@@ -30,9 +32,9 @@ export const assistantUseCases = { syllabi: new ListAssistantSyllabiUseCase(assi
 
 const studyRepository = new AxiosStudyRepository()
 export const identityUseCases = {
-  login: new LoginUseCase(new AxiosAuthRepository(), sessionStore),
-  logout: new LogoutUseCase(new AxiosAuthRepository(), sessionStore),
-  restoreSession: new RestoreSessionUseCase(new AxiosAuthRepository(), sessionStore),
+  login: new LoginUseCase(authRepository, sessionStore),
+  logout: new LogoutUseCase(authRepository, sessionStore),
+  restoreSession: new RestoreSessionUseCase(authRepository, sessionStore),
 }
 export const studyUseCases = {
   list: new ListNotebooksUseCase(studyRepository),

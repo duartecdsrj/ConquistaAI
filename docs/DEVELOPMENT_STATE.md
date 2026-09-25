@@ -635,3 +635,18 @@ docker compose exec -T frontend npm run build
 - Validações concluídas: build frontend aprovado; YAML validado por ; migration 016 aplicada; lint PHP das rotas, serviço e writer aprovado;  iniciado e aguardando fila vazia.
 
 - Validações concluídas: build frontend aprovado; configuração Docker validada; migration 016 aplicada; lint PHP das rotas, serviço e writer aprovado; question-pdf-worker iniciado e aguardando fila vazia.
+
+
+## Avanço atual — seleção global por edital
+
+- Questões permanecem globais; o filtro `syllabus_id` passou a selecionar por interseção entre taxonomia das questões e assuntos do edital, sem usar `questions.syllabus_id`.
+- A distribuição ponderada ainda depende de pesos explícitos por assunto no catálogo; enquanto não forem cadastrados, a seleção respeita o conjunto de assuntos, sem inventar pesos.
+- Validação pendente: build frontend e teste de seleção com edital contendo vínculos canônicos.
+
+
+## Avanço atual — pesos e sessão
+
+- Migration 018 adicionou peso, origem, confiança e data de cálculo aos assuntos locais do edital; o contrato frontend já recebe esses campos.
+- O seletor de caderno aceita syllabus_id e cruza os assuntos canônicos do edital com as questões globais.
+- Correção de sessão: o cliente Axios usa o refresh token HttpOnly após um 401, compartilha a renovação concorrente, salva o novo access token e repete uma vez a requisição original; falha de refresh limpa a sessão.
+- Validação: build frontend aprovado. Pendente: expor edição e visualização de pesos no Catálogo e implementar a calibração histórica/IA.

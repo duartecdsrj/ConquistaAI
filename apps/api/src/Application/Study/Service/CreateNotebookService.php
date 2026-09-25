@@ -35,6 +35,7 @@ final class CreateNotebookService
                 $request->filters['board'] ?? null,
                 $request->filters['year'] ?? null,
                 $request->filters['difficulty'] ?? null,
+                $request->filters['syllabus_id'] ?? null,
             ));
             $selection = FrozenQuestionSelection::fromQuestionIds(
                 array_map(static fn ($question): string => $question->id, $page->items),

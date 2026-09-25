@@ -15,5 +15,9 @@ final readonly class Subject
         public ?int $sourcePage = null,
         public ?int $sourceStartOffset = null,
         public ?int $sourceEndOffset = null,
+        public float $selectionWeight = 1.0,
+        public string $weightSource = 'DEFAULT',
+        public float $weightConfidence = 0.0,
+        public ?string $weightCalculatedAt = null,
     ) {}
 }

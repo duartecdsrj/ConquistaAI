@@ -18,6 +18,7 @@ export interface AuthSession {
 
 export interface AuthRepository {
   login(credentials: LoginCredentials): Promise<AuthSession>
+  refresh(): Promise<AuthSession>
   currentUser(): Promise<AuthenticatedUser>
   logout(): Promise<void>
 }

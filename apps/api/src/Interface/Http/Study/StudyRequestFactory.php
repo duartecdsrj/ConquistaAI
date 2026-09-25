@@ -58,9 +58,10 @@ final class StudyRequestFactory
     /** @param array<string, mixed> $filters */
     private function validFilters(array $filters): bool
     {
-        $allowed = ['subject_id', 'board', 'year', 'difficulty'];
+        $allowed = ['subject_id', 'syllabus_id', 'board', 'year', 'difficulty'];
         if (array_diff(array_keys($filters), $allowed) !== []) return false;
         return (!isset($filters['subject_id']) || is_string($filters['subject_id']))
+            && (!isset($filters['syllabus_id']) || is_string($filters['syllabus_id']))
             && (!isset($filters['board']) || is_string($filters['board']))
             && (!isset($filters['year']) || is_int($filters['year']))
             && (!isset($filters['difficulty']) || (is_string($filters['difficulty']) && in_array($filters['difficulty'], ['EASY', 'MEDIUM', 'HARD'], true)));

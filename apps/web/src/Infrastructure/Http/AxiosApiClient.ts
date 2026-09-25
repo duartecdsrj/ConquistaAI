@@ -16,14 +16,17 @@ export class ApiRequestError extends Error {
 
 const client = axios.create({ baseURL: '/api/v1', withCredentials: true, headers: { Accept: 'application/json', 'Content-Type': 'application/json' } })
 let accessTokenProvider: () => string | null = () => null
+let refreshHandler: (() => Promise<string | null>) | null = null
+let refreshInFlight: Promise<string | null> | null = null
 export function configureAccessTokenProvider(provider: () => string | null): void { accessTokenProvider = provider }
+export function configureRefreshHandler(handler: () => Promise<string | null>): void { refreshHandler = handler }
 
 client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = accessTokenProvider()
   if (token) config.headers.Authorization = 'Bearer ' + token
   return config
 })
-client.interceptors.response.use((response: AxiosResponse) => response, (error: AxiosError<ApiFailure>) => Promise.reject(toApiRequestError(error)))
+client.interceptors.response.use((response: AxiosResponse) => response, async (error: AxiosError<ApiFailure> & { config?: InternalAxiosRequestConfig & { _retried?: boolean } }) => { const config = error.config; const url = config?.url ?? ''; if (error.response?.status === 401 && config && !config._retried && !url.includes('/auth/refresh') && !url.includes('/auth/login') && refreshHandler) { config._retried = true; refreshInFlight ??= refreshHandler().finally(() => { refreshInFlight = null }); const token = await refreshInFlight; if (token) { config.headers.Authorization = 'Bearer ' + token; return client.request(config) } } return Promise.reject(toApiRequestError(error)) }) 
 
 export async function getData<T>(url: string, config?: AxiosRequestConfig): Promise<T> { return (await client.get<ApiEnvelope<T>>(url, config)).data.data }
 export async function postData<TResponse, TRequest>(url: string, body?: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.post<ApiEnvelope<TResponse>>(url, body, config)).data.data }

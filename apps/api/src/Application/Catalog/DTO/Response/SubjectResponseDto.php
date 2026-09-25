@@ -15,5 +15,9 @@ final readonly class SubjectResponseDto
         public ?int $sourcePage,
         public ?int $sourceStartOffset,
         public ?int $sourceEndOffset,
+        public float $selectionWeight,
+        public string $weightSource,
+        public float $weightConfidence,
+        public ?string $weightCalculatedAt,
     ) {}
 }

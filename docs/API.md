@@ -166,3 +166,8 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 `POST /api/v1/admin/question-pdf-imports` requer ADMIN e recebe `multipart/form-data` com `syllabus_id` e um ou mais `documents[]` em PDF. Cada arquivo gera um job isolado e devolve uma lista com `id`, status, progresso, páginas candidatas, questões extraídas, criadas, duplicadas, com erro, classificadas e assuntos canônicos criados.
 
 `GET /api/v1/admin/question-pdf-imports/{id}` permite ao administrador que criou o job acompanhar a mesma estrutura. Estados: `PENDING`, `PROCESSING`, `COMPLETED` e `FAILED`. O worker transmite somente páginas candidatas a questão e a lista de taxonomia ao provider de IA autorizado; o PDF original não é transmitido integralmente. Questões são criadas como `REVIEW`, sem gabarito inventado.
+
+
+### Seleção global por edital
+
+As questões são globais e classificadas por taxonomia canônica; não pertencem a concurso ou edital. Ao criar um caderno, o filtro opcional `syllabus_id` restringe a seleção a questões cujos assuntos canônicos constem no edital informado. Banca, concurso de origem e ano são apenas metadados de cada questão.

@@ -5,7 +5,7 @@ namespace App\Application\Study\DTO\Request;
 
 final readonly class CreateNotebookRequestDto
 {
-    /** @param array{subject_id?: string, board?: string, year?: int, difficulty?: string} $filters */
+    /** @param array{subject_id?: string, syllabus_id?: string, board?: string, year?: int, difficulty?: string} $filters */
     public function __construct(
         public string $userId,
         public string $name,
