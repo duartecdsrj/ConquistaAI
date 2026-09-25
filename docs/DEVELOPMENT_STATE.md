@@ -756,3 +756,10 @@ docker compose exec -T frontend npm run build
 - Limpeza autorizada de importações concluída: removidos 6 jobs históricos, 2 PDFs de questões e 2 diretórios de ativos associados; a fila persistida está vazia. Taxonomia, concursos e editais foram preservados.
 - O classificador agora deve devolver taxonomy_path, da raiz à folha específica. O writer recusa nó que possua filhos como classificação final e também recusa assunto novo sem pai canônico identificado; a questão volta como falha de extração, nunca como classificação genérica.
 - Worker de PDFs reiniciado após a limpeza e aguardando novos jobs enviados pela interface. Validações: PHPUnit 47 testes/116 asserções e build frontend aprovados.
+
+
+## Avanço atual — limpeza integral do banco
+
+- Limpeza integral autorizada e executada: removidos dados operacionais de questões, alternativas, ativos, classificações por questão, concursos, editais, cargos, cadernos, tentativas, respostas, revisões, importações, jobs, assistente, descoberta, metas e sessões.
+- Preservados: 4 usuários, papéis e vínculos de papéis, 475 assuntos canônicos e o histórico de migrations. Aliases e histórico de fusões da taxonomia também foram removidos para manter somente a árvore de assuntos.
+- Auditoria posterior: zero questões, concursos, cadernos, tentativas, jobs e sessões. O worker foi reiniciado e aguarda novas importações; usuários devem autenticar novamente.
