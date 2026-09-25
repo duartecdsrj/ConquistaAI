@@ -153,3 +153,8 @@ A tela Import restaura os jobs persistidos ao ser aberta. Itens pendentes ou em 
 ## Conteúdo rico de questões
 
 A revisão editorial e a execução de caderno reutilizam `QuestionContent.vue` para apresentar texto, tabelas Markdown e blocos de código, e `QuestionAssetImage.vue` para imagens extraídas do PDF. Este último obtém o binário com Axios autenticado e expõe somente uma URL Blob temporária ao componente de imagem; não há rota pública de arquivos.
+
+
+## Questões de correlação
+
+`QuestionContent.vue`, compartilhado pela revisão editorial e pelo caderno, reconhece enunciados que contenham itens numerados e afirmações com `( )`. Esses conteúdos são apresentados como quadro de duas colunas: itens numerados à esquerda e afirmações a relacionar à direita. Em telas com até 599 px, o quadro passa para uma coluna, preservando a ordem e a legibilidade.

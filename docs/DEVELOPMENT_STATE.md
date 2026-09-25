@@ -742,3 +742,10 @@ docker compose exec -T frontend npm run build
 - Limpeza autorizada e executada em transação: removidas 77 questões EXAM em REVIEW/DRAFT importadas por PDF, 373 alternativas, 66 vínculos de taxonomia e 1 ativo visual.
 - Foram preservadas as 3 questões PUBLISHED, a taxonomia canônica (incluindo Dados Abertos), concursos, editais e histórico de jobs.
 - Auditoria posterior: zero questões importadas em REVIEW/DRAFT, zero alternativas órfãs e zero ativos órfãos. A interface está pronta para uma nova importação.
+
+
+## Avanço atual — questões de correlação
+
+- QuestionContent passou a reconhecer enunciados de associação que tragam itens numerados e afirmações marcadas com `( )`. A revisão editorial e o caderno exibem o mesmo quadro em duas colunas, com itens à esquerda e afirmações à direita; no celular, o quadro é empilhado.
+- O conteúdo original e alternativas permanecem inalterados; questões sem ambas as estruturas seguem o fluxo de texto, tabela ou código já existente.
+- Validação: build do frontend aprovado.
