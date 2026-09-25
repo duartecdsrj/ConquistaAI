@@ -47,7 +47,7 @@ A resposta segue o envelope padrão e devolve `{ "id": "uuid", "document_sha256"
 
 `GET /api/v1/admin/syllabi/{id}/processing-jobs/latest` requer `ADMIN` e retorna o último job do edital ou `404 RESOURCE_NOT_FOUND`. Estados possíveis: `PENDING`, `PROCESSING`, `COMPLETED` e `FAILED`. O campo `progress` varia de 0 a 100 e `errorMessage` só contém mensagem segura para administração.
 
-`GET /api/v1/admin/syllabi/{id}/extractions` requer `ADMIN` e devolve as páginas extraídas, ordenadas por página, com `{ "pageNumber", "textContent", "startOffset", "endOffset", "documentSha256" }`. O endpoint não cria assuntos nem publica conteúdo; é somente leitura para revisão administrativa.
+`GET /api/v1/admin/syllabi/{id}/extractions` requer `ADMIN` e devolve as páginas extraídas, ordenadas por página, com `{ "pageNumber", "textContent", "startOffset", "endOffset", "documentSha256" }`. Ao concluir a extração, o worker envia somente trechos do edital ao provider configurado e cria cargos, assuntos locais vinculados ao edital e associações à taxonomia canônica. Itens sem assunto canônico geram um nó raiz ativo; cada assunto preserva a página apontada pelo modelo. O endpoint permanece somente leitura para revisão administrativa.
 
 
 

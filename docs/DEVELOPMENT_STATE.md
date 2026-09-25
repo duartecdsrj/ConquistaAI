@@ -2,6 +2,14 @@
 
 Atualizado em 24/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
 
+
+## 2026-09-25 — Correção do worker de editais
+
+- Diagnóstico no concurso de validação Tranpetro: o PDF foi armazenado, mas o job falhou antes de extrair páginas porque a imagem Alpine do `syllabus-worker` não continha `pdftotext`.
+- Correção aplicada na imagem compartilhada da API/worker: instalação de `poppler-utils`; imagem reconstruída e `pdftotext version 25.12.0` confirmado no worker.
+- Reprocessamento do edital Tranpetro concluído: novo job `a0cc9f98-2eca-43a8-b3d7-57d07ecf6556` terminou em `COMPLETED` (100%), com 84 páginas e 411.508 caracteres extraídos.
+- Em implementação: após extração, o worker chama o provider configurado (`AI_PROVIDER`) com evidências limitadas do edital, cria cargos e assuntos locais, e associa cada assunto a uma taxonomia canônica existente ou recém-criada. O reprocessamento do Tranpetro será a validação integrada desta etapa. Durante a primeira execução, uma falha da análise fechou o EntityManager por estar dentro da transação de extração; a análise foi separada da transação para o job poder registrar FAILED de forma recuperável. Diagnóstico adicional: o worker não recebia `AI_PROVIDER` e credenciais do provider; a configuração foi alinhada à API antes do novo reprocessamento. Diagnóstico final de conectividade: o worker precisava integrar também a rede `public` para alcançar o endpoint Gemini, sem publicar nenhuma porta. O modelo `gemini-2.5-flash` configurado foi descontinuado para esta conta; atualizado localmente para `gemini-3.8-flash`, conforme resposta do provider. A validação da nova chamada recebeu `high demand` em duas tentativas; o reprocessamento editorial do Tranpetro permanece pendente de disponibilidade do Gemini, enquanto extração PDF continua validada.
+
 ## Como retomar em outro ambiente
 > **Regra obrigatória para IAs e contribuidores:** sempre que houver avanço de desenvolvimento — criação, alteração, validação, commit, descoberta de bloqueio ou mudança de próxima etapa — atualize este arquivo no mesmo ciclo, antes de iniciar outra funcionalidade. Não dependa somente do histórico da conversa ou de commits para transmitir contexto.
 

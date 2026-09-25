@@ -90,6 +90,11 @@ services:
       DB_NAME: ${DB_NAME:-concursos}
       DB_USER: ${DB_USER:-concursos}
       DB_PASSWORD: ${DB_PASSWORD:-change-me}
+      AI_PROVIDER: ${AI_PROVIDER:-local}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
     volumes:
       - ./apps/api:/app
       - api_vendor:/app/vendor
@@ -97,7 +102,7 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    networks: [internal]
+    networks: [public, internal]
 
   mysql:
     dns:
