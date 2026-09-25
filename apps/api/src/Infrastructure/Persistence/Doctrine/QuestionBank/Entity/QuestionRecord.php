@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class QuestionRecord
 {
     #[ORM\Id] #[ORM\Column(type: 'string', length: 36)] public string $id;
-    #[ORM\Column(name: 'syllabus_id', type: 'string', length: 36)] public string $syllabusId;
+    #[ORM\Column(name: 'syllabus_id', type: 'string', length: 36, nullable: true)] public ?string $syllabusId = null;
     #[ORM\Column(type: 'text')] public string $statement;
     #[ORM\Column(type: 'string', length: 16)] public string $difficulty;
     #[ORM\Column(type: 'string', length: 190, nullable: true)] public ?string $board;

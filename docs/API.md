@@ -23,10 +23,10 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `PUT /admin/subjects/{id}/taxonomy-subjects`; `GET, PATCH, DELETE /subjects/{id}` |
 | Tags | `GET, POST /tags` |
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
-| Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit` |
+| Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit`; `POST /admin/question-pdf-imports` (PDFs em lote); `GET /admin/question-pdf-imports/{id}` |
 | Revisão editorial | `GET /admin/questions/drafts`; `POST /admin/questions/{id}/publish` |
 | Taxonomia | `GET, POST, PATCH /admin/taxonomy/subjects` (lista paginada e cria assunto canônico); `POST /admin/taxonomy/aliases` (cria alias canônico) |
-| Fusão de Taxonomia | `POST /admin/taxonomy/subjects/{id}/merge` recebe `{ "target_subject_id": "uuid", "reason": "texto" }`, exige ADMIN, reatribui vínculos canônicos e grava auditoria |
+| Fusão de Taxonomia | `POST /admin/taxonomy/subjects/{id}/merge` recebe `{ "target_subject_id": "uuid", "reason": "texto" }`, exige ADMIN, elimina associações duplicadas, reatribui vínculos canônicos de questões e assuntos locais, e grava auditoria |
 | Reconciliação de Taxonomia | `GET /admin/taxonomy/reconciliation-proposals` lista propostas determinísticas com confiança e justificativa; requer ADMIN e não executa fusões |
 | Taxonomia editorial | `PUT /admin/questions/{id}/taxonomy-subjects` recebe `{ "taxonomy_subject_ids": ["uuid"] }` e substitui as associações canônicas da questão para usuários ADMIN |
 | Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
@@ -47,7 +47,7 @@ A resposta segue o envelope padrão e devolve `{ "id": "uuid", "document_sha256"
 
 `GET /api/v1/admin/syllabi/{id}/processing-jobs/latest` requer `ADMIN` e retorna o último job do edital ou `404 RESOURCE_NOT_FOUND`. Estados possíveis: `PENDING`, `PROCESSING`, `COMPLETED` e `FAILED`. O campo `progress` varia de 0 a 100 e `errorMessage` só contém mensagem segura para administração.
 
-`GET /api/v1/admin/syllabi/{id}/extractions` requer `ADMIN` e devolve as páginas extraídas, ordenadas por página, com `{ "pageNumber", "textContent", "startOffset", "endOffset", "documentSha256" }`. Ao concluir a extração, o worker envia somente trechos do edital ao provider configurado e cria cargos, assuntos locais vinculados ao edital e associações à taxonomia canônica. A leitura separa Anexo I (cargos) do Anexo IV (conteúdos) e normaliza uma taxonomia semântica em matérias, assuntos e subassuntos, sem impor grupos fixos do edital. Numerações e identificadores editoriais não integram os nomes. Antes de criar um nó canônico, o worker procura equivalência ativa exata e por prefixo de assunto para reutilizá-lo; cada assunto preserva a página apontada pelo modelo. O endpoint permanece somente leitura para revisão administrativa.
+`GET /api/v1/admin/syllabi/{id}/extractions` requer `ADMIN` e devolve as páginas extraídas, ordenadas por página, com `{ "pageNumber", "textContent", "startOffset", "endOffset", "documentSha256" }`. Ao concluir a extração, o worker envia somente trechos do edital ao provider configurado e cria cargos, assuntos locais vinculados ao edital e associações à taxonomia canônica. A leitura separa Anexo I (cargos) do Anexo IV (conteúdos) e normaliza uma taxonomia semântica em áreas, matérias, assuntos e subassuntos, conforme evidência do edital; áreas recorrentes como Direito, Tecnologia da Informação e Língua Portuguesa agrupam suas disciplinas quando aplicável. Numerações e identificadores editoriais não integram os nomes. Antes de criar um nó canônico, o worker procura equivalência ativa exata e por prefixo de assunto para reutilizá-lo; cada assunto preserva a página apontada pelo modelo. O endpoint permanece somente leitura para revisão administrativa.
 
 
 
@@ -159,3 +159,10 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 ### Meta semanal de estudo
 
 `GET /api/v1/study-goals/me` retorna a meta semanal do usuário autenticado, com alvo de respostas concluídas, progresso na janela atual de sete dias e percentual. `PUT /api/v1/study-goals/me` recebe `{ "weekly_question_goal": 20 }`, exige inteiro entre 1 e 500 e cria ou atualiza exclusivamente a meta do próprio usuário.
+
+
+### Importação assíncrona de PDFs de questões
+
+`POST /api/v1/admin/question-pdf-imports` requer ADMIN e recebe `multipart/form-data` com `syllabus_id` e um ou mais `documents[]` em PDF. Cada arquivo gera um job isolado e devolve uma lista com `id`, status, progresso, páginas candidatas, questões extraídas, criadas, duplicadas, com erro, classificadas e assuntos canônicos criados.
+
+`GET /api/v1/admin/question-pdf-imports/{id}` permite ao administrador que criou o job acompanhar a mesma estrutura. Estados: `PENDING`, `PROCESSING`, `COMPLETED` e `FAILED`. O worker transmite somente páginas candidatas a questão e a lista de taxonomia ao provider de IA autorizado; o PDF original não é transmitido integralmente. Questões são criadas como `REVIEW`, sem gabarito inventado.

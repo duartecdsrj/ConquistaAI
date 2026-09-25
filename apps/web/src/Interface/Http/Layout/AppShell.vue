@@ -54,7 +54,7 @@ const navigationItems = computed<readonly { id: ApplicationSection; label: strin
   ...(props.canManage ? [
     { id: 'catalog' as const, label: 'Catálogo', caption: 'Administração', icon: 'inventory_2_outlined' },
     { id: 'discovery' as const, label: 'Descobertas', caption: 'Provas e gabaritos', icon: 'travel_explore' },
-    { id: 'import' as const, label: 'Importar questões', caption: 'Preview e confirmação', icon: 'cloud_upload_outlined' },
+    { id: 'import' as const, label: 'Importar questões', caption: 'PDFs em lote e arquivos', icon: 'cloud_upload_outlined' },
     { id: 'editorial' as const, label: 'Revisar questões', caption: 'Publicação editorial', icon: 'fact_check' },
     { id: 'taxonomy' as const, label: 'Taxonomia', caption: 'Assuntos canônicos', icon: 'account_tree' },
   ] : []),

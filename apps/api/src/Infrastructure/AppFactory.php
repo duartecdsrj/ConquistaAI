@@ -46,6 +46,7 @@ use App\Interface\Http\QuestionBank\QuestionImportRequestFactory;
 use App\Interface\Http\Study\StudyRouteRegistrar;
 use App\Interface\Http\QuestionBank\PublishedQuestionRouteRegistrar;
 use App\Interface\Http\QuestionBank\EditorialQuestionRouteRegistrar;
+use App\Interface\Http\QuestionBank\QuestionPdfImportRouteRegistrar;
 use App\Interface\Http\Performance\PerformanceRouteRegistrar;
 use App\Interface\Http\Taxonomy\TaxonomyRouteRegistrar;
 use InvalidArgumentException;
@@ -75,6 +76,7 @@ final class AppFactory
         (new PerformanceRouteRegistrar($responses, self::authService()))->register($app);
         (new PublishedQuestionRouteRegistrar($responses, self::authService()))->register($app);
         (new EditorialQuestionRouteRegistrar($responses, self::authService()))->register($app);
+        (new QuestionPdfImportRouteRegistrar($responses, self::authService()))->register($app);
         (new TaxonomyRouteRegistrar($responses, self::authService()))->register($app);
 
         $app->get('/health', static function (ServerRequestInterface $request, ResponseInterface $response) use ($responses): ResponseInterface {

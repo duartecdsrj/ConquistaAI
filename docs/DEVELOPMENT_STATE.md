@@ -610,3 +610,28 @@ docker compose exec -T frontend npm run build
 - Causa raiz da hierarquia identificada: `iconv(...ASCII//TRANSLIT)` do container transformava “Básicos” em `b'asicos`. A chave canônica agora normaliza diacríticos portugueses de forma determinística, sem depender de iconv. É necessária uma última reconstrução limpa para materializar as duas raízes.
 - Regra de taxonomia revisada por solicitação editorial: Conhecimentos Básicos/Específicos e ênfases deixaram de ser nós obrigatórios. A IA agora propõe matéria, assunto e subassunto a partir do conteúdo; itens compostos são decompostos semanticamente (por exemplo, Sistemas Distribuídos sob Redes de Computadores) e listas repetidas são unificadas. A resolução canônica consulta slug exato e equivalente por prefixo antes de criar um nó. Próximo passo: reconstruir o edital limpo e auditar duplicidades.
 - Correção da exibição da árvore: a Taxonomia carregava somente a primeira página (100 nós), embora a árvore canônica tenha mais registros. O composable agora pagina até `total_pages` antes de montar o QTree; todos os níveis passam a estar disponíveis.
+- Organização editorial da árvore: áreas amplas passaram a agrupar disciplinas correlatas quando o conteúdo as sustenta — Direito; Tecnologia da Informação; e Língua Portuguesa. O prompt orienta Redes > Protocolos > DNS/HTTP/DHCP e preserva Modelo OSI como filho de Redes; a revisão canônica também reanexa os nós existentes sem duplicá-los.
+- Aplicação no catálogo canônico concluída: criadas as áreas Direito e Tecnologia da Informação; disciplinas jurídicas de primeiro nível foram reanexadas a Direito; Redes de Computadores, Banco de Dados, Segurança da Informação e Desenvolvimento foram reanexados a Tecnologia da Informação; Protocolos, Modelo OSI, DNS, HTTP e DHCP foram validados nos níveis corretos. Build do frontend aprovado.
+- Interação da árvore de conhecimento: removida a expansão automática e habilitados conectores visuais do QTree. Os ramos começam recolhidos e passam a expandir somente ao clique.
+- Revisão refinada aplicada à árvore canônica: consolidou Sistemas Operacionais, Infraestrutura de TI, Dados e Inteligência Artificial, Gestão de TI e Desenvolvimento sob Tecnologia da Informação; Segurança Cibernética foi reanexada a Segurança da Informação. Os rótulos residuais REDE e REDE2 não tinham filhos nem vínculos e foram removidos. Validação do ramo e build do frontend aprovados.
+- Correção da fusão de assuntos: o MySQL rejeitava o DELETE com subconsulta na mesma tabela (`1093`), resultando em INTERNAL_ERROR. O applier agora localiza duplicidades por ORM, remove-as por chave e reatribui referências de questões, assuntos locais e aliases antes de registrar a fusão. Reproduzido com IDs inexistentes sem mutação e build frontend aprovado.
+
+
+## Avanço atual — importação assíncrona de PDFs de questões
+
+- Foi iniciada a persistência local de jobs para PDFs de questões, com vínculo ao edital, hash do arquivo, métricas de extração, classificação, duplicidade e criação de rascunhos.
+- O PDF-base informado possui 1.871 páginas; o worker deve primeiro detectar blocos candidatos a questão para não enviar o documento integral ao classificador.
+- Pendente de autorização explícita: o classificador precisa enviar somente os blocos candidatos e a lista de assuntos canônicos ao provedor externo de IA configurado (Gemini ou OpenAI). Até essa autorização, o worker de classificação não será implementado nem executado.
+- Próximo passo após autorização: concluir o worker, endpoints multipart e acompanhamento no frontend, com testes usando o PDF-base.
+
+
+## Avanço atual — importação de PDFs de questões
+
+- Entrega integrada: envio de PDFs em lote pelo frontend, jobs persistidos por arquivo, endpoint de consulta e painel com polling enquanto houver itens pendentes ou em processamento.
+- O resumo por arquivo mostra páginas candidatas, questões extraídas, criadas, duplicadas, com erro, classificadas e assuntos canônicos novos. Questões extraídas entram em `REVIEW`; nenhum gabarito é inferido.
+- O worker usa `pdftotext` localmente para detectar blocos candidatos e, com autorização recebida, envia apenas esses blocos e os nomes canônicos ao provider de IA. O PDF-base de 1.871 páginas não é transmitido integralmente.
+- Validações pendentes: build frontend, lint completo e importação controlada do PDF-base.
+
+- Validações concluídas: build frontend aprovado; YAML validado por ; migration 016 aplicada; lint PHP das rotas, serviço e writer aprovado;  iniciado e aguardando fila vazia.
+
+- Validações concluídas: build frontend aprovado; configuração Docker validada; migration 016 aplicada; lint PHP das rotas, serviço e writer aprovado; question-pdf-worker iniciado e aguardando fila vazia.
