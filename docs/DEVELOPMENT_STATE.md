@@ -727,3 +727,11 @@ docker compose exec -T frontend npm run build
 - Figuras só são vinculadas quando o classificador declara a página e o texto faz referência visual. Para enunciados que mencionam figura acima/abaixo, o worker fornece também as páginas adjacentes como contexto ao classificador. A questão de exemplo sobre a espiral de Nonaka e Tackeuchi recebeu exclusivamente a figura pertinente da página anterior; a rota autenticada do ativo respondeu 200.
 - Validações: PHPUnit aprovado (45 testes, 111 asserções), Playwright da revisão editorial aprovado em desktop e mobile e build de produção do frontend aprovado.
 - Próximo passo: a próxima importação usará as regras novas; não foi enfileirado nenhum novo job neste ciclo.
+
+
+## Avanço atual — classificação canônica específica
+
+- O classificador de PDFs recebe agora os caminhos completos da taxonomia, e não apenas uma lista plana. Ele deve retornar o conceito específico e, se este ainda não existir, seu pai canônico mais próximo; nós amplos como Tecnologia da Informação, Direito e Banco de Dados não são respostas aceitáveis quando o enunciado evidencia um tema concreto.
+- O writer passa a criar assunto novo sob o pai sugerido, preservando nível e árvore, em vez de inseri-lo sempre na raiz.
+- Correção de dados aplicada com evidência textual: criado Dados Abertos sob Tecnologia da Informação > Dados e Inteligência Artificial > Governança e Segurança de Dados e reclassificadas 21 questões EXAM em REVIEW/DRAFT que mencionam explicitamente o tema. Auditoria: zero desses itens permanecem em Tecnologia da Informação ou Banco de Dados.
+- Validações: PHPUnit aprovado (46 testes, 112 asserções), build do frontend aprovado e consulta de auditoria confirmada. Nenhum job de IA foi executado neste ciclo.
