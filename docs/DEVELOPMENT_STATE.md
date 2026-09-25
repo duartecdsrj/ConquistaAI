@@ -749,3 +749,10 @@ docker compose exec -T frontend npm run build
 - QuestionContent passou a reconhecer enunciados de associação que tragam itens numerados e afirmações marcadas com `( )`. A revisão editorial e o caderno exibem o mesmo quadro em duas colunas, com itens à esquerda e afirmações à direita; no celular, o quadro é empilhado.
 - O conteúdo original e alternativas permanecem inalterados; questões sem ambas as estruturas seguem o fluxo de texto, tabela ou código já existente.
 - Validação: build do frontend aprovado.
+
+
+## Avanço atual — reinício limpo de importação e classificação
+
+- Limpeza autorizada de importações concluída: removidos 6 jobs históricos, 2 PDFs de questões e 2 diretórios de ativos associados; a fila persistida está vazia. Taxonomia, concursos e editais foram preservados.
+- O classificador agora deve devolver taxonomy_path, da raiz à folha específica. O writer recusa nó que possua filhos como classificação final e também recusa assunto novo sem pai canônico identificado; a questão volta como falha de extração, nunca como classificação genérica.
+- Worker de PDFs reiniciado após a limpeza e aguardando novos jobs enviados pela interface. Validações: PHPUnit 47 testes/116 asserções e build frontend aprovados.
