@@ -712,3 +712,5 @@ docker compose exec -T frontend npm run build
 - Qualidade da próxima importação: subject deixou de aceitar `null` no contrato do classificador e no writer. Itens sem classificação canônica passam a ser contabilizados como falha de extração, sem criar questão sem assunto; o prompt exige assunto existente ou novo nome genérico sem numeração editorial.
 
 - Validação visual da revisão: incluído cenário Playwright autenticado que navega para Revisar questões, expande item importado e confirma cabeçalho editorial e seletor de assuntos, sem alterar dados. Execução aprovada em desktop e mobile (2/2).
+
+- Correção de ativos na revisão: os URLs da leitura usavam `/api/v1/question-assets/...` apesar de o Axios já possuir `/api/v1` como base, produzindo um caminho duplicado e ocultando as figuras. O contrato interno agora entrega `question-assets/{id}` relativo ao cliente. Teste Playwright autenticado confirmou imagem Blob visível em desktop e mobile (2/2); PHPUnit 43/109 e build frontend aprovados.

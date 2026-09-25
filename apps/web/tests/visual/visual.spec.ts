@@ -51,5 +51,8 @@ test('revisão editorial carrega questões importadas e classificação', async 
   await expect(item).toBeVisible()
   await item.locator('.q-item').first().click()
   await expect(item.locator('.question-header')).toBeVisible()
+  const figure = item.getByAltText('Figura da questão').first()
+  await expect(figure).toBeVisible()
+  await expect(figure).toHaveAttribute('src', /^blob:/)
   await expect(item.getByText('Assuntos canônicos', { exact: true })).toBeVisible()
 })

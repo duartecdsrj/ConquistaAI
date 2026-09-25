@@ -71,7 +71,19 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
             ->getQuery()
             ->getResult();
 
-        return array_map($this->map(...), $records);
+        $recordsById = [];
+        foreach ($records as $record) {
+            $recordsById[$record->id] = $record;
+        }
+
+        $orderedRecords = [];
+        foreach ($ids as $id) {
+            if (isset($recordsById[$id])) {
+                $orderedRecords[] = $recordsById[$id];
+            }
+        }
+
+        return array_map($this->map(...), $orderedRecords);
     }
 
     private function map(QuestionRecord $question): PublishedQuestion
@@ -82,7 +94,7 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
                 $option->label,
                 $option->content,
                 $option->sortOrder,
-                array_map(fn (object $asset): string => '/api/v1/question-assets/'.$asset->id, $this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord','asset')->where('asset.optionId = :optionId')->setParameter('optionId',$option->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),
+                array_map(fn (object $asset): string => 'question-assets/'.$asset->id, $this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord','asset')->where('asset.optionId = :optionId')->setParameter('optionId',$option->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),
             ),
             $this->entityManager->createQueryBuilder()
                 ->select('option')
@@ -104,7 +116,7 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
             array_map(static fn (object $assignment): string => $assignment->taxonomySubjectId, $this->entityManager->createQueryBuilder()->select('assignment')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionTaxonomySubjectRecord', 'assignment')->where('assignment.questionId = :questionId')->setParameter('questionId', $question->id)->getQuery()->getResult()),
             $question->status,
             $question->source,
-            array_map(fn (object $asset): string => '/api/v1/question-assets/'.$asset->id, $this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord', 'asset')->where('asset.questionId = :questionId')->setParameter('questionId', $question->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),
+            array_map(fn (object $asset): string => 'question-assets/'.$asset->id, $this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord', 'asset')->where('asset.questionId = :questionId')->setParameter('questionId', $question->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),
         );
     }
 }
