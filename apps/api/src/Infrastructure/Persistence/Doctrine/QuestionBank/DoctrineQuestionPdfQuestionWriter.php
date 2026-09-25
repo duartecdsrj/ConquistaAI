@@ -76,11 +76,25 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         if ($path === []) return null;
         $name = $path[array_key_last($path)];
         $slug = $this->slugs->slug($name);
-        $subject = $this->taxonomy->findBySlug($slug) ?? $this->taxonomy->findByComparableSlug($slug);
-        if ($subject !== null) return $this->taxonomy->hasChildren($subject->id) ? null : [$subject, false];
         $parentName = is_string($question['parent_subject'] ?? null) ? $question['parent_subject'] : (count($path) > 1 ? $path[count($path) - 2] : null);
         $parent = $this->parentTaxonomy($parentName);
-        if ($parent === null) return null;
+        if ($parent === null) {
+            $candidate = $this->taxonomy->findBySlug($slug) ?? $this->taxonomy->findByComparableSlug($slug);
+            if ($candidate === null) return null;
+            if ($this->taxonomy->hasChildren($candidate->id) || $this->isGenericLeaf($slug)) return null;
+            return [$candidate, false];
+        }
+        if ($this->isGenericLeaf($slug)) return null;
+
+        // A folha é resolvida primeiro sob o pai informado pelo classificador. Isso evita
+        // classificar, por exemplo, "Dados Abertos" na raiz quando pertence a TI.
+        $subject = $this->taxonomy->findByParentAndSlug($parent->id, $slug);
+        if ($subject === null) {
+            $candidate = $this->taxonomy->findBySlug($slug) ?? $this->taxonomy->findByComparableSlug($slug);
+            $subject = $candidate !== null && $candidate->parentId === $parent->id ? $candidate : null;
+        }
+        if ($subject !== null) return $this->taxonomy->hasChildren($subject->id) ? null : [$subject, false];
+
         $subject = new TaxonomySubject($this->id(), $parent->id, $name, $slug, null, $parent->level + 1, true);
         $this->taxonomy->save($subject);
         return [$subject, true];
@@ -93,6 +107,11 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         $path = array_values(array_filter(array_map(static fn(mixed $item): string => is_string($item) ? trim($item) : '', $path)));
         if ($path !== []) return $path;
         return is_string($question['subject'] ?? null) && trim($question['subject']) !== '' ? [trim($question['subject'])] : [];
+    }
+
+    private function isGenericLeaf(string $slug): bool
+    {
+        return in_array($slug, ['conhecimentos-gerais', 'conhecimentos-especificos', 'tecnologia-da-informacao', 'informatica', 'direito', 'administracao', 'lingua-portuguesa', 'portugues', 'banco-de-dados'], true);
     }
 
     private function parentTaxonomy(?string $name): ?TaxonomySubject

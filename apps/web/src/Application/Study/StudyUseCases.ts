@@ -2,6 +2,8 @@ import type { PublishedQuestion } from '../../Domain/QuestionBank/QuestionReposi
 import type { CreateNotebookCommand, Notebook, NotebookStatistics, StudyGoal, StudyPlan, StudyRepository } from '../../Domain/Study/StudyRepository'
 import type { PageQuery, PageResult } from '../../Infrastructure/Http/AxiosApiClient'
 
+export class ListPositionSubjectsUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(positionId:string) { return this.repository.positionSubjects(positionId) } }
+
 export class ListNotebooksUseCase {
   public constructor(private readonly repository: StudyRepository) {}
   public execute(query?: PageQuery): Promise<PageResult<Notebook>> { return this.repository.list(query) }

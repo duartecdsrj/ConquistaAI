@@ -10,6 +10,8 @@ final readonly class ExamResponseDto
         public string $name,
         public ?string $organizer,
         public ?int $year,
+        public ?string $institutionLogoUrl,
+        public ?string $organizerLogoUrl,
     ) {
     }
 }

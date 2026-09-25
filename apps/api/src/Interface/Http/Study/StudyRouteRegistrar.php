@@ -23,6 +23,10 @@ use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrinePublishedQuestionRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineStudyGoalRepository;
+use App\Infrastructure\Persistence\Doctrine\Study\DoctrineStudyContestSubjectRepository;
+use App\Application\Study\Service\ListStudyContestSubjectsService;
+use App\Interface\Http\Study\Controller\StudyContestController;
+use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrinePositionRepository;use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrinePositionTaxonomyAssignmentRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookProgressReader;
 use App\Interface\Http\Study\Controller\StudyGoalController;
@@ -47,7 +51,7 @@ final class StudyRouteRegistrar
         $mapper = new NotebookResponseMapper();
         $controller = new StudyController(
             $this->authentication,
-            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager)),
+            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager)),
             new GetNotebookService($notebooks, $mapper),
             new ListNotebooksService($notebooks, $mapper),
             new ListNotebookQuestionsService($notebooks, $questions, new PublishedQuestionResponseMapper()),
@@ -57,6 +61,7 @@ final class StudyRouteRegistrar
             new GetNotebookStatisticsService($notebooks, new DoctrineNotebookProgressReader($entityManager)),
             $this->responses,
         );
+        $contest = new StudyContestController($this->authentication, new ListStudyContestSubjectsService(new DoctrineStudyContestSubjectRepository($entityManager)), $this->responses);
         $goals = new DoctrineStudyGoalRepository($entityManager);
         $goalReader = new GetStudyGoalService($goals);
         $goalController = new StudyGoalController(
@@ -68,6 +73,8 @@ final class StudyRouteRegistrar
         $requests = new StudyRequestFactory();
         $identity = new IdentityRequestFactory();
         $responses = $this->responses;
+
+        $app->get('/v1/study-positions/{positionId}/subjects', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($contest, $identity): ResponseInterface { return $contest->subjects($request, $response, $identity->accessToken($request), (string) ($arguments['positionId'] ?? '')); });
 
         $app->get('/v1/study-goals/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($goalController, $identity, $responses): ResponseInterface {
             try {

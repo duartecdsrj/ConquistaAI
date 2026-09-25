@@ -140,9 +140,13 @@ O módulo Discovery é administrativo e segue `DiscoveryPage -> useDiscovery -> 
 A aba **Concursos** usa `POST /admin/exams/with-notice` por meio de `CatalogUseCases.createExamWithNotice`. A page não monta FormData nem chama HTTP: ela envia os dados ao composable, que usa o caso de uso e o repositório Axios. O PDF é opcional, mas, quando fornecido, o backend cria o edital principal e agenda sua extração automaticamente.
 
 
+## Logos no catálogo
+
+O tipo `Exam` contém URLs de logo da instituição e da organizadora devolvidas pela API. `CatalogPage` as apresenta em blocos de marca quadrados, com o concurso e a banca em hierarquia própria; o cadastro não possui campo manual de imagem e a ausência de URL conserva o ícone padrão.
+
 ## Catálogo contextual
 
-A tela apresenta os concursos na primeira aba. Ao abrir Cargos ou Editais, o administrador seleciona antes o concurso; as listagens e criações ficam limitadas a esse escopo. A aba Assuntos requer adicionalmente a escolha de um edital. Tags são globais. Ações de visualizar levam ao contexto do concurso e editar usa `CatalogUseCases.updateExam`; o envio posterior de PDF apenas anexa o arquivo e não enfileira processamento.
+A tela apresenta os concursos na primeira aba. Na aba Cargos, a ação **Assuntos** abre uma seleção múltipla de assuntos canônicos: ela persiste a matriz exclusiva do cargo e é a fonte usada no estudo direcionado. Ao abrir Cargos ou Editais, o administrador seleciona antes o concurso; as listagens e criações ficam limitadas a esse escopo. A aba Assuntos requer adicionalmente a escolha de um edital. Tags são globais. Ações de visualizar levam ao contexto do concurso e editar usa `CatalogUseCases.updateExam`; o envio posterior de PDF apenas anexa o arquivo e não enfileira processamento.
 
 
 ## Histórico de PDFs importados
@@ -158,3 +162,13 @@ A revisão editorial e a execução de caderno reutilizam `QuestionContent.vue` 
 ## Questões de correlação
 
 `QuestionContent.vue`, compartilhado pela revisão editorial e pelo caderno, reconhece enunciados que contenham itens numerados e afirmações com `( )`. Esses conteúdos são apresentados como quadro de duas colunas: itens numerados à esquerda e afirmações a relacionar à direita. Em telas com até 599 px, o quadro passa para uma coluna, preservando a ordem e a legibilidade.
+
+
+## Estudo direcionado
+
+A criação de caderno/simulado exige a seleção de concurso e cargo pretendido. Após selecionar o cargo, o formulário busca e permite selecionar somente os assuntos canônicos associados a ele; a página não acessa HTTP diretamente. `NotebooksPage` consulta concursos e cargos pelos casos de uso de Catálogo através do composable, sem HTTP na tela, e envia os IDs ao comando de criação.
+
+
+## Métricas por concurso
+
+A página Seu desempenho permite escolher um concurso e consulta `dashboard/me` com `exam_id`. Os indicadores e a lista de assuntos consideram apenas tentativas cujas questões pertencem à matriz canônica daquele concurso.

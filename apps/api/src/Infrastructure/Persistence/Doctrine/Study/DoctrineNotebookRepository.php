@@ -33,7 +33,7 @@ final class DoctrineNotebookRepository implements NotebookRepositoryInterface
         $record->name = $notebook->name;
         $record->type = 'PRACTICE';
         $record->mode = $notebook->mode->value;
-        $record->filters = [];
+        $record->filters = $notebook->filters;
         $record->createdAt = $notebook->createdAt;
         $this->synchronize($record, $notebook);
         $this->entityManager->persist($record);
@@ -93,6 +93,7 @@ final class DoctrineNotebookRepository implements NotebookRepositoryInterface
 
     private function synchronize(NotebookRecord $record, Notebook $notebook): void
     {
+        $record->filters = $notebook->filters;
         $record->status = $notebook->status->value;
         $record->startedAt = $notebook->startedAt;
         $record->finishedAt = $notebook->finishedAt;
@@ -125,6 +126,7 @@ final class DoctrineNotebookRepository implements NotebookRepositoryInterface
             $record->startedAt,
             $record->finishedAt,
             $record->durationSeconds,
+            is_array($record->filters) ? $record->filters : [],
         );
     }
 }

@@ -4,7 +4,7 @@ interface AttemptApi { readonly id: string }
 interface AnswerApi { readonly id: string }
 interface CompletedAttemptApi { readonly id: string; readonly completed_at: string }
 export class AxiosPerformanceRepository implements PerformanceRepository {
-  public getDashboard(syllabusId?: string): Promise<SyllabusDashboard> { return getData<SyllabusDashboard>('/dashboard/me', { params: syllabusId ? { syllabus_id: syllabusId } : {} }) }
+  public getDashboard(syllabusId?: string, examId?: string): Promise<SyllabusDashboard> { return getData<SyllabusDashboard>('/dashboard/me', { params: { ...(syllabusId ? { syllabus_id: syllabusId } : {}), ...(examId ? { exam_id: examId } : {}) } }) }
   public getMine(): Promise<BasicStatistics> { return getData<BasicStatistics>('/statistics/me') }
   public async submitAnswer(notebookId: string, questionId: string, optionId: string, elapsedSeconds: number): Promise<SubmittedAnswer> {
     const attempt = await postData<AttemptApi, undefined>('/notebooks/' + encodeURIComponent(notebookId) + '/questions/' + encodeURIComponent(questionId) + '/attempts')

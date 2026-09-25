@@ -7,8 +7,8 @@
       <section class="metrics"><q-card flat><q-card-section><span>Respostas concluídas</span><strong>{{ statistics.total }}</strong></q-card-section></q-card><q-card flat class="positive"><q-card-section><span>Acertos</span><strong>{{ statistics.correct }}</strong></q-card-section></q-card><q-card flat class="negative"><q-card-section><span>Erros</span><strong>{{ statistics.incorrect }}</strong></q-card-section></q-card><q-card flat><q-card-section><span>Tempo médio</span><strong>{{ duration }}</strong></q-card-section></q-card></section>
       <q-card flat class="summary"><q-card-section><p class="eyebrow">TAXA GERAL</p><h2>{{ percentage }}% de acerto</h2></q-card-section></q-card>
     </template>
-    <section class="heading"><div><h2>Dashboard por edital</h2><p>Inclui assuntos canônicos e seus descendentes.</p></div></section>
-    <q-card v-if="dashboard" flat class="subjects"><q-card-section>
+    <section class="heading"><div><h2>Dashboard por concurso</h2><p>Inclui assuntos canônicos e seus descendentes.</p></div></section>
+    <q-card v-if="dashboard" flat class="subjects"><q-card-section><q-select v-model="selectedExamId" outlined dense emit-value map-options label="Concurso" :options="contestOptions" @update:model-value="changeContest" />
       <q-select outlined dense emit-value map-options label="Edital" :model-value="dashboard.selectedSyllabusId" :options="syllabusOptions" @update:model-value="changeSyllabus" />
       <q-banner v-if="!dashboard.sufficientData" rounded class="warning">Dados insuficientes: {{ dashboard.total }} respostas em {{ dashboard.distinctDays }} dia(s). São necessárias 10 respostas em 3 dias.</q-banner>
     </q-card-section><q-list v-if="dashboard.subjects.length" separator><q-item v-for="subject in dashboard.subjects" :key="subject.id"><q-item-section><q-item-label>{{ subject.name }}</q-item-label><q-item-label caption>{{ subject.correct }} acertos em {{ subject.total }} respostas · {{ subject.distinctDays }} dia(s)</q-item-label></q-item-section><q-item-section side><q-badge :color="subject.sufficientData ? 'positive' : 'grey-6'">{{ subject.sufficientData ? 'Amostra suficiente' : 'Dados insuficientes' }}</q-badge><strong>{{ Math.round(subject.percentage) }}%</strong></q-item-section></q-item></q-list><q-card-section v-else class="text-grey-7">Ainda não há respostas classificadas canonicamente neste edital.</q-card-section></q-card>
@@ -16,15 +16,21 @@
   </q-page>
 </template>
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { catalogUseCases } from '../../../Infrastructure/Container'
+import type { Exam } from '../../../Domain/Catalog/CatalogRepository'
 import { usePerformance } from './usePerformance'
+const contests = ref<readonly Exam[]>([])
+const selectedExamId = ref<string | null>(null)
 const { dashboard, error, load, loadDashboard, loading, statistics } = usePerformance()
 const percentage = computed(() => Math.round(statistics.value?.percentage ?? 0))
 const duration = computed(() => { const seconds = Math.round(statistics.value?.averageElapsedSeconds ?? 0); return seconds > 59 ? String(Math.floor(seconds / 60)) + ' min' : String(seconds) + ' s' })
+const contestOptions = computed(() => contests.value.map(item => ({ label: item.name + (item.year ? ' · ' + item.year : ''), value: item.id })))
 const syllabusOptions = computed(() => (dashboard.value?.syllabi ?? []).map((item) => ({ label: item.examName + ' · ' + item.positionName + ' · ' + item.name, value: item.id })))
+function changeContest(value: string | null): void { if (value) void loadDashboard(undefined, value) }
 function changeSyllabus(value: string | null): void { if (value) void loadDashboard(value) }
-function refresh(): void { void load(); void loadDashboard(dashboard.value?.selectedSyllabusId ?? undefined) }
-onMounted(refresh)
+function refresh(): void { void load(); void loadDashboard(dashboard.value?.selectedSyllabusId ?? undefined, selectedExamId.value ?? undefined) }
+onMounted(async () => { contests.value = await catalogUseCases.listExams(); selectedExamId.value = contests.value[0]?.id ?? null; refresh() })
 </script>
 <style scoped>
 .page{max-width:1050px;margin:auto;padding:42px 34px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:26px}.eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.top h1,h2{margin:0;color:#142950}.top p,.heading p{margin:7px 0;color:#71819e}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.q-card{border:1px solid #e5ecf6;border-radius:17px;background:#fff;box-shadow:0 8px 26px rgba(33,58,105,.04)}.metrics strong{display:block;margin-top:8px;color:#172e59;font-size:27px}.metrics span{color:#7888a4;font-size:12px}.summary{margin-top:18px}.heading{margin:34px 0 14px}.subjects{overflow:hidden}.warning{margin-top:14px;background:#fff8e5;color:#765812}.empty :deep(.q-card__section){display:flex;align-items:center;gap:20px;padding:30px}.error{margin-bottom:14px;background:#fff3f2;color:#ae2f25}@media(max-width:700px){.page{padding:28px 16px}.metrics{grid-template-columns:1fr 1fr}}@media(max-width:430px){.metrics{grid-template-columns:1fr}}

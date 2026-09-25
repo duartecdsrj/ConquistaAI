@@ -24,6 +24,8 @@ use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineAuthEventRepository
 use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineAuthSessionRepository;
 use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineUserRepository;
 use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineExamRepository;
+use App\Infrastructure\Catalog\GeminiExamLogoResearcher;
+use App\Infrastructure\Database;
 use App\Infrastructure\Security\HmacJwtAccessTokenService;
 use App\Infrastructure\Security\NativePasswordHasher;
 use App\Infrastructure\Security\RandomRefreshTokenGenerator;
@@ -253,7 +255,7 @@ $errorMiddleware = $app->addErrorMiddleware(false, true, true);
 
         return new CatalogController(
             $authentication,
-            new CreateExamService(new DoctrineExamRepository($entityManager), $mapper, new DoctrineTransactionManager($entityManager)),
+            new CreateExamService(new DoctrineExamRepository($entityManager), $mapper, new DoctrineTransactionManager($entityManager), new GeminiExamLogoResearcher(Database::env('GEMINI_API_KEY', Database::env('GEMINI_KEY')), Database::env('GEMINI_MODEL', 'gemini-2.5-flash'))),
             new ListExamsService(new DoctrineExamRepository($entityManager), $mapper),
             new GetExamService(new DoctrineExamRepository($entityManager), $mapper),
             new UpdateExamService(new DoctrineExamRepository($entityManager), $mapper, new DoctrineTransactionManager($entityManager)),

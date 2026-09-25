@@ -19,6 +19,7 @@ final class NotebookResponseMapper
             $notebook->status->value,
             $notebook->startedAt?->format(DATE_ATOM),
             $notebook->finishedAt?->format(DATE_ATOM),
+            $notebook->filters,
             $notebook->durationSeconds,
         );
     }

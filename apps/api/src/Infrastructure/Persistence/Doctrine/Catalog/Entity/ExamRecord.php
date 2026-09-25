@@ -23,6 +23,12 @@ class ExamRecord
     #[ORM\Column(type: 'smallint', nullable: true)]
     public ?int $year;
 
+    #[ORM\Column(name: 'institution_logo_url', type: 'string', length: 1024, nullable: true)]
+    public ?string $institutionLogoUrl = null;
+
+    #[ORM\Column(name: 'organizer_logo_url', type: 'string', length: 1024, nullable: true)]
+    public ?string $organizerLogoUrl = null;
+
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     public DateTimeImmutable $createdAt;
 

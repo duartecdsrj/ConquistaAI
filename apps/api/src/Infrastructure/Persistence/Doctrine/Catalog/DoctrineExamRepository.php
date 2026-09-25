@@ -22,6 +22,8 @@ final class DoctrineExamRepository implements ExamRepositoryInterface
         $record->name = $exam->name;
         $record->organizer = $exam->organizer;
         $record->year = $exam->year;
+        $record->institutionLogoUrl = $exam->institutionLogoUrl;
+        $record->organizerLogoUrl = $exam->organizerLogoUrl;
         $record->createdAt = new DateTimeImmutable('now');
         $record->updatedAt = $record->createdAt;
 
@@ -45,6 +47,8 @@ final class DoctrineExamRepository implements ExamRepositoryInterface
         $record->name = $exam->name;
         $record->organizer = $exam->organizer;
         $record->year = $exam->year;
+        $record->institutionLogoUrl = $exam->institutionLogoUrl;
+        $record->organizerLogoUrl = $exam->organizerLogoUrl;
         $record->updatedAt = new DateTimeImmutable('now');
 
         return true;
@@ -79,6 +83,6 @@ final class DoctrineExamRepository implements ExamRepositoryInterface
 
     private function map(ExamRecord $record): Exam
     {
-        return new Exam($record->id, $record->name, $record->organizer, $record->year);
+        return new Exam($record->id, $record->name, $record->organizer, $record->year, $record->institutionLogoUrl, $record->organizerLogoUrl);
     }
 }

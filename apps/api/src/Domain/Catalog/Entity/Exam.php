@@ -10,6 +10,8 @@ final readonly class Exam
         public string $name,
         public ?string $organizer,
         public ?int $year,
+        public ?string $institutionLogoUrl = null,
+        public ?string $organizerLogoUrl = null,
     ) {
     }
 }

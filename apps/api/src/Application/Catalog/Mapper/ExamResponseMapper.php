@@ -10,6 +10,6 @@ final class ExamResponseMapper
 {
     public function map(Exam $exam): ExamResponseDto
     {
-        return new ExamResponseDto($exam->id, $exam->name, $exam->organizer, $exam->year);
+        return new ExamResponseDto($exam->id, $exam->name, $exam->organizer, $exam->year, $exam->institutionLogoUrl, $exam->organizerLogoUrl);
     }
 }

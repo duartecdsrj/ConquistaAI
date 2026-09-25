@@ -9,7 +9,7 @@ final class ConfiguredAssistantProviderFactory {
   return match($provider){
    'local','deterministic'=>new DeterministicSyllabusAssistantProvider(),
    'openai'=>new OpenAiAssistantProvider(Database::env('OPENAI_API_KEY'),Database::env('OPENAI_MODEL','gpt-5')),
-   'gemini'=>new GeminiAssistantProvider(Database::env('GEMINI_API_KEY'),Database::env('GEMINI_MODEL','gemini-2.5-flash')),
+   'gemini'=>new GeminiAssistantProvider(Database::env('GEMINI_API_KEY', Database::env('GEMINI_KEY')),Database::env('GEMINI_MODEL','gemini-2.5-flash')),
    default=>throw new \DomainException('AI_PROVIDER invalido. Use local, openai ou gemini.')
   };
  }

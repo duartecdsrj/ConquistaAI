@@ -65,8 +65,9 @@ final class PerformanceRouteRegistrar
         $app->get('/v1/dashboard/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($statisticsController, $identity, $responses): ResponseInterface {
             try {
                 $query = $request->getQueryParams();
+                $examId = isset($query['exam_id']) && is_string($query['exam_id']) && $query['exam_id'] !== '' ? $query['exam_id'] : null;
                 $syllabusId = isset($query['syllabus_id']) && is_string($query['syllabus_id']) && $query['syllabus_id'] !== '' ? $query['syllabus_id'] : null;
-                return $statisticsController->dashboard($request, $response, $identity->accessToken($request), new \App\Application\Performance\DTO\Request\GetSyllabusDashboardRequestDto($syllabusId));
+                return $statisticsController->dashboard($request, $response, $identity->accessToken($request), new \App\Application\Performance\DTO\Request\GetSyllabusDashboardRequestDto($syllabusId, $examId));
             } catch (InvalidArgumentException $exception) {
                 return self::unauthenticated($responses, $request, $response, $exception);
             }

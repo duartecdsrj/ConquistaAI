@@ -42,6 +42,20 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
                 ->setParameter('selectionSyllabus', $filter->syllabusId);
         }
 
+        if ($filter->examId !== null) {
+            $query->innerJoin('App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionTaxonomySubjectRecord', 'examTaxonomyQuestion', 'WITH', 'examTaxonomyQuestion.questionId = question.id')
+                ->innerJoin('App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SubjectTaxonomyAssignmentRecord', 'examTaxonomySyllabus', 'WITH', 'examTaxonomySyllabus.taxonomySubjectId = examTaxonomyQuestion.taxonomySubjectId')
+                ->innerJoin('App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SubjectRecord', 'examSyllabusSubject', 'WITH', 'examSyllabusSubject.id = examTaxonomySyllabus.subjectId')
+                ->innerJoin('App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SyllabusRecord', 'examSyllabus', 'WITH', 'examSyllabus.id = examSyllabusSubject.syllabusId')
+                ->andWhere('examSyllabus.examId = :selectionExam')
+                ->setParameter('selectionExam', $filter->examId);
+        }
+        if ($filter->taxonomySubjectIds !== []) {
+            $query->innerJoin('App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionTaxonomySubjectRecord', 'selectedTaxonomyQuestion', 'WITH', 'selectedTaxonomyQuestion.questionId = question.id')
+                ->andWhere('selectedTaxonomyQuestion.taxonomySubjectId IN (:selectionTaxonomySubjects)')
+                ->setParameter('selectionTaxonomySubjects', $filter->taxonomySubjectIds);
+        }
+
         if ($filter->subjectId !== null) {
             $query->innerJoin('App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionSubjectRecord', 'subject', 'WITH', 'subject.questionId = question.id')
                 ->andWhere('subject.subjectId = :subjectId')

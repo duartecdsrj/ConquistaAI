@@ -11,6 +11,8 @@ export class CatalogUseCases {
   }
   public listPositions(examId: string): Promise<readonly Position[]> { return this.repository.listPositions(examId) }
   public createPosition(examId: string, name: string, emphasis: string): Promise<Position> { return this.repository.createPosition(examId, required(name, 'Informe o nome do cargo.'), optional(emphasis) ?? undefined) }
+  public listPositionTaxonomySubjects(positionId: string): Promise<readonly string[]> { return this.repository.listPositionTaxonomySubjects(positionId) }
+  public assignPositionTaxonomySubjects(positionId: string, taxonomySubjectIds: readonly string[]): Promise<void> { if (!positionId) throw new Error('Selecione o cargo.'); return this.repository.assignPositionTaxonomySubjects(positionId, taxonomySubjectIds) }
   public listSyllabi(examId: string): Promise<readonly Syllabus[]> { return this.repository.listSyllabi(examId) }
   public createSyllabus(examId: string, name: string): Promise<Syllabus> { return this.repository.createSyllabus(examId, required(name, 'Informe o nome do edital.')) }
   public uploadSyllabusDocument(syllabusId: string, document: File): Promise<void> {

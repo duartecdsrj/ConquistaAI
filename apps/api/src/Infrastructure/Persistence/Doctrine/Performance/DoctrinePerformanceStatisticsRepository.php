@@ -72,6 +72,12 @@ final class DoctrinePerformanceStatisticsRepository implements PerformanceStatis
         return array_map(static fn (array $answer): SyllabusCompletedAnswer => new SyllabusCompletedAnswer($answer['correct'], $answer['elapsed'], $answer['completedAt'], $answer['subjects']), array_values($answers));
     }
 
+    public function completedAnswersForUserAndExam(string $userId, string $examId): array
+    {
+        $rows=$this->entityManager->createQueryBuilder()->select('answer.id AS answerId, answer.optionId AS optionId, answer.elapsedSeconds AS elapsedSeconds, attempt.completedAt AS completedAt, question.correctOptionId AS correctOptionId, assignment.taxonomySubjectId AS taxonomySubjectId')->from(AnswerRecord::class,'answer')->innerJoin(AttemptRecord::class,'attempt','WITH','attempt.id=answer.attemptId')->innerJoin(QuestionRecord::class,'question','WITH','question.id=attempt.questionId')->innerJoin(QuestionTaxonomySubjectRecord::class,'assignment','WITH','assignment.questionId=question.id')->innerJoin('App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SubjectTaxonomyAssignmentRecord','matrix','WITH','matrix.taxonomySubjectId=assignment.taxonomySubjectId')->innerJoin('App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SubjectRecord','subject','WITH','subject.id=matrix.subjectId')->innerJoin(SyllabusRecord::class,'syllabus','WITH','syllabus.id=subject.syllabusId')->where('attempt.userId=:userId')->andWhere('attempt.completedAt IS NOT NULL')->andWhere('attempt.finalAnswerId=answer.id')->andWhere('syllabus.examId=:examId')->setParameter('userId',$userId)->setParameter('examId',$examId)->getQuery()->getArrayResult();
+        $answers=[];foreach($rows as $row){$id=(string)$row['answerId'];if(!isset($answers[$id]))$answers[$id]=['correct'=>isset($row['correctOptionId'])&&$row['optionId']===$row['correctOptionId'],'elapsed'=>(int)$row['elapsedSeconds'],'completedAt'=>$row['completedAt'],'subjects'=>[]];$answers[$id]['subjects'][]=(string)$row['taxonomySubjectId'];}return array_map(static fn(array $a)=>new SyllabusCompletedAnswer($a['correct'],$a['elapsed'],$a['completedAt'],array_values(array_unique($a['subjects']))),array_values($answers));
+    }
+
     public function taxonomyHierarchyForSyllabus(string $syllabusId): array
     {
         $rows = $this->entityManager->createQueryBuilder()->select('taxonomy.id AS id, taxonomy.parentId AS parentId, taxonomy.name AS name')->from(TaxonomySubjectRecord::class, 'taxonomy')->where('taxonomy.active = true')->getQuery()->getArrayResult();

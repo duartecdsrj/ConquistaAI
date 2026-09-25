@@ -13,9 +13,9 @@ export function usePerformance() {
     catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar seu desempenho.' }
     finally { loading.value = false }
   }
-  async function loadDashboard(syllabusId?: string): Promise<void> {
+  async function loadDashboard(syllabusId?: string, examId?: string): Promise<void> {
     loading.value = true; error.value = ''
-    try { dashboard.value = await performanceUseCases.getDashboard.execute(syllabusId) }
+    try { dashboard.value = await performanceUseCases.getDashboard.execute(syllabusId, examId) }
     catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar o painel por edital.' }
     finally { loading.value = false }
   }

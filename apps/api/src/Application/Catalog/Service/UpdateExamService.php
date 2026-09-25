@@ -29,7 +29,12 @@ final class UpdateExamService
             throw new \InvalidArgumentException('Dados do concurso invalidos.');
         }
 
-        $exam = new Exam($request->id, $name, $organizer, $request->year);
+        $existing = $this->exams->findById($request->id);
+        if ($existing === null) {
+            return null;
+        }
+
+        $exam = new Exam($request->id, $name, $organizer, $request->year, $existing->institutionLogoUrl, $existing->organizerLogoUrl);
         $updated = $this->transactions->transactional(fn (): bool => $this->exams->update($exam));
 
         return $updated ? $this->mapper->map($exam) : null;

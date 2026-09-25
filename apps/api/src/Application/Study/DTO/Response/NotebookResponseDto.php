@@ -15,6 +15,7 @@ final readonly class NotebookResponseDto
         public string $status,
         public ?string $startedAt,
         public ?string $finishedAt,
+        /** @var array<string,mixed> */ public array $filters,
         public ?int $durationSeconds,
     ) {
     }

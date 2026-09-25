@@ -763,3 +763,32 @@ docker compose exec -T frontend npm run build
 - Limpeza integral autorizada e executada: removidos dados operacionais de questões, alternativas, ativos, classificações por questão, concursos, editais, cargos, cadernos, tentativas, respostas, revisões, importações, jobs, assistente, descoberta, metas e sessões.
 - Preservados: 4 usuários, papéis e vínculos de papéis, 475 assuntos canônicos e o histórico de migrations. Aliases e histórico de fusões da taxonomia também foram removidos para manter somente a árvore de assuntos.
 - Auditoria posterior: zero questões, concursos, cadernos, tentativas, jobs e sessões. O worker foi reiniciado e aguarda novas importações; usuários devem autenticar novamente.
+
+
+## Avanço atual — descoberta automática de logos
+
+- Migration 023 adiciona URLs anuláveis de logo da instituição e da organizadora aos concursos. As respostas e a tabela do Catálogo foram atualizadas; a edição preserva os logos já descobertos.
+- Criação simples e criação com edital usam a mesma porta de descoberta: Gemini com Google Search Grounding busca exclusivamente domínios oficiais e gera o ícone a partir do domínio. Nenhum campo manual de logo foi exposto. A falha da pesquisa é não bloqueante.
+- Corrigida a autenticação da API Gemini para usar o parâmetro de chave suportado pelo ambiente. Durante esta validação, o Grounding retornou 429 por cota excedida; o Transpetro existente foi preenchido a partir dos domínios oficiais verificados (transpetro.com.br e cesgranrio.org.br).
+- Próximo passo operacional: restabelecer a cota do Gemini para que novos cadastros recebam logos automaticamente; o fluxo e a persistência já estão ativos.
+
+
+## Avanço atual — apresentação de marcas no catálogo
+
+- A tabela de Concursos deixou de anexar favicons minúsculos ao texto. Instituição e banca agora usam blocos quadrados independentes, com imagem em `contain`, nome em destaque e metadado de papel/ano; a ausência de imagem conserva um ícone sem quebrar o alinhamento.
+- Validação: build de produção do frontend aprovado no container e cenário Playwright autenticado do catálogo aprovado em desktop e mobile (2/2).
+
+- Refinamento solicitado: concurso e cargo pretendido foram incluídos como campos obrigatórios no formulário de estudo direcionado. O backend valida que o cargo pertence ao concurso e persiste ambos nos filtros do caderno/simulado, devolvidos pela API. Build frontend e PHPUnit aprovados.
+
+- Seleção múltipla entregue: `GET /study-contests/{examId}/subjects` fornece os assuntos canônicos vinculados ao concurso autenticado. O formulário exige concurso, cargo e ao menos um assunto, e envia `exam_id`, `position_id` e `subject_ids`. Build frontend e PHPUnit aprovados. Próximo passo da meta: dashboard agregado por concurso sobre as tentativas do usuário.
+
+- Dashboard por concurso entregue: o seletor em Seu desempenho consulta métricas por `exam_id`; totais, tempo e assuntos são calculados pelas associações canônicas da matriz, mantendo questões genéricas reutilizáveis. Build frontend e PHPUnit aprovados.
+
+
+## 2026-09-25 — Associação de assuntos por cargo
+
+- Migration `024_position_taxonomy_subjects.sql` cria a matriz N:N persistente entre cargo e assunto canônico, permitindo reutilizar o mesmo assunto em cargos distintos sem acoplá-lo ao concurso inteiro.
+- API adicionada: leitura autenticada `GET /v1/positions/{id}/taxonomy-subjects`, manutenção ADMIN `PUT /v1/admin/positions/{id}/taxonomy-subjects` e seleção para estudo `GET /v1/study-positions/{positionId}/subjects`.
+- Catálogo: cada cargo passa a ter a ação **Assuntos**, com seleção múltipla dos assuntos canônicos. Cadernos e simulados só exibem os assuntos do cargo escolhido; o backend também rejeita IDs que não pertençam à matriz do cargo.
+- Migração aplicada no ambiente local. Validações: PHPUnit 47 testes / 116 assertions aprovado; build frontend aprovado.
+- Pendência operacional: para concursos já cadastrados, o administrador deve preencher a matriz de cada cargo na nova ação antes de criar o estudo direcionado; uma futura análise de edital poderá propor essa matriz, mas não deve inferi-la silenciosamente.

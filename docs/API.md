@@ -18,7 +18,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Recurso | Rotas |
 | --- | --- |
 | Concursos | `GET, POST /exams` (itens DRAFT e REVIEW); `POST /admin/exams/with-notice` (multipart, concurso + PDF); `GET, PUT, DELETE /exams/{id}` |
-| Cargos | `GET, POST /exams/{examId}/positions`; `PATCH, DELETE /positions/{id}` |
+| Cargos | `GET, POST /exams/{examId}/positions`; `PATCH, DELETE /positions/{id}`; `GET /positions/{id}/taxonomy-subjects`; `PUT /admin/positions/{id}/taxonomy-subjects` |
 | Editais | `GET, POST /exams/{examId}/syllabi`; `POST /admin/syllabi/{id}/document` (multipart PDF); `PATCH, DELETE /syllabi/{id}` |
 | Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `PUT /admin/subjects/{id}/taxonomy-subjects`; `GET, PATCH, DELETE /subjects/{id}` |
 | Tags | `GET, POST /tags` |
@@ -32,6 +32,10 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
 
 `GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
+
+### Logos automáticos de concursos
+
+As respostas de concurso incluem `institutionLogoUrl` e `organizerLogoUrl`, ambas anuláveis. Em `POST /exams` e `POST /admin/exams/with-notice`, o serviço consulta o Gemini com Google Search Grounding para identificar somente domínios institucionais oficiais e converte o domínio validado em ícone. A consulta não bloqueia o cadastro: em caso de indisponibilidade, ausência de fonte confiável ou cota excedida, os dois campos retornam `null`. Nenhum URL de logo é aceito do cliente.
 
 ### Documento do edital
 
@@ -80,7 +84,7 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 
 `POST /notebooks/{id}/start` é idempotente enquanto o caderno está em andamento e retorna o caderno com `status`, `startedAt`, `finishedAt` e `durationSeconds`. `POST /notebooks/{id}/pause` acumula a duração já decorrida e muda o estado para `PAUSED`; `start` retoma a contagem sem perder o acumulado. `GET /notebooks/{id}/statistics` retorna `total`, `answered`, `correct`, `incorrect`, `percentage`, `averageElapsedSeconds`, `elapsedSeconds` e `answeredQuestionIds`, sempre restritos ao proprietário. `POST /notebooks/{id}/finish` encerra o caderno, calcula a duração acumulada e impede novas tentativas. Um caderno finalizado não pode ser iniciado nem finalizado novamente.
 
-`POST /notebooks` recebe `name`, `mode` (`STUDY` ou `EXAM`), `quantity` e o objeto opcional `filters`. Os filtros aceitos no MVP sao `subject_id`, `board`, `year` e `difficulty` (`EASY`, `MEDIUM` ou `HARD`). O cliente nao envia IDs de questoes: o service consulta somente questoes publicadas, persiste a lista retornada em `notebook_questions` e a composicao nunca muda. A API responde `422 VALIDATION_FAILED` quando os filtros nao encontram a quantidade solicitada, em vez de completar o caderno com questoes fora dos filtros.
+`POST /notebooks` recebe `name`, `mode` (`STUDY` ou `EXAM`), `quantity` e o objeto opcional `filters`. Para estudo direcionado, `filters` deve informar conjuntamente `exam_id`, `position_id` e uma lista não vazia `subject_ids`; o cargo precisa pertencer ao concurso e todo assunto deve estar associado ao cargo. Os filtros aceitos no MVP sao `subject_id`, `board`, `year` e `difficulty` (`EASY`, `MEDIUM` ou `HARD`). O cliente nao envia IDs de questoes: o service consulta somente questoes publicadas, persiste a lista retornada em `notebook_questions` e a composicao nunca muda. A API responde `422 VALIDATION_FAILED` quando os filtros nao encontram a quantidade solicitada, em vez de completar o caderno com questoes fora dos filtros.
 
 ## Desempenho e revisoes
 
@@ -143,6 +147,12 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 ### Proveniência de conteúdo programático
 
 `POST /api/v1/subjects` aceita opcionalmente `source_excerpt`, `source_page`, `source_start_offset` e `source_end_offset` junto a `syllabus_id`, `name`, `parent_id` e `sort_order`. Esses campos registram a evidência do conteúdo dentro do PDF do edital e são retornados por `GET /api/v1/syllabi/{syllabusId}/subjects`. `source_page` começa em 1; offsets começam em 0 e o fim não pode anteceder o início.
+
+### Associação canônica de assuntos por cargo
+
+`GET /api/v1/positions/{id}/taxonomy-subjects` requer autenticação e retorna `{ positionId, taxonomySubjectIds }`. `PUT /api/v1/admin/positions/{id}/taxonomy-subjects` requer `ADMIN` e recebe `{ "taxonomy_subject_ids": ["uuid"] }`. A operação substitui a matriz canônica daquele cargo em uma transação; aceita assunto ativo e permite que o mesmo assunto seja associado a vários cargos.
+
+`GET /api/v1/study-positions/{positionId}/subjects` requer autenticação e retorna somente os assuntos ativos associados ao cargo, com `id`, `parentId`, `name` e `level`.
 
 ### Associação canônica de assuntos do edital
 

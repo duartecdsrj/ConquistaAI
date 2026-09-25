@@ -1,6 +1,6 @@
 import type { BasicStatistics, PerformanceRepository, SubmittedAnswer } from '../../Domain/Performance/PerformanceRepository'
 export class GetMyStatisticsUseCase { public constructor(private readonly repository: PerformanceRepository) {} public execute(): Promise<BasicStatistics> { return this.repository.getMine() } }
-export class GetSyllabusDashboardUseCase { public constructor(private readonly repository: PerformanceRepository) {} public execute(syllabusId?: string): Promise<import('../../Domain/Performance/PerformanceRepository').SyllabusDashboard> { return this.repository.getDashboard(syllabusId) } }
+export class GetSyllabusDashboardUseCase { public constructor(private readonly repository: PerformanceRepository) {} public execute(syllabusId?: string, examId?: string): Promise<import('../../Domain/Performance/PerformanceRepository').SyllabusDashboard> { return this.repository.getDashboard(syllabusId, examId) } }
 export class SubmitNotebookAnswerUseCase {
   public constructor(private readonly repository: PerformanceRepository) {}
   public execute(notebookId: string, questionId: string, optionId: string, elapsedSeconds: number): Promise<SubmittedAnswer> {

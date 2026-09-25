@@ -9,8 +9,8 @@ final class GeminiAssistantProvider implements AssistantProviderInterface {
   if($this->apiKey==='') throw new \DomainException('GEMINI_API_KEY nao foi configurada.');
   $sources=implode("\n\n",array_map(static fn($e)=>"[Página {$e->pageNumber}]\n{$e->excerpt}",$evidence));
   $payload=['systemInstruction'=>['parts'=>[['text'=>'Você é um assistente de estudos. Responda em português do Brasil usando exclusivamente as fontes fornecidas. Se elas não sustentarem a resposta, diga isso claramente. Cite as páginas relevantes e não invente regras, datas ou links.']]],'contents'=>[['role'=>'user','parts'=>[['text'=>"Pergunta do estudante:\n{$question}\n\nFontes recuperadas do edital:\n{$sources}"]]]]];
-  $url='https://generativelanguage.googleapis.com/v1beta/models/'.rawurlencode($this->model).':generateContent';
-  $context=stream_context_create(['http'=>['method'=>'POST','timeout'=>60,'ignore_errors'=>true,'header'=>"Content-Type: application/json\r\nx-goog-api-key: {$this->apiKey}\r\n",'content'=>json_encode($payload,JSON_THROW_ON_ERROR)]]);
+  $url='https://generativelanguage.googleapis.com/v1beta/models/'.rawurlencode($this->model).':generateContent?key=' . rawurlencode($this->apiKey);
+  $context=stream_context_create(['http'=>['method'=>'POST','timeout'=>60,'ignore_errors'=>true,'header'=>"Content-Type: application/json\r\n",'content'=>json_encode($payload,JSON_THROW_ON_ERROR)]]);
   $body=false;for($attempt=0;$attempt<3&&$body===false;$attempt++){if($attempt>0)usleep($attempt*1000000);$body=@file_get_contents($url,false,$context);}
   if($body===false) throw new \DomainException('Nao foi possivel consultar o Gemini.');
   try{$response=json_decode($body,true,512,JSON_THROW_ON_ERROR);}catch(\JsonException){throw new \DomainException('O Gemini retornou uma resposta invalida.');}

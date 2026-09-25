@@ -13,11 +13,13 @@ export interface Notebook {
   readonly status: NotebookStatus
   readonly startedAt: string | null
   readonly finishedAt: string | null
+  readonly filters: Readonly<Record<string, unknown>>
   readonly durationSeconds: number | null
 }
 
 export interface NotebookStatistics { readonly total: number; readonly answered: number; readonly correct: number; readonly incorrect: number; readonly percentage: number; readonly averageElapsedSeconds: number; readonly elapsedSeconds: number; readonly answeredQuestionIds: readonly string[] }
 
+export interface StudyContestSubject { readonly id:string; readonly parentId:string|null; readonly name:string; readonly level:number }
 export interface StudyGoal { readonly weeklyQuestionGoal: number; readonly completedQuestions: number; readonly percentage: number; readonly periodStartsAt: string }
 export interface StudyPlanPriority { readonly subjectId: string; readonly total: number; readonly correct: number; readonly percentage: number; readonly distinctDays: number; readonly sufficientData: boolean; readonly reason: string; readonly action: 'RESPONDER_CONJUNTO_FILTRADO' | 'PRATICAR_AMOSTRA' }
 export interface StudyPlan { readonly priorities: readonly StudyPlanPriority[] }
@@ -25,10 +27,11 @@ export interface CreateNotebookCommand {
   readonly name: string
   readonly mode: NotebookMode
   readonly quantity: number
-  readonly filters: Readonly<{ subjectId?: string; syllabusId?: string; board?: string; year?: number; difficulty?: 'EASY' | 'MEDIUM' | 'HARD' }>
+  readonly filters: Readonly<{ examId?: string; positionId?: string; subjectIds?: readonly string[]; subjectId?: string; syllabusId?: string; board?: string; year?: number; difficulty?: 'EASY' | 'MEDIUM' | 'HARD' }>
 }
 
 export interface StudyRepository {
+  positionSubjects(positionId: string): Promise<readonly StudyContestSubject[]>
   list(query?: PageQuery): Promise<PageResult<Notebook>>
   get(id: string): Promise<Notebook>
   listQuestions(id: string, query?: PageQuery): Promise<PageResult<PublishedQuestion>>

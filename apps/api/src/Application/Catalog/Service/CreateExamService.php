@@ -9,6 +9,7 @@ use App\Application\Catalog\Mapper\ExamResponseMapper;
 use App\Domain\Catalog\Entity\Exam;
 use App\Domain\Catalog\Repository\ExamRepositoryInterface;
 use App\Application\Catalog\Port\TransactionManagerInterface;
+use App\Application\Catalog\Port\ExamLogoResearcherInterface;
 
 final class CreateExamService
 {
@@ -16,6 +17,7 @@ final class CreateExamService
         private readonly ExamRepositoryInterface $exams,
         private readonly ExamResponseMapper $mapper,
         private readonly TransactionManagerInterface $transactions,
+        private readonly ?ExamLogoResearcherInterface $logos = null,
     ) {
     }
 
@@ -30,7 +32,13 @@ final class CreateExamService
             throw new \InvalidArgumentException('Dados do concurso invalidos.');
         }
 
-        $exam = new Exam($this->uuid(), $name, $organizer, $year);
+        try {
+            $logos = $this->logos?->find($name, $organizer) ?? ['institution' => null, 'organizer' => null];
+        } catch (\Throwable) {
+            $logos = ['institution' => null, 'organizer' => null];
+        }
+
+        $exam = new Exam($this->uuid(), $name, $organizer, $year, $logos['institution'], $logos['organizer']);
         $this->transactions->transactional(function () use ($exam): void { $this->exams->save($exam); });
 
         return $this->mapper->map($exam);
