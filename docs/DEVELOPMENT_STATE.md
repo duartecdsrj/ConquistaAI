@@ -710,3 +710,5 @@ docker compose exec -T frontend npm run build
 
 - Correção da revisão editorial: `DoctrinePublishedQuestionRepository` usava closures `static` que acessavam `$this` ao carregar ativos por alternativa/questão, causando INTERNAL_ERROR em `GET /admin/questions/drafts`. As closures agora são vinculadas à instância; a consulta foi reproduzida com 25 de 54 itens e ativos carregados. PHPUnit: 43 testes / 109 asserções.
 - Qualidade da próxima importação: subject deixou de aceitar `null` no contrato do classificador e no writer. Itens sem classificação canônica passam a ser contabilizados como falha de extração, sem criar questão sem assunto; o prompt exige assunto existente ou novo nome genérico sem numeração editorial.
+
+- Validação visual da revisão: incluído cenário Playwright autenticado que navega para Revisar questões, expande item importado e confirma cabeçalho editorial e seletor de assuntos, sem alterar dados. Execução aprovada em desktop e mobile (2/2).

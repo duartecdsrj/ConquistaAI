@@ -36,3 +36,20 @@ test('catálogo apresenta escopo explícito sem acionar processamento', async ({
   await expect(page.getByText('Selecione um concurso para ver somente os dados relacionados a ele.')).toBeVisible()
   await expect(page).toHaveScreenshot('catalogo.png', { fullPage: true, animations: 'disabled' })
 })
+
+
+test('revisão editorial carrega questões importadas e classificação', async ({ page }, testInfo) => {
+  test.skip(!process.env.E2E_EMAIL || !process.env.E2E_PASSWORD, 'Defina a fixture E2E.')
+  await page.goto('/')
+  await page.getByLabel('E-mail').fill(process.env.E2E_EMAIL!)
+  await page.getByLabel('Senha').fill(process.env.E2E_PASSWORD!)
+  await page.getByRole('button', { name: 'Entrar na plataforma' }).click()
+  if (testInfo.project.name === 'mobile') await page.getByLabel('Abrir navegação').click()
+  await page.getByText('Revisar questões', { exact: true }).first().click()
+  await expect(page.getByRole('heading', { name: 'Revisar questões' })).toBeVisible()
+  const item = page.locator('.q-expansion-item').first()
+  await expect(item).toBeVisible()
+  await item.locator('.q-item').first().click()
+  await expect(item.locator('.question-header')).toBeVisible()
+  await expect(item.getByText('Assuntos canônicos', { exact: true })).toBeVisible()
+})
