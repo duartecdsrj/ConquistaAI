@@ -1,6 +1,6 @@
 <template>
   <q-page class="page">
-    <section class="top"><div><p class="eyebrow">ANÁLISE REAL</p><h1>Seu desempenho</h1><p>Resultados calculados a partir das suas tentativas concluídas.</p></div><q-btn flat no-caps color="primary" label="Atualizar" :loading="loading" @click="refresh" /></section>
+    <section class="top"><div><p class="eyebrow">ANÁLISE REAL</p><h1 class="page-title">Seu desempenho</h1><p>Resultados calculados a partir das suas tentativas concluídas.</p></div><q-btn flat no-caps color="primary" label="Atualizar" :loading="loading" @click="refresh" /></section>
     <q-banner v-if="error" rounded class="error">{{ error }}</q-banner>
     <q-inner-loading :showing="loading" color="primary" />
     <template v-if="statistics && !loading">

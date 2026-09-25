@@ -462,3 +462,88 @@ docker compose exec -T frontend npm run build
 - Selecione `AI_PROVIDER=gemini` e configure `GEMINI_API_KEY` e, opcionalmente, `GEMINI_MODEL` (padrão `gemini-2.5-flash`). A chave permanece somente no ambiente do servidor.
 - Foram incluídas as variáveis no Compose e no `.env.example`, e um teste unitário garante que a ausência de chave não inicia chamada externa.
 - Próximo passo: inserir uma chave Gemini privada no `.env`, recriar o serviço `api` e realizar uma consulta real com um edital extraído.
+
+
+## Avanço atual — refatoração visual da SPA
+
+- O shell autenticado foi alinhado à referência aprovada: drawer compacto com ícones, busca no cabeçalho, notificações, avatar e comportamento sobreposto no mobile.
+- Tokens Quasar e estilos globais foram atualizados para a paleta azul clara, superfícies brancas, bordas suaves e controles arredondados definidos no novo DESIGN_SYSTEM.md.
+- A rota de Descobertas foi recolocada dentro do AppShell; antes ela não recebia a moldura autenticada por estar posicionada fora do bloco condicional.
+- Nenhum contrato HTTP, composable ou repositório foi alterado.
+- Validações: `git diff --check` aprovado; `docker compose exec -T frontend npm run build` aprovado em 24/09/2026. O build local direto permanece indisponível porque node_modules não está presente no workspace.
+- Próximo passo: revisão visual em desktop e mobile com sessão autenticada antes de ajustes finos ou commit.
+
+
+## Avanço atual — normalização de títulos
+
+- Todas as páginas autenticadas (Início, Taxonomia, Importação, Revisão, Desempenho, Catálogo, Cadernos, Questões, Assistente e Descobertas) usam agora a classe visual única `page-title`.
+- A escala é 26 px no desktop e 22 px no mobile, com peso, cor, line-height, tracking e espaçamento consistentes; Login e resolução de caderno continuam exceções de jornada imersiva.
+- DESIGN_SYSTEM.md passou a registrar a escala tipográfica obrigatória.
+- Validações: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados em 24/09/2026.
+- Próximo passo: revisão visual autenticada em desktop e mobile para ajustes finos de densidade.
+
+
+## Avanço atual — layout de execução do caderno
+
+- A tela de resolução foi reorganizada segundo a referência: contexto da sessão no topo, índice navegável de questões, área central de resposta e painel de progresso.
+- Índice, estado respondido, total, acertos, erros, percentual e cronômetro são derivados apenas da seleção congelada e das estatísticas reais da API. Anotações, IA e árvore por assunto não foram simuladas porque ainda não possuem contrato.
+- Em até 600 px, a questão vem antes do índice e do progresso, mantendo alternativas com alvo de toque apropriado.
+- Validação: docker compose exec -T frontend npm run build aprovado em 24/09/2026.
+- Próximo passo: instalar/configurar Playwright, criar fixture autenticada e registrar screenshots desktop/mobile como regressão visual.
+
+
+## Avanço atual — regressão visual com Playwright
+
+- Playwright foi adicionado como dependência de desenvolvimento e o script `npm run test:visual` executa os perfis desktop (1440 × 900) e mobile (390 × 844).
+- O container frontend instala Chromium do Alpine, evitando dependência de binários externos incompatíveis.
+- A baseline pública de Login foi capturada e validada nos dois breakpoints. O cenário do caderno exige `E2E_EMAIL`, `E2E_PASSWORD` e `E2E_NOTEBOOK_ID`; ele autentica contra a API real e é ignorado de forma explícita sem essas variáveis.
+- A URL `?notebook=<id>` abre diretamente um caderno após restauração de sessão, permitindo a captura autenticada sem alterar contratos.
+- Próximo passo: fornecer ou configurar a fixture autenticada para aprovar screenshots do caderno e das demais telas.
+
+
+## Validação Playwright — 24/09/2026
+
+- `docker compose exec -T frontend npm run test:visual` executado com sucesso: 2 testes aprovados (Login em desktop e mobile).
+- Os 2 cenários autenticados do caderno foram ignorados de forma esperada, pois `E2E_EMAIL`, `E2E_PASSWORD` e `E2E_NOTEBOOK_ID` não estão configurados no ambiente do container.
+- Próximo passo: configurar essas três variáveis no Compose/.env e reexecutar a suíte para gerar e aprovar as baselines do caderno.
+
+
+## Reexecução Playwright — 24/09/2026
+
+- Nova execução manteve 2 testes aprovados (Login desktop/mobile) e 2 cenários de caderno ignorados.
+- Diagnóstico: nenhuma variável `E2E_*` existe no ambiente do serviço `frontend`; o `.env` raiz não é propagado automaticamente, pois o serviço não as declara em `compose.yaml`.
+- Próximo passo: declarar `E2E_EMAIL`, `E2E_PASSWORD` e `E2E_NOTEBOOK_ID` em `frontend.environment` no Compose e recriar o container antes de reexecutar.
+
+
+## Tentativa autenticada Playwright — 24/09/2026
+
+- As variáveis E2E foram declaradas no serviço `frontend` e chegaram ao container após recriação.
+- A suíte executou os cenários do caderno, mas o login não concluiu: o formulário permaneceu visível depois do envio em desktop e mobile.
+- Login público continua aprovado em ambos os breakpoints. O bloqueio atual é a autenticação com os valores E2E, não a renderização do caderno.
+- Próximo passo: confirmar que `E2E_EMAIL` e `E2E_PASSWORD` correspondem a um usuário ativo da API local e que `E2E_NOTEBOOK_ID` pertence a ele; então reexecutar `npm run test:visual`.
+
+
+## Validação autenticada Playwright — 24/09/2026
+
+- Causa da autenticação identificada e corrigida: a suíte precisa acessar `http://nginx`, que encaminha `/api`; o host interno `nginx` foi incluído explicitamente na allowlist do Vite.
+- As baselines de Login e Caderno foram registradas em desktop (1440 × 900) e mobile (390 × 844) com sessão e caderno reais.
+- Validações aprovadas: `docker compose exec -T frontend npm run build`, `docker compose exec -T frontend npm run test:visual` (4 testes).
+- Próximo passo: aplicar o mesmo critério de baseline autenticada às demais páginas quando seus fluxos de teste forem definidos.
+
+
+## Ambiente visual E2E isolado — 24/09/2026
+
+- `compose.e2e.yaml` cria o projeto Docker separado `concursos-e2e`, com volume MySQL próprio e sem publicar portas do ambiente de testes.
+- `apps/api/bin/seed-e2e.php` é uma carga idempotente exclusiva de infraestrutura de teste: usuário, concurso, edital, assunto, 10 questões publicadas, caderno em andamento e duas respostas concluídas.
+- `scripts/test-visual-e2e.sh` apaga somente os volumes do projeto E2E, recria a infraestrutura, aguarda o Nginx e executa o Playwright. Não usa `E2E_NOTEBOOK_ID`, credenciais pessoais ou banco principal.
+- Playwright foi ajustado para abrir o drawer no mobile e mascarar somente o cronômetro variável na comparação do caderno.
+- Validações: ambiente E2E limpo aprovado; `npm run test:visual` com 4 testes aprovados; build frontend aprovado.
+- Próximo passo: aplicar fixtures e baselines semelhantes aos demais fluxos autenticados conforme forem priorizados.
+
+
+## Validação final de fixture visual E2E — 24/09/2026
+
+- A fixture foi executada em banco MySQL isolado e limpo, com migrations e carga automática.
+- A suíte Playwright do ambiente `concursos-e2e` foi aprovada: Login e Caderno em desktop e mobile (4 testes).
+- O runner não requer UUID nem credencial pessoal; os únicos dados de acesso são os valores determinísticos declarados exclusivamente em `compose.e2e.yaml`.
+- O cronômetro é mascarado na comparação do screenshot por ser o único elemento variável; todo o restante do viewport é comparado.

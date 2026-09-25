@@ -11,9 +11,9 @@
     <EditorialPage v-else-if="section === 'editorial'" />
     <TaxonomyPage v-else-if="section === 'taxonomy'" />
     <AssistantPage v-else-if="section === 'assistant'" />
+    <DiscoveryPage v-else-if="section === 'discovery'" />
     <PerformancePage v-else />
   </AppShell>
-    <DiscoveryPage v-else-if="section === 'discovery'" />
 </template>
 
 <script setup lang="ts">
@@ -46,5 +46,9 @@ function closeNotebook(): void {
   section.value = 'notebooks'
 }
 
-onMounted(restore)
+onMounted(async () => {
+  await restore()
+  const notebookId = new URLSearchParams(window.location.search).get('notebook')
+  if (notebookId && user.value) activeNotebookId.value = notebookId
+})
 </script>

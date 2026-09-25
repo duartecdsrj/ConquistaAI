@@ -1,7 +1,7 @@
 <template>
   <q-page class="taxonomy-page">
     <section class="page-heading">
-      <div><p class="eyebrow">ADMINISTRAÇÃO</p><h1>Taxonomia de assuntos</h1><p>Organize os assuntos canônicos, suas variações e relacionamentos em uma única estrutura.</p></div>
+      <div><p class="eyebrow">ADMINISTRAÇÃO</p><h1 class="page-title">Taxonomia de assuntos</h1><p>Organize os assuntos canônicos, suas variações e relacionamentos em uma única estrutura.</p></div>
       <div class="header-actions"><q-badge color="blue-1" text-color="primary" rounded>{{ subjects.length }} assuntos</q-badge><q-btn unelevated no-caps color="primary" icon="refresh" label="Atualizar taxonomia" :loading="loading" @click="refresh" /></div>
     </section>
     <q-banner v-if="error" rounded class="error-banner"><template #avatar><q-icon name="error_outline" /></template>{{ error }}</q-banner>

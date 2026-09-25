@@ -1,0 +1,49 @@
+services:
+  mysql:
+    environment:
+      MYSQL_DATABASE: concursos_e2e
+      MYSQL_USER: concursos_e2e
+      MYSQL_PASSWORD: concursos_e2e
+      MYSQL_ROOT_PASSWORD: concursos_e2e_root
+    volumes:
+      - mysql_e2e_data:/var/lib/mysql
+
+  e2e-seed:
+    build: ./apps/api
+    command: ["sh", "-c", "php bin/migrate.php && php bin/seed-e2e.php"]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: concursos_e2e
+      DB_USER: concursos_e2e
+      DB_PASSWORD: concursos_e2e
+      E2E_EMAIL: visual@conquistaai.test
+      E2E_PASSWORD: VisualTest#2026
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [internal]
+
+  api:
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: concursos_e2e
+      DB_USER: concursos_e2e
+      DB_PASSWORD: concursos_e2e
+      JWT_SECRET: e2e-only-secret-with-at-least-thirty-two-characters
+      JWT_ISSUER: concursos-e2e
+    depends_on:
+      e2e-seed:
+        condition: service_completed_successfully
+
+  frontend:
+    environment:
+      E2E_EMAIL: visual@conquistaai.test
+      E2E_PASSWORD: VisualTest#2026
+
+  nginx:
+    ports: !reset []
+
+volumes:
+  mysql_e2e_data:

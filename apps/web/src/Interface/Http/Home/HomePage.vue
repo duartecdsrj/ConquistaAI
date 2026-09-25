@@ -1,7 +1,7 @@
 <template>
   <q-page class="app-page">
     <section class="hero">
-      <div><p class="eyebrow">PAINEL DE ESTUDOS</p><h1>Olá, {{ user.name.split(' ')[0] }}.</h1><p class="hero-copy">Seu ritmo se constrói questão por questão. Veja o que merece sua atenção hoje.</p></div>
+      <div><p class="eyebrow">PAINEL DE ESTUDOS</p><h1 class="page-title">Olá, {{ user.name.split(' ')[0] }}.</h1><p class="hero-copy">Seu ritmo se constrói questão por questão. Veja o que merece sua atenção hoje.</p></div>
       <div class="hero-mark"><q-img src="/images/concursos-study-mark.png" fit="contain" /><span>Preparação<br><strong>com propósito</strong></span></div>
     </section>
     <q-banner v-if="error" rounded class="error-banner">{{ error }} <template #action><q-btn flat no-caps label="Tentar novamente" @click="load" /></template></q-banner>

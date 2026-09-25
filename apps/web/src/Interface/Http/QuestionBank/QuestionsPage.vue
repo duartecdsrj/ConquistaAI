@@ -1,6 +1,6 @@
 <template>
   <q-page class="page">
-    <section class="top"><div><p class="eyebrow">BANCO PUBLICADO</p><h1>Questões</h1><p>Explore itens disponíveis para seus próximos cadernos.</p></div><q-btn flat no-caps color="primary" label="Limpar filtros" @click="clear" /></section>
+    <section class="top"><div><p class="eyebrow">BANCO PUBLICADO</p><h1 class="page-title">Questões</h1><p>Explore itens disponíveis para seus próximos cadernos.</p></div><q-btn flat no-caps color="primary" label="Limpar filtros" @click="clear" /></section>
     <q-card flat class="filters"><q-card-section class="filter-grid"><q-input v-model="filters.board" outlined dense label="Banca" @keyup.enter="search" /><q-input v-model.number="filters.year" outlined dense type="number" label="Ano" @keyup.enter="search" /><q-select v-model="filters.difficulty" clearable outlined dense label="Dificuldade" :options="difficultyOptions" emit-value map-options /><q-btn unelevated no-caps color="primary" label="Filtrar" :loading="loading" @click="search" /></q-card-section></q-card>
     <q-banner v-if="error" rounded class="error">{{ error }}</q-banner>
     <p class="results">{{ total }} {{ total === 1 ? 'questão encontrada' : 'questões encontradas' }}</p>

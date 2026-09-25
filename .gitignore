@@ -6,3 +6,6 @@ apps/api/.phpunit.result.cache
 apps/web/node_modules/
 apps/web/dist/
 backups/
+
+apps/web/playwright-report/
+apps/web/test-results/

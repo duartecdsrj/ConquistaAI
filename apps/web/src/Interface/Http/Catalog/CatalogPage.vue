@@ -1,7 +1,7 @@
 <template>
   <q-page class="page">
     <section class="top">
-      <div><p class="eyebrow">ADMINISTRAÇÃO</p><h1>Catálogo</h1><p>Organize concursos, cargos, editais, assuntos e tags.</p></div>
+      <div><p class="eyebrow">ADMINISTRAÇÃO</p><h1 class="page-title">Catálogo</h1><p>Organize concursos, cargos, editais, assuntos e tags.</p></div>
       <q-btn flat no-caps color="primary" label="Atualizar" :loading="loading" @click="loadExams" />
     </section>
     <q-banner v-if="error" rounded class="error">{{ error }}</q-banner>
