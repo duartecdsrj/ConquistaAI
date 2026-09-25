@@ -719,3 +719,11 @@ docker compose exec -T frontend npm run build
 
 - Correção de ativos decorativos: removidos 333 vínculos incorretos de `question_assets` (questões, alternativas e taxonomia preservadas). O writer não usa mais todas as imagens das páginas; exige `image_pages` explícito e referência textual a figura/tabela/gráfico/diagrama. O extrator também ignora imagens repetidas mais de duas vezes no documento, filtrando cabeçalhos, rodapés e logotipos recorrentes.
 - Revisão editorial passou a paginar toda a taxonomia antes de construir as opções, eliminando UUIDs exibidos quando o assunto estava fora da primeira página. Playwright desktop/mobile, PHPUnit 43/109 e build frontend aprovados.
+
+
+## Avanço atual — saneamento de enunciados e figuras
+
+- O writer de importação agora elimina, antes da deduplicação e da gravação, prefixos de metadados (concurso, cargo e nível) e a sequência de alternativas repetida dentro do enunciado. A mesma regra foi aplicada aos 31 itens EXAM em REVIEW/DRAFT já importados; a auditoria posterior não encontrou prefixos de metadados nem alternativas A–E inline nesses itens.
+- Figuras só são vinculadas quando o classificador declara a página e o texto faz referência visual. Para enunciados que mencionam figura acima/abaixo, o worker fornece também as páginas adjacentes como contexto ao classificador. A questão de exemplo sobre a espiral de Nonaka e Tackeuchi recebeu exclusivamente a figura pertinente da página anterior; a rota autenticada do ativo respondeu 200.
+- Validações: PHPUnit aprovado (45 testes, 111 asserções), Playwright da revisão editorial aprovado em desktop e mobile e build de produção do frontend aprovado.
+- Próximo passo: a próxima importação usará as regras novas; não foi enfileirado nenhum novo job neste ciclo.
