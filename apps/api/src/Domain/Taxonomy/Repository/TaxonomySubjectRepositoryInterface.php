@@ -13,6 +13,12 @@ interface TaxonomySubjectRepositoryInterface extends TaxonomyHierarchyRepository
 
     public function findByParentAndSlug(?string $parentId, string $slug): ?TaxonomySubject;
 
+    /** Reutiliza assunto canônico independentemente da origem editorial. */
+    public function findBySlug(string $slug): ?TaxonomySubject;
+
+    /** Localiza equivalência semântica simples por prefixo de slug. */
+    public function findByComparableSlug(string $slug): ?TaxonomySubject;
+
     /** @return list<TaxonomySubject> */
     public function list(int $offset, int $limit): array;
 

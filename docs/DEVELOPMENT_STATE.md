@@ -572,3 +572,41 @@ docker compose exec -T frontend npm run build
 - Corrigida a incoerência de navegação: Cargos e Editais são sempre filtrados pelo concurso escolhido; Assuntos exige a seleção de um edital; Tags são globais.
 - Ações da tabela agora são reais: visualizar abre o contexto de gerenciamento e editar usa `PUT /exams/{id}`. Também foi restaurada a inclusão posterior de edital e o envio de PDF, sem qualquer enfileiramento de job pela interface.
 - Adicionado teste visual Playwright do Catálogo que percorre a aba Editais sem acionar processamento de IA.
+
+- Novo teste do job Tranpetro em 25/09: job `8bb76e86-e583-4809-a6b9-333d229a7865` falhou de forma recuperável antes da criação editorial. A chamada mínima ao Gemini confirmou `high demand`; não houve criação parcial de cargos ou assuntos.
+
+- Para mitigar a indisponibilidade recorrente de `gemini-3.8-flash`, o ambiente local foi configurado para `gemini-3.5-flash-lite`, modelo estável orientado a alto volume. Próximo passo: validar chamada mínima e reenfileirar Tranpetro.
+
+- Validação concluída com `gemini-3.5-flash-lite`: job Tranpetro `f7bf98d0-cb4e-4334-9b30-111420603269` terminou `COMPLETED` (100%) e criou 2 cargos e 4 assuntos com vínculos canônicos. Observação: o PDF contém caracteres codificados de forma imperfeita (`�`), que devem ser normalizados antes de uma próxima rodada editorial.
+
+- A inspeção hexadecimal confirmou que os nomes já gravados estavam em UTF-8 válido; o glifo `�` visto no terminal era de renderização da sessão. Ainda assim, `PdftotextPdfTextExtractor` passou a validar UTF-8 e converter texto inválido de Windows-1252 antes de persistir evidências e chamar a IA.
+
+- Reprocessamento após normalização UTF-8: job Tranpetro `7ea330ba-60e3-4371-8a81-86cf9d88b0e7` concluiu `COMPLETED` (100%) com os mesmos 2 cargos e 4 assuntos, sem duplicação.
+
+
+## 2026-09-24 — Cadernos e plano: painel visual e interação
+
+- A tela de Cadernos foi alinhada à referência visual com cabeçalho de ação, cartão de meta semanal, progresso circular, período calculado a partir do contrato real e métricas derivadas exclusivamente de `GET /study-goals/me` e da lista autenticada de cadernos.
+- A atualização da meta continua usando `PUT /study-goals/me`; criação, recomendações e abertura de cadernos preservam os casos de uso existentes.
+- Foram incluídas abas Todos/Em andamento/Finalizados e busca por nome no `useNotebooks`, como estado de apresentação, sem chamadas HTTP diretas na página.
+- Validação: `docker compose exec -T frontend npm run build` aprovada em 24/09/2026. O Vite apenas informou o aviso já conhecido sobre chunk acima de 500 kB.
+- Próximo passo: revisão visual autenticada em desktop e mobile com a fixture E2E quando a prioridade de regressão visual for retomada.
+
+- Diagnóstico da cobertura de cargos Tranpetro: a relação completa de 33 ênfases está no Anexo I, páginas 41–42. O seletor de evidências atual encerra após 16 páginas que contêm termos genéricos (`cargo`, `conteúdo`, `conhecimento`), antes de alcançar o anexo; por isso a IA retornou apenas o cargo-base e Advocacia mencionada no corpo inicial. Próxima correção: priorizar anexos/quadro de ênfases e separar extração de cargos da extração de assuntos.
+
+- Correção de cobertura de cargos: `AnalyzeSyllabusCatalogService` agora prioriza Anexo I / Quadro de Ênfases e as páginas imediatamente seguintes, além do Anexo IV para assuntos; a instrução ao modelo extrai cada ênfase como cargo, com limite de 50. Será validado com novo job Tranpetro.
+
+- Reprocessamento com a priorização do Anexo I: job `62bfc627-7b1a-4942-a90a-6cc4a4251789` concluiu `COMPLETED` e identificou as 33 ênfases. Foram removidos via Doctrine somente os 2 registros imprecisos da rodada anterior (cargo-base e Advocacia sem numeração); o concurso Tranpetro agora possui exatamente 33 cargos.
+
+- Otimização implementada: análise agora chama IA separadamente para Anexo I (cargos) e todo o intervalo Anexo IV–V (assuntos); a resposta de assuntos exige nome, pai e página para montar árvore local e taxonomia canônica em níveis.
+
+- Correção da árvore de assuntos: a análise do Anexo IV foi dividida em lotes de duas páginas para evitar truncamento de JSON pelo provider. Antes da persistência, os itens são indexados e os pais são resolvidos recursivamente no próprio plano, preservando a hierarquia mesmo quando um pai aparece em lote posterior.
+- Correção do delimitador: referências internas a “Anexo V” dentro do conteúdo faziam a coleta encerrar na própria página 53. A detecção de início/fim agora usa apenas o cabeçalho da página extraída.
+- Resiliência do provider Gemini: chamadas de processamento de edital agora têm timeout de 60 segundos e até três tentativas para falhas transitórias de rede, sem repetir persistência nem expor detalhes técnicos na API.
+- Revisão solicitada da taxonomia: a árvore atual confirmou 398 nós, dos quais 242 ainda continham numeração editorial. A nova regra separa cargos/ênfases do conteúdo, limita raízes a Conhecimentos Básicos/Específicos, exige matéria ampla antes de tópicos, remove prefixos editoriais e procura assunto canônico equivalente ativo antes de criar um novo nó. Próximo passo: limpar a geração atual e validar a nova reconstrução.
+- Limpeza concluída em ordem segura de folhas para raízes: removidos 398 assuntos locais, 398 vínculos e 398 nós canônicos sem uso; os 33 cargos Tranpetro foram preservados.
+- Validação do job `a15837dc-66f0-4435-8a36-bd92889f5d1b`: concluído, sem numeração editorial e com níveis 0–3, porém a IA anexou incorretamente Conhecimentos Básicos sob Conhecimentos Específicos. A normalização agora torna os dois grupos raízes imutáveis; será feita reconstrução limpa.
+- Monitoramento do job `5aef6b63-4466-4ffb-8274-0cf86b02d917`: concluído com 365 assuntos, zero nomes numerados e hierarquia até nível 3. Detectada variação “Conhecimentos Básicos:” com dois-pontos, que impediu o reconhecimento da raiz; a normalização final remove pontuação de rótulos antes da classificação e a árvore será regenerada.
+- Causa raiz da hierarquia identificada: `iconv(...ASCII//TRANSLIT)` do container transformava “Básicos” em `b'asicos`. A chave canônica agora normaliza diacríticos portugueses de forma determinística, sem depender de iconv. É necessária uma última reconstrução limpa para materializar as duas raízes.
+- Regra de taxonomia revisada por solicitação editorial: Conhecimentos Básicos/Específicos e ênfases deixaram de ser nós obrigatórios. A IA agora propõe matéria, assunto e subassunto a partir do conteúdo; itens compostos são decompostos semanticamente (por exemplo, Sistemas Distribuídos sob Redes de Computadores) e listas repetidas são unificadas. A resolução canônica consulta slug exato e equivalente por prefixo antes de criar um nó. Próximo passo: reconstruir o edital limpo e auditar duplicidades.
+- Correção da exibição da árvore: a Taxonomia carregava somente a primeira página (100 nós), embora a árvore canônica tenha mais registros. O composable agora pagina até `total_pages` antes de montar o QTree; todos os níveis passam a estar disponíveis.

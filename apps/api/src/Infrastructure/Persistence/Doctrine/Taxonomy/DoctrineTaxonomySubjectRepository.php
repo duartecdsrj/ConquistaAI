@@ -58,6 +58,41 @@ final class DoctrineTaxonomySubjectRepository implements TaxonomySubjectReposito
         return $record instanceof TaxonomySubjectRecord ? $this->map($record) : null;
     }
 
+    public function findBySlug(string $slug): ?TaxonomySubject
+    {
+        $record = $this->entityManager->createQueryBuilder()
+            ->select('subject')
+            ->from(TaxonomySubjectRecord::class, 'subject')
+            ->where('subject.slug = :slug')
+            ->andWhere('subject.active = true')
+            ->orderBy('subject.level', 'ASC')
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $record instanceof TaxonomySubjectRecord ? $this->map($record) : null;
+    }
+
+    public function findByComparableSlug(string $slug): ?TaxonomySubject
+    {
+        $record = $this->entityManager->createQueryBuilder()
+            ->select('subject')
+            ->from(TaxonomySubjectRecord::class, 'subject')
+            ->where('subject.active = true')
+            ->andWhere('(subject.slug LIKE :prefix OR :slug LIKE CONCAT(subject.slug, :separator))')
+            ->orderBy('subject.level', 'ASC')
+            ->addOrderBy('subject.name', 'ASC')
+            ->setParameter('prefix', $slug . '-%')
+            ->setParameter('slug', $slug)
+            ->setParameter('separator', '-%')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $record instanceof TaxonomySubjectRecord ? $this->map($record) : null;
+    }
+
     public function list(int $offset, int $limit): array
     {
         return array_map($this->map(...), $this->entityManager->createQueryBuilder()->select('subject')->from(TaxonomySubjectRecord::class, 'subject')->orderBy('subject.level', 'ASC')->addOrderBy('subject.name', 'ASC')->setFirstResult($offset)->setMaxResults($limit)->getQuery()->getResult());

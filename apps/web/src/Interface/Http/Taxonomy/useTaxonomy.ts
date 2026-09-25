@@ -30,7 +30,18 @@ export function useTaxonomy() {
   async function load(): Promise<void> {
     loading.value = true
     error.value = ''
-    try { subjects.value = (await taxonomyUseCases.list.execute({ page: 1, perPage: 100 })).items }
+    try {
+      const all: TaxonomySubject[] = []
+      let page = 1
+      let totalPages = 1
+      while (page <= totalPages) {
+        const result = await taxonomyUseCases.list.execute({ page, perPage: 100 })
+        all.push(...result.items)
+        totalPages = result.pagination.total_pages
+        page += 1
+      }
+      subjects.value = all
+    }
     catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar a taxonomia.' }
     finally { loading.value = false }
   }
