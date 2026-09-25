@@ -10,6 +10,7 @@ final readonly class PublishedQuestionOptionResponseDto
         public string $label,
         public string $content,
         public int $position,
+        /** @var list<string> */ public array $assetUrls = [],
     ) {
     }
 }

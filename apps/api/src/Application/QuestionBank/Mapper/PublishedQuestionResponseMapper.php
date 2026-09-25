@@ -23,12 +23,14 @@ final class PublishedQuestionResponseMapper
                     $option->label,
                     $option->content,
                     $option->position,
+                    $option->assetUrls,
                 ),
                 $question->options,
             ),
             $question->taxonomySubjectIds,
             $question->status,
             $question->source,
+            $question->assetUrls,
         );
     }
 }

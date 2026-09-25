@@ -692,3 +692,16 @@ docker compose exec -T frontend npm run build
 - Migration 020 aplicada: o ENUM de jobs agora aceita CANCELLED. O job ativo 1c381fd1-ee51-4fd1-b31e-93aea6fdd54e foi cancelado em 16% após 15 lotes; worker confirmado ocioso em ciclos posteriores.
 
 - Limpeza adicional autorizada: removidas 53 questões REVIEW de PDF; DRAFT e PUBLISHED preservadas. Revisão agora apresenta cabeçalho de banca/concurso-ano/cargo, separa afirmativas romanas e preenche assuntos canônicos pelo nome; writer sanitiza prefixos A-E duplicados nas alternativas.
+
+- Pipeline de próxima importação reforçado: prompt e writer aceitam somente múltipla escolha com 3–5 alternativas; discursivas e certo/errado são descartadas. Criado componente seguro de conteúdo rico para blocos de texto, tabelas Markdown e código, aplicado à revisão editorial. Extração e vínculo de arquivos de imagem por página segue pendente.
+
+- Migration 021 adiciona ativos de imagem por questão. O worker usa pdfimages, associa figuras às páginas declaradas pelo classificador e a revisão renderiza os ativos por URL estática.
+
+- Ativos visuais são entregues pela API autenticada; a interface os carrega como Blob via Axios e cria URL local, sem expor PDFs ou imagens por rota pública.
+
+- Caderno agora reutiliza QuestionContent e QuestionAssetImage: enunciados, alternativas, código, tabelas e figuras preservam a mesma apresentação da revisão, com alternativas acessíveis e clicáveis.
+- Política de ativos: usuário autenticado acessa somente figuras de questões PUBLISHED; ADMIN também acessa ativos de REVIEW/DRAFT na revisão.
+
+- Migration 022 adiciona option_id aos ativos; o classificador pode declarar image_pages por alternativa e revisão/caderno exibem figuras no cartão correto.
+- Auditoria corrigiu o contrato do classificador: type=MULTIPLE_CHOICE volta a ser exigido e emitido; diretório de ativos novos usa permissões legíveis pelo processo da API.
+- Contrato do prompt revalidado literalmente: cada questão retornada deve conter type=MULTIPLE_CHOICE, em consonância com a barreira do writer.

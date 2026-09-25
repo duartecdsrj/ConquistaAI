@@ -16,6 +16,7 @@ final readonly class PublishedQuestionResponseDto
         /** @var list<string> */ public array $taxonomySubjectIds = [],
         public string $status = 'PUBLISHED',
         public ?string $source = null,
+        /** @var list<string> */ public array $assetUrls = [],
     ) {
     }
 }

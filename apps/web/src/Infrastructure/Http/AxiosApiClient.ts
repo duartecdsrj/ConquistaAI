@@ -48,3 +48,5 @@ function toApiRequestError(error: AxiosError<ApiFailure>): ApiRequestError {
   const failure = error.response?.data
   return new ApiRequestError(failure?.error?.code ?? 'NETWORK_ERROR', failure?.error?.message ?? 'Nao foi possivel comunicar com a API.', error.response?.status ?? 0, failure?.error?.details ?? [], failure?.meta?.request_id)
 }
+
+export async function getBlobObjectUrl(url: string): Promise<string> { return URL.createObjectURL((await client.get(url, { responseType: 'blob' })).data as Blob) }

@@ -1,0 +1,2 @@
+<?php
+declare(strict_types=1);namespace App\Application\QuestionBank\Port;interface QuestionPdfAssetExtractorInterface{/** @return array<int,list<string>> */public function extract(string $pdfPath,string $documentHash):array;}

@@ -1,0 +1,8 @@
+<template><div class="content"><template v-for="(block,index) in blocks" :key="index"><pre v-if="block.kind==='code'" class="code"><code>{{block.value}}</code></pre><table v-else-if="block.kind==='table'" class="table"><tbody><tr v-for="(row,rowIndex) in block.rows" :key="rowIndex"><component :is="rowIndex===0?'th':'td'" v-for="(cell,cellIndex) in row" :key="cellIndex">{{cell}}</component></tr></tbody></table><p v-else>{{block.value}}</p></template></div></template>
+<script setup lang="ts">
+import { computed } from 'vue'
+const props = defineProps<{ readonly value: string }>()
+type Block = { kind: 'text' | 'code' | 'table'; value: string; rows?: string[][] }
+const blocks = computed<Block[]>(() => { const out: Block[] = []; const parts = props.value.replace(/\r/g, '').split('`'.repeat(3)); for (let partIndex = 0; partIndex < parts.length; partIndex++) { const part = parts[partIndex]; if (partIndex % 2 === 1) { out.push({ kind: 'code', value: part.trim() }); continue } for (const item of part.split(/\n{2,}/)) { const lines = item.trim().split('\n'); if (lines.length >= 2 && lines.every((line) => line.includes('|'))) out.push({ kind: 'table', value: '', rows: lines.filter((line) => !/^\s*\|?[-: ]+\|/.test(line)).map((line) => line.split('|').map((cell) => cell.trim()).filter(Boolean)) }); else if (item.trim()) out.push({ kind: 'text', value: item.trim() }) } } return out })
+</script>
+<style scoped>.content p{white-space:pre-line;line-height:1.5}.code{overflow:auto;padding:14px;background:#10213f;color:#e7f0ff;border-radius:10px;font:12px/1.5 monospace}.table{width:100%;border-collapse:collapse;border:1px solid #dce6f4}.table :deep(th),.table :deep(td){padding:8px;border:1px solid #dce6f4;text-align:left}.table :deep(th){background:#edf4ff}</style>

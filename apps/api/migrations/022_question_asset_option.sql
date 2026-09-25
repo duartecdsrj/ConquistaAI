@@ -1,0 +1,1 @@
+ALTER TABLE question_assets ADD COLUMN option_id CHAR(36) NULL AFTER question_id, ADD CONSTRAINT fk_question_assets_option FOREIGN KEY (option_id) REFERENCES question_options(id) ON DELETE CASCADE, ADD INDEX idx_question_assets_option (option_id);

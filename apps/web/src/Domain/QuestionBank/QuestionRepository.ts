@@ -6,6 +6,7 @@ export interface PublishedQuestionOption {
   readonly label: string
   readonly content: string
   readonly position: number
+  readonly assetUrls?: readonly string[]
 }
 export interface PublishedQuestion {
   readonly id: string
@@ -17,6 +18,7 @@ export interface PublishedQuestion {
   readonly taxonomySubjectIds?: readonly string[]
   readonly status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED'
   readonly source?: string | null
+  readonly assetUrls?: readonly string[]
 }
 export interface QuestionFilters extends PageQuery {
   readonly subjectId?: string
