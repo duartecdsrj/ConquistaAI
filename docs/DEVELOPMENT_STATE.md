@@ -735,3 +735,10 @@ docker compose exec -T frontend npm run build
 - O writer passa a criar assunto novo sob o pai sugerido, preservando nível e árvore, em vez de inseri-lo sempre na raiz.
 - Correção de dados aplicada com evidência textual: criado Dados Abertos sob Tecnologia da Informação > Dados e Inteligência Artificial > Governança e Segurança de Dados e reclassificadas 21 questões EXAM em REVIEW/DRAFT que mencionam explicitamente o tema. Auditoria: zero desses itens permanecem em Tecnologia da Informação ou Banco de Dados.
 - Validações: PHPUnit aprovado (46 testes, 112 asserções), build do frontend aprovado e consulta de auditoria confirmada. Nenhum job de IA foi executado neste ciclo.
+
+
+## Avanço atual — limpeza para nova importação
+
+- Limpeza autorizada e executada em transação: removidas 77 questões EXAM em REVIEW/DRAFT importadas por PDF, 373 alternativas, 66 vínculos de taxonomia e 1 ativo visual.
+- Foram preservadas as 3 questões PUBLISHED, a taxonomia canônica (incluindo Dados Abertos), concursos, editais e histórico de jobs.
+- Auditoria posterior: zero questões importadas em REVIEW/DRAFT, zero alternativas órfãs e zero ativos órfãos. A interface está pronta para uma nova importação.
