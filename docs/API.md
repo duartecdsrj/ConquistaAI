@@ -17,9 +17,9 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 
 | Recurso | Rotas |
 | --- | --- |
-| Concursos | `GET, POST /exams`; `GET, PUT, DELETE /exams/{id}` |
+| Concursos | `GET, POST /exams`; `POST /admin/exams/with-notice` (multipart, concurso + PDF); `GET, PUT, DELETE /exams/{id}` |
 | Cargos | `GET, POST /exams/{examId}/positions`; `PATCH, DELETE /positions/{id}` |
-| Editais | `GET, POST /positions/{positionId}/syllabi`; `POST /admin/syllabi/{id}/document` (multipart PDF); `PATCH, DELETE /syllabi/{id}` |
+| Editais | `GET, POST /exams/{examId}/syllabi`; `POST /admin/syllabi/{id}/document` (multipart PDF); `PATCH, DELETE /syllabi/{id}` |
 | Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `PUT /admin/subjects/{id}/taxonomy-subjects`; `GET, PATCH, DELETE /subjects/{id}` |
 | Tags | `GET, POST /tags` |
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
@@ -34,6 +34,8 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 `GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
 
 ### Documento do edital
+
+`POST /api/v1/admin/exams/with-notice` requer `ADMIN` e recebe `multipart/form-data` com `document` opcional e os metadados `name`, `organizer` opcional e `year` opcional; clientes web os enviam como parâmetros da requisição para compatibilidade com o parser multipart. Em uma única transação cria o concurso e seu edital principal; quando há PDF válido, persiste o arquivo, agenda a extração e devolve `{ "exam", "syllabus", "processingJob" }`.
 
 `POST /api/v1/admin/syllabi/{id}/document` requer `ADMIN` e recebe `multipart/form-data` com o campo `document`. O arquivo deve declarar `application/pdf` e iniciar com a assinatura `%PDF-`. O serviço calcula SHA-256, mantém o conteúdo em armazenamento local idempotente e atualiza o edital existente sem criar um novo registro.
 

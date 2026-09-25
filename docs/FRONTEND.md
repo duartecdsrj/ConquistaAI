@@ -133,3 +133,8 @@ O módulo Assistant usa `AssistantPage -> useAssistant -> UseCase -> Repository 
 ## Descoberta web controlada
 
 O módulo Discovery é administrativo e segue `DiscoveryPage -> useDiscovery -> UseCase -> Repository -> Axios -> API`. A tela envia somente consulta e tipo, exibe candidatos e respectivas URLs/proveniência; não realiza navegação HTTP direta nem baixa documentos.
+
+
+## Catálogo: cadastro de concurso com edital
+
+A aba **Concursos** usa `POST /admin/exams/with-notice` por meio de `CatalogUseCases.createExamWithNotice`. A page não monta FormData nem chama HTTP: ela envia os dados ao composable, que usa o caso de uso e o repositório Axios. O PDF é opcional, mas, quando fornecido, o backend cria o edital principal e agenda sua extração automaticamente.

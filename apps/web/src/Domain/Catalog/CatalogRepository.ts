@@ -1,14 +1,16 @@
 export interface Exam { readonly id: string; readonly name: string; readonly organizer: string | null; readonly year: number | null }
 export interface Position { readonly id: string; readonly examId: string; readonly name: string; readonly emphasis: string | null }
-export interface Syllabus { readonly id: string; readonly positionId: string; readonly name: string; readonly publishedAt: string | null; readonly sourceUrl: string | null; readonly documentSha256: string | null; readonly documentOriginalName: string | null; readonly documentMimeType: string | null; readonly documentSize: number | null }
+export interface Syllabus { readonly id: string; readonly examId: string; readonly name: string; readonly publishedAt: string | null; readonly sourceUrl: string | null; readonly documentSha256: string | null; readonly documentOriginalName: string | null; readonly documentMimeType: string | null; readonly documentSize: number | null }
 export interface Subject { readonly id: string; readonly syllabusId: string; readonly parentId: string | null; readonly name: string; readonly sortOrder: number; readonly sourceExcerpt: string | null; readonly sourcePage: number | null; readonly sourceStartOffset: number | null; readonly sourceEndOffset: number | null }
 export interface SubjectProvenance { readonly sourceExcerpt?: string; readonly sourcePage?: number }
 export interface SyllabusProcessingJob { readonly id: string; readonly syllabusId: string; readonly documentSha256: string; readonly status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'; readonly progress: number; readonly errorMessage: string | null; readonly createdAt: string; readonly startedAt: string | null; readonly finishedAt: string | null }
 export interface SyllabusDocumentExtraction { readonly documentSha256: string; readonly pageNumber: number; readonly textContent: string; readonly startOffset: number; readonly endOffset: number }
 export interface Tag { readonly id: string; readonly name: string }
+export interface ExamWithNotice { readonly exam: Exam; readonly syllabus: Syllabus | null; readonly processingJob: SyllabusProcessingJob | null }
 export interface CatalogRepository {
   listExams(): Promise<readonly Exam[]>
   createExam(input: Omit<Exam, 'id'>): Promise<Exam>
+  createExamWithNotice(input: Omit<Exam, 'id'>, document: File | null): Promise<ExamWithNotice>
   listPositions(examId: string): Promise<readonly Position[]>
   createPosition(examId: string, name: string, emphasis?: string): Promise<Position>
   listSyllabi(positionId: string): Promise<readonly Syllabus[]>

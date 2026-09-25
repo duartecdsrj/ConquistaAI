@@ -547,3 +547,13 @@ docker compose exec -T frontend npm run build
 - A suíte Playwright do ambiente `concursos-e2e` foi aprovada: Login e Caderno em desktop e mobile (4 testes).
 - O runner não requer UUID nem credencial pessoal; os únicos dados de acesso são os valores determinísticos declarados exclusivamente em `compose.e2e.yaml`.
 - O cronômetro é mascarado na comparação do screenshot por ser o único elemento variável; todo o restante do viewport é comparado.
+
+
+## 2026-09-24 — Catálogo: concurso com edital
+
+- Entregue o endpoint administrativo `POST /api/v1/admin/exams/with-notice`: recebe concurso, organizadora, ano e PDF opcional em multipart, cria o edital principal e agenda a extração no mesmo fluxo quando há documento.
+- A tela Catálogo foi reorganizada para a referência: abas, busca, tabela de concursos e modal de inclusão com anexo do edital. O adaptador Axios é o único ponto que constrói `FormData`.
+- Corrigida a divergência do cliente: editais pertencem ao concurso e agora são consultados em `/exams/{examId}/syllabi`, consistente com a API após a migração 015.
+- Validações: lint PHP dos módulos Catalog e `docker compose exec -T frontend npm run build` aprovados.
+- Pendência de produto deliberada: propostas de cargos, taxonomia e percentuais por concurso precisam de endpoint persistido de proposta/revisão e de fonte auditável de provas anteriores. A extração do PDF já é automática; a publicação editorial não será automatizada silenciosamente.
+- Próximo passo: modelar o job de análise com evidências por página, revisão administrativa e distribuição de assuntos usada pelo gerador de cadernos.
