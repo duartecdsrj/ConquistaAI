@@ -148,3 +148,8 @@ A tela apresenta os concursos na primeira aba. Ao abrir Cargos ou Editais, o adm
 ## Histórico de PDFs importados
 
 A tela Import restaura os jobs persistidos ao ser aberta. Itens pendentes ou em processamento ficam visíveis e atualizam por polling; itens concluídos ou com falha permanecem no histórico recolhido, aberto sob demanda. A listagem é fornecida por `ImportUseCases` e `AxiosImportRepository`, sem estado local como fonte de verdade.
+
+
+## Conteúdo rico de questões
+
+A revisão editorial e a execução de caderno reutilizam `QuestionContent.vue` para apresentar texto, tabelas Markdown e blocos de código, e `QuestionAssetImage.vue` para imagens extraídas do PDF. Este último obtém o binário com Axios autenticado e expõe somente uma URL Blob temporária ao componente de imagem; não há rota pública de arquivos.

@@ -705,3 +705,5 @@ docker compose exec -T frontend npm run build
 - Migration 022 adiciona option_id aos ativos; o classificador pode declarar image_pages por alternativa e revisão/caderno exibem figuras no cartão correto.
 - Auditoria corrigiu o contrato do classificador: type=MULTIPLE_CHOICE volta a ser exigido e emitido; diretório de ativos novos usa permissões legíveis pelo processo da API.
 - Contrato do prompt revalidado literalmente: cada questão retornada deve conter type=MULTIPLE_CHOICE, em consonância com a barreira do writer.
+
+- Job autorizado `a178019b-b8e3-11f1-8ce7-d285a492b84d` foi cancelado deliberadamente pelo administrador após validação parcial. Até o cancelamento: 1.860 páginas, 803 candidatas, 16 lotes, 62 questões extraídas, 52 criadas, 6 duplicadas, 4 descartadas/erro, 41 classificadas e 174 ativos visuais (35 nas alternativas). O estado CANCELLED foi preservado; nenhuma nova chamada à IA foi iniciada. Validações: PHPUnit 43 testes/109 asserções e build do frontend aprovados.

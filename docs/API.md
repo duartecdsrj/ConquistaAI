@@ -165,8 +165,12 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 
 `POST /api/v1/admin/question-pdf-imports` requer ADMIN e recebe `multipart/form-data` com `syllabus_id` e um ou mais `documents[]` em PDF. Cada arquivo gera um job isolado e devolve uma lista com `id`, status, progresso, páginas candidatas, questões extraídas, criadas, duplicadas, com erro, classificadas e assuntos canônicos criados.
 
-`GET /api/v1/admin/question-pdf-imports/{id}` permite ao administrador que criou o job acompanhar a mesma estrutura. Estados: `PENDING`, `PROCESSING`, `COMPLETED` e `FAILED`. O worker transmite somente páginas candidatas a questão e a lista de taxonomia ao provider de IA autorizado; o PDF original não é transmitido integralmente. Questões são criadas como `REVIEW`, sem gabarito inventado.
+`GET /api/v1/admin/question-pdf-imports/{id}` permite ao administrador que criou o job acompanhar a mesma estrutura. Estados: `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED` e `CANCELLED`. O worker transmite somente páginas candidatas a questão e a lista de taxonomia ao provider de IA autorizado; o PDF original não é transmitido integralmente. Questões são criadas como `REVIEW`, sem gabarito inventado.
 
+
+### Ativos visuais de questões
+
+`GET /api/v1/question-assets/{id}` requer autenticação e entrega uma figura extraída do PDF. Figuras de questões `PUBLISHED` ficam disponíveis a qualquer usuário autenticado; ativos de itens em `REVIEW` ou `DRAFT` são restritos a ADMIN. O cliente deve buscá-los autenticadamente, sem URL pública do arquivo.
 
 ### Seleção global por edital
 
