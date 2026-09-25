@@ -4,14 +4,15 @@ export class CatalogUseCases {
   public constructor(private readonly repository: CatalogRepository) {}
   public listExams(): Promise<readonly Exam[]> { return this.repository.listExams() }
   public createExam(name: string, organizer: string, year: number | null): Promise<Exam> { return this.repository.createExam({ name: required(name, 'Informe o nome do concurso.'), organizer: optional(organizer), year }) }
+  public updateExam(id: string, name: string, organizer: string, year: number | null): Promise<Exam> { return this.repository.updateExam(id, { name: required(name, 'Informe o nome do concurso.'), organizer: optional(organizer), year }) }
   public createExamWithNotice(name: string, organizer: string, year: number | null, document: File | null): Promise<ExamWithNotice> {
     if (document && document.type !== 'application/pdf') throw new Error('Selecione um arquivo PDF.')
     return this.repository.createExamWithNotice({ name: required(name, 'Informe o nome do concurso.'), organizer: optional(organizer), year }, document)
   }
   public listPositions(examId: string): Promise<readonly Position[]> { return this.repository.listPositions(examId) }
   public createPosition(examId: string, name: string, emphasis: string): Promise<Position> { return this.repository.createPosition(examId, required(name, 'Informe o nome do cargo.'), optional(emphasis) ?? undefined) }
-  public listSyllabi(positionId: string): Promise<readonly Syllabus[]> { return this.repository.listSyllabi(positionId) }
-  public createSyllabus(positionId: string, name: string): Promise<Syllabus> { return this.repository.createSyllabus(positionId, required(name, 'Informe o nome do edital.')) }
+  public listSyllabi(examId: string): Promise<readonly Syllabus[]> { return this.repository.listSyllabi(examId) }
+  public createSyllabus(examId: string, name: string): Promise<Syllabus> { return this.repository.createSyllabus(examId, required(name, 'Informe o nome do edital.')) }
   public uploadSyllabusDocument(syllabusId: string, document: File): Promise<void> {
     if (document.type !== 'application/pdf') throw new Error('Selecione um arquivo PDF.')
     return this.repository.uploadSyllabusDocument(syllabusId, document)

@@ -10,11 +10,12 @@ export interface ExamWithNotice { readonly exam: Exam; readonly syllabus: Syllab
 export interface CatalogRepository {
   listExams(): Promise<readonly Exam[]>
   createExam(input: Omit<Exam, 'id'>): Promise<Exam>
+  updateExam(id: string, input: Omit<Exam, 'id'>): Promise<Exam>
   createExamWithNotice(input: Omit<Exam, 'id'>, document: File | null): Promise<ExamWithNotice>
   listPositions(examId: string): Promise<readonly Position[]>
   createPosition(examId: string, name: string, emphasis?: string): Promise<Position>
-  listSyllabi(positionId: string): Promise<readonly Syllabus[]>
-  createSyllabus(positionId: string, name: string, publishedAt?: string, sourceUrl?: string): Promise<Syllabus>
+  listSyllabi(examId: string): Promise<readonly Syllabus[]>
+  createSyllabus(examId: string, name: string, publishedAt?: string, sourceUrl?: string): Promise<Syllabus>
   uploadSyllabusDocument(syllabusId: string, document: File): Promise<void>
   queueSyllabusProcessing(syllabusId: string, reprocess?: boolean): Promise<SyllabusProcessingJob>
   getLatestSyllabusProcessing(syllabusId: string): Promise<SyllabusProcessingJob>

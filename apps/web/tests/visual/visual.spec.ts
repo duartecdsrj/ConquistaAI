@@ -21,3 +21,18 @@ test('caderno mantém a composição autenticada', async ({ page }, testInfo) =>
   await expect(page.getByText(/questão/i).first()).toBeVisible()
   await expect(page).toHaveScreenshot('caderno.png', { fullPage: false, animations: 'disabled', mask: [page.locator('.timer')] })
 })
+
+
+test('catálogo apresenta escopo explícito sem acionar processamento', async ({ page }, testInfo) => {
+  test.skip(!process.env.E2E_EMAIL || !process.env.E2E_PASSWORD, 'Defina a fixture E2E.')
+  await page.goto('/')
+  await page.getByLabel('E-mail').fill(process.env.E2E_EMAIL!)
+  await page.getByLabel('Senha').fill(process.env.E2E_PASSWORD!)
+  await page.getByRole('button', { name: 'Entrar na plataforma' }).click()
+  if (testInfo.project.name === 'mobile') await page.getByLabel('Abrir navegação').click()
+  await page.getByText('Catálogo', { exact: true }).first().click()
+  await expect(page.getByRole('heading', { name: 'Catálogo' })).toBeVisible()
+  await page.getByRole('tab', { name: 'Editais' }).click()
+  await expect(page.getByText('Selecione um concurso para ver somente os dados relacionados a ele.')).toBeVisible()
+  await expect(page).toHaveScreenshot('catalogo.png', { fullPage: true, animations: 'disabled' })
+})

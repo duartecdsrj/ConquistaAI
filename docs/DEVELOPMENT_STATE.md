@@ -565,3 +565,10 @@ docker compose exec -T frontend npm run build
 - Validações: lint PHP dos módulos Catalog e `docker compose exec -T frontend npm run build` aprovados.
 - Pendência de produto deliberada: propostas de cargos, taxonomia e percentuais por concurso precisam de endpoint persistido de proposta/revisão e de fonte auditável de provas anteriores. A extração do PDF já é automática; a publicação editorial não será automatizada silenciosamente.
 - Próximo passo: modelar o job de análise com evidências por página, revisão administrativa e distribuição de assuntos usada pelo gerador de cadernos.
+
+
+## 2026-09-25 — Revisão de fluxo do Catálogo
+
+- Corrigida a incoerência de navegação: Cargos e Editais são sempre filtrados pelo concurso escolhido; Assuntos exige a seleção de um edital; Tags são globais.
+- Ações da tabela agora são reais: visualizar abre o contexto de gerenciamento e editar usa `PUT /exams/{id}`. Também foi restaurada a inclusão posterior de edital e o envio de PDF, sem qualquer enfileiramento de job pela interface.
+- Adicionado teste visual Playwright do Catálogo que percorre a aba Editais sem acionar processamento de IA.

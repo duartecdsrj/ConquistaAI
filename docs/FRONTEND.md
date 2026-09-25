@@ -138,3 +138,8 @@ O módulo Discovery é administrativo e segue `DiscoveryPage -> useDiscovery -> 
 ## Catálogo: cadastro de concurso com edital
 
 A aba **Concursos** usa `POST /admin/exams/with-notice` por meio de `CatalogUseCases.createExamWithNotice`. A page não monta FormData nem chama HTTP: ela envia os dados ao composable, que usa o caso de uso e o repositório Axios. O PDF é opcional, mas, quando fornecido, o backend cria o edital principal e agenda sua extração automaticamente.
+
+
+## Catálogo contextual
+
+A tela apresenta os concursos na primeira aba. Ao abrir Cargos ou Editais, o administrador seleciona antes o concurso; as listagens e criações ficam limitadas a esse escopo. A aba Assuntos requer adicionalmente a escolha de um edital. Tags são globais. Ações de visualizar levam ao contexto do concurso e editar usa `CatalogUseCases.updateExam`; o envio posterior de PDF apenas anexa o arquivo e não enfileira processamento.
