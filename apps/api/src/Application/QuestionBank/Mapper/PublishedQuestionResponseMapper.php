@@ -26,6 +26,9 @@ final class PublishedQuestionResponseMapper
                 ),
                 $question->options,
             ),
+            $question->taxonomySubjectIds,
+            $question->status,
+            $question->source,
         );
     }
 }

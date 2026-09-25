@@ -1,0 +1,1 @@
+ALTER TABLE question_pdf_import_jobs MODIFY status ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED') NOT NULL;

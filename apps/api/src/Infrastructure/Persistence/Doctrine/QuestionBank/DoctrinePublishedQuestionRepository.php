@@ -100,6 +100,9 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
             $question->board,
             $question->examYear,
             $options,
+            array_map(static fn (object $assignment): string => $assignment->taxonomySubjectId, $this->entityManager->createQueryBuilder()->select('assignment')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionTaxonomySubjectRecord', 'assignment')->where('assignment.questionId = :questionId')->setParameter('questionId', $question->id)->getQuery()->getResult()),
+            $question->status,
+            $question->source,
         );
     }
 }

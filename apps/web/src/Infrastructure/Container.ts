@@ -18,7 +18,7 @@ import { AxiosQuestionRepository } from './QuestionBank/AxiosQuestionRepository'
 import { AxiosStudyRepository } from './Study/AxiosStudyRepository'
 import { AxiosTaxonomyRepository } from './Taxonomy/AxiosTaxonomyRepository'
 import { AxiosEditorialRepository } from './Editorial/AxiosEditorialRepository'
-import { AssignEditorialQuestionTaxonomyUseCase, ListDraftQuestionsUseCase, PublishEditorialQuestionUseCase } from '../Application/Editorial/EditorialUseCases'
+import { AssignEditorialQuestionTaxonomyUseCase, ListDraftQuestionsUseCase, MarkEditorialQuestionsForApprovalUseCase, PublishEditorialQuestionUseCase } from '../Application/Editorial/EditorialUseCases'
 import { CreateTaxonomySubjectAliasUseCase, CreateTaxonomySubjectUseCase, MergeTaxonomySubjectsUseCase, ListTaxonomyReconciliationProposalsUseCase, ListTaxonomySubjectsUseCase, ListTaxonomyDuplicateSuggestionsUseCase, UpdateTaxonomySubjectUseCase } from '../Application/Taxonomy/TaxonomyUseCases'
 
 const sessionStore = new BrowserSessionStore()
@@ -57,4 +57,4 @@ export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(perform
 export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())
 export const importUseCases = new ImportUseCases(new AxiosImportRepository())
 const editorialRepository = new AxiosEditorialRepository()
-export const editorialUseCases = { listDrafts: new ListDraftQuestionsUseCase(editorialRepository), publish: new PublishEditorialQuestionUseCase(editorialRepository), assignTaxonomy: new AssignEditorialQuestionTaxonomyUseCase(editorialRepository) }
+export const editorialUseCases = { listDrafts: new ListDraftQuestionsUseCase(editorialRepository), publish: new PublishEditorialQuestionUseCase(editorialRepository), assignTaxonomy: new AssignEditorialQuestionTaxonomyUseCase(editorialRepository), markForApproval: new MarkEditorialQuestionsForApprovalUseCase(editorialRepository) }

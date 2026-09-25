@@ -1,5 +1,34 @@
 <?php
 declare(strict_types=1);
 namespace App\Interface\Http\QuestionBank;
-use App\Application\QuestionBank\Mapper\QuestionPdfImportJobResponseMapper;use App\Application\QuestionBank\Service\GetQuestionPdfImportJobService;use App\Application\QuestionBank\Service\QueueQuestionPdfImportService;use App\Application\Identity\Service\AuthService;use App\Infrastructure\Database;use App\Infrastructure\Http\ApiResponseFactory;use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionPdfImportJobRepository;use App\Infrastructure\Storage\LocalQuestionPdfDocumentStorage;use App\Interface\Http\Identity\IdentityRequestFactory;use App\Interface\Http\QuestionBank\Controller\QuestionPdfImportController;use InvalidArgumentException;use Psr\Http\Message\ResponseInterface;use Psr\Http\Message\ServerRequestInterface;use Slim\App;
-final class QuestionPdfImportRouteRegistrar { public function __construct(private readonly ApiResponseFactory $responses,private readonly AuthService $auth){} public function register(App $app):void{$em=DoctrineEntityManagerFactory::create();$mapper=new QuestionPdfImportJobResponseMapper();$jobs=new DoctrineQuestionPdfImportJobRepository($em);$controller=new QuestionPdfImportController($this->auth,new QueueQuestionPdfImportService($jobs,new LocalQuestionPdfDocumentStorage(Database::env('QUESTION_PDF_DOCUMENT_DIRECTORY','/app/storage/question-pdfs')),$mapper,new DoctrineTransactionManager($em)),new GetQuestionPdfImportJobService($jobs,$mapper),$this->responses);$input=new QuestionPdfImportRequestFactory();$identity=new IdentityRequestFactory();$responses=$this->responses;$app->post('/v1/admin/question-pdf-imports',static function(ServerRequestInterface $request,ResponseInterface $response)use($controller,$input,$identity,$responses):ResponseInterface{try{return $controller->queue($request,$response,$identity->accessToken($request),$input->queue($request));}catch(InvalidArgumentException){return $responses->problem($response,'VALIDATION_FAILED','Um ou mais campos sao invalidos.',422,(string)$request->getAttribute('request_id'));}});$app->get('/v1/admin/question-pdf-imports/{id}',static fn(ServerRequestInterface $request,ResponseInterface $response,array $args):ResponseInterface=>$controller->get($request,$response,$identity->accessToken($request),(string)$args['id']));} }
+use App\Application\QuestionBank\Mapper\QuestionPdfImportJobResponseMapper;
+use App\Application\QuestionBank\Service\GetQuestionPdfImportJobService;use App\Application\QuestionBank\Service\CancelQuestionPdfImportJobService;
+use App\Application\QuestionBank\Service\ListQuestionPdfImportJobsService;
+use App\Application\QuestionBank\Service\QueueQuestionPdfImportService;
+use App\Application\Identity\Service\AuthService;
+use App\Infrastructure\Database;
+use App\Infrastructure\Http\ApiResponseFactory;
+use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
+use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
+use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionPdfImportJobRepository;
+use App\Infrastructure\Storage\LocalQuestionPdfDocumentStorage;
+use App\Interface\Http\Identity\IdentityRequestFactory;
+use App\Interface\Http\QuestionBank\Controller\QuestionPdfImportController;
+use InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Slim\App;
+final class QuestionPdfImportRouteRegistrar
+{
+    public function __construct(private readonly ApiResponseFactory $responses, private readonly AuthService $auth) {}
+    public function register(App $app): void
+    {
+        $em = DoctrineEntityManagerFactory::create(); $mapper = new QuestionPdfImportJobResponseMapper(); $jobs = new DoctrineQuestionPdfImportJobRepository($em);
+        $controller = new QuestionPdfImportController($this->auth, new QueueQuestionPdfImportService($jobs, new LocalQuestionPdfDocumentStorage(Database::env('QUESTION_PDF_DOCUMENT_DIRECTORY', '/app/storage/question-pdfs')), $mapper, new DoctrineTransactionManager($em)), new GetQuestionPdfImportJobService($jobs, $mapper), new ListQuestionPdfImportJobsService($jobs, $mapper), new CancelQuestionPdfImportJobService($jobs), $this->responses);
+        $input = new QuestionPdfImportRequestFactory(); $identity = new IdentityRequestFactory(); $responses = $this->responses;
+        $app->post('/v1/admin/question-pdf-imports', static function (ServerRequestInterface $request, ResponseInterface $response) use ($controller, $input, $identity, $responses): ResponseInterface { try { return $controller->queue($request, $response, $identity->accessToken($request), $input->queue($request)); } catch (InvalidArgumentException) { return $responses->problem($response, 'VALIDATION_FAILED', 'Um ou mais campos sao invalidos.', 422, (string) $request->getAttribute('request_id')); } });
+        $app->get('/v1/admin/question-pdf-imports', static function (ServerRequestInterface $request, ResponseInterface $response) use ($controller, $input, $identity, $responses): ResponseInterface { try { return $controller->list($request, $response, $identity->accessToken($request), $input->list($request)); } catch (InvalidArgumentException) { return $responses->problem($response, 'VALIDATION_FAILED', 'Parametros de paginacao invalidos.', 422, (string) $request->getAttribute('request_id')); } });
+        $app->post('/v1/admin/question-pdf-imports/{id}/cancel', static fn (ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface => $controller->cancel($request, $response, $identity->accessToken($request), (string) $args['id']));
+        $app->get('/v1/admin/question-pdf-imports/{id}', static fn (ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface => $controller->get($request, $response, $identity->accessToken($request), (string) $args['id']));
+    }
+}

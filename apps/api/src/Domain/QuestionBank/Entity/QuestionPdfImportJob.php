@@ -1,2 +1,9 @@
 <?php
-declare(strict_types=1); namespace App\Domain\QuestionBank\Entity; final readonly class QuestionPdfImportJob { public function __construct(public string $id,public ?string $syllabusId,public string $createdBy,public string $documentPath,public string $documentSha256,public string $documentOriginalName,public string $status,public int $progress,public int $pageCount,public int $candidatePages,public int $extractedQuestions,public int $classifiedQuestions,public int $createdQuestions,public int $duplicateQuestions,public int $failedQuestions,public int $createdTaxonomySubjects,public ?string $errorMessage,public \DateTimeImmutable $createdAt,public ?\DateTimeImmutable $startedAt=null,public ?\DateTimeImmutable $finishedAt=null){} }
+declare(strict_types=1);
+namespace App\Domain\QuestionBank\Entity;
+final readonly class QuestionPdfImportJob
+{
+    public function __construct(
+        public string $id, public ?string $syllabusId, public string $createdBy, public string $documentPath, public string $documentSha256, public string $documentOriginalName, public string $status, public int $progress, public int $pageCount, public int $candidatePages, public int $processedChunks, public int $retryCount, public ?\DateTimeImmutable $nextAttemptAt, public int $extractedQuestions, public int $classifiedQuestions, public int $createdQuestions, public int $duplicateQuestions, public int $failedQuestions, public int $createdTaxonomySubjects, public ?string $errorMessage, public \DateTimeImmutable $createdAt, public ?\DateTimeImmutable $startedAt = null, public ?\DateTimeImmutable $finishedAt = null,
+    ) {}
+}

@@ -650,3 +650,45 @@ docker compose exec -T frontend npm run build
 - O seletor de caderno aceita syllabus_id e cruza os assuntos canônicos do edital com as questões globais.
 - Correção de sessão: o cliente Axios usa o refresh token HttpOnly após um 401, compartilha a renovação concorrente, salva o novo access token e repete uma vez a requisição original; falha de refresh limpa a sessão.
 - Validação: build frontend aprovado. Pendente: expor edição e visualização de pesos no Catálogo e implementar a calibração histórica/IA.
+
+
+## Avanço atual — upload e pesos no Catálogo
+
+- Corrigido erro de cliente ao receber resposta sem envelope: `ApiRequestError` agora protege `failure.error` ausente.
+- Causa do upload identificada como 413 do Nginx para o PDF de 39 MB; Nginx e PHP agora aceitam uploads de até 100 MB.
+- O Catálogo passou a exibir peso, origem e confiança de cada assunto de edital.
+- Validação: containers API/proxy/worker reconstruídos com os limites novos e build frontend aprovado.
+
+- Validação final do proxy: o container Nginx foi recriado forçadamente e nginx -T confirma client_max_body_size 100m em execução; GET /health respondeu 200. O PDF de 39 MB passa a ficar dentro do limite aceito.
+
+
+## Avanço atual — histórico de importações de PDFs
+
+- Adicionado GET /admin/question-pdf-imports paginado, restrito aos jobs criados pelo administrador autenticado e ordenado do mais recente para o mais antigo.
+- A tela Import restaura os jobs ao entrar: pendentes e em processamento são exibidos e atualizados; concluídos e falhos ficam no histórico recolhido, acionado pelo botão correspondente.
+- Validações: lint PHP dos serviços, repositório, controller e rota aprovado; build do frontend aprovado.
+
+
+## Avanço atual — resiliência da importação de PDFs
+
+- Migration 019 adicionou cursor de lotes, contagem de retentativas e próxima execução aos jobs de PDF. Indisponibilidade transitória do provider de IA agora retorna o job à fila com espera progressiva (1, 2, 4, 8 e 15 minutos) e retoma do último lote persistido; após cinco retentativas o job falha com mensagem segura.
+- A revisão editorial agora lista estados DRAFT e REVIEW. Assim, as questões criadas pela importação de PDF tornam-se visíveis para classificação e validação administrativa.
+- Validações: migration 019 aplicada; lint PHP e build frontend aprovados.
+
+
+## Avanço atual — limpeza e revisão de questões importadas
+
+- Exclusão autorizada executada em transação: removidas 261 questões REVIEW originadas da importação de PDF, suas 1.256 alternativas e 236 associações canônicas. Foram preservadas 2 questões DRAFT, 3 PUBLISHED e o job histórico.
+- O contrato de leitura editorial agora devolve status e assuntos canônicos associados; a tela inicializa o seletor com a classificação já persistida.
+- Adicionado comando administrativo de marcação em lote: questões REVIEW selecionadas passam para DRAFT, permanecendo a publicação como etapa que exige gabarito válido.
+- Validações: lint PHP e build frontend aprovados. Pendente do mesmo recurso: persistir ativos extraídos por página do PDF, vinculá-los à questão e renderizar com segurança imagens, tabelas e blocos de código; o worker também deve rejeitar explicitamente itens discursivos e de certo/errado antes da gravação.
+
+
+## Avanço atual — interrupção de importação de PDF
+
+- Adicionado cancelamento persistente de jobs PENDING/PROCESSING, com rota administrativa e botão Interromper na lista de importações em andamento.
+- O worker consulta o estado antes e depois de cada lote: um job cancelado não volta a PROCESSING nem grava novos lotes após a confirmação do cancelamento.
+- Validação: build frontend e lint PHP aprovados.
+- Migration 020 aplicada: o ENUM de jobs agora aceita CANCELLED. O job ativo 1c381fd1-ee51-4fd1-b31e-93aea6fdd54e foi cancelado em 16% após 15 lotes; worker confirmado ocioso em ciclos posteriores.
+
+- Limpeza adicional autorizada: removidas 53 questões REVIEW de PDF; DRAFT e PUBLISHED preservadas. Revisão agora apresenta cabeçalho de banca/concurso-ano/cargo, separa afirmativas romanas e preenche assuntos canônicos pelo nome; writer sanitiza prefixos A-E duplicados nas alternativas.

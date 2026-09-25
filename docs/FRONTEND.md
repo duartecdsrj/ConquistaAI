@@ -143,3 +143,8 @@ A aba **Concursos** usa `POST /admin/exams/with-notice` por meio de `CatalogUseC
 ## Catálogo contextual
 
 A tela apresenta os concursos na primeira aba. Ao abrir Cargos ou Editais, o administrador seleciona antes o concurso; as listagens e criações ficam limitadas a esse escopo. A aba Assuntos requer adicionalmente a escolha de um edital. Tags são globais. Ações de visualizar levam ao contexto do concurso e editar usa `CatalogUseCases.updateExam`; o envio posterior de PDF apenas anexa o arquivo e não enfileira processamento.
+
+
+## Histórico de PDFs importados
+
+A tela Import restaura os jobs persistidos ao ser aberta. Itens pendentes ou em processamento ficam visíveis e atualizam por polling; itens concluídos ou com falha permanecem no histórico recolhido, aberto sob demanda. A listagem é fornecida por `ImportUseCases` e `AxiosImportRepository`, sem estado local como fonte de verdade.

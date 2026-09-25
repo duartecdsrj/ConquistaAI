@@ -9,5 +9,6 @@ RUN apk add --no-cache poppler-utils \
 WORKDIR /app
 COPY --from=dependencies /app/vendor ./vendor
 COPY . .
+COPY docker-upload.ini /usr/local/etc/php/conf.d/uploads.ini
 EXPOSE 8000
 CMD ["sh", "-c", "php bin/migrate.php && php -S 0.0.0.0:8000 -t public public/router.php"]

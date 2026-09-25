@@ -14,6 +14,9 @@ export interface PublishedQuestion {
   readonly board: string | null
   readonly year: number | null
   readonly options: readonly PublishedQuestionOption[]
+  readonly taxonomySubjectIds?: readonly string[]
+  readonly status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED'
+  readonly source?: string | null
 }
 export interface QuestionFilters extends PageQuery {
   readonly subjectId?: string

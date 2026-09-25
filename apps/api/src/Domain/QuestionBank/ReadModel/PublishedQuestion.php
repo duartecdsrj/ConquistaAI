@@ -13,6 +13,9 @@ final readonly class PublishedQuestion
         public ?string $board,
         public ?int $year,
         public array $options,
+        /** @var list<string> */ public array $taxonomySubjectIds = [],
+        public string $status = 'PUBLISHED',
+        public ?string $source = null,
     ) {
     }
 }

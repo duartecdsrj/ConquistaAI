@@ -1,5 +1,44 @@
 <?php
 declare(strict_types=1);
 namespace App\Interface\Http\QuestionBank\Controller;
-use App\Application\Identity\DTO\Request\AccessTokenRequestDto;use App\Application\Identity\Service\AuthService;use App\Application\QuestionBank\DTO\Request\QueueQuestionPdfImportRequestDto;use App\Application\QuestionBank\Service\GetQuestionPdfImportJobService;use App\Application\QuestionBank\Service\QueueQuestionPdfImportService;use App\Domain\Identity\Exception\UnavailableUserException;use App\Infrastructure\Http\ApiResponseFactory;use DomainException;use Psr\Http\Message\ResponseInterface;use Psr\Http\Message\ServerRequestInterface;
-final class QuestionPdfImportController { public function __construct(private readonly AuthService $auth,private readonly QueueQuestionPdfImportService $queue,private readonly GetQuestionPdfImportJobService $get,private readonly ApiResponseFactory $responses){} /** @param list<QueueQuestionPdfImportRequestDto> $inputs */ public function queue(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,array $inputs):ResponseInterface{$user=$this->admin($request,$response,$access);if($user instanceof ResponseInterface)return$user;try{$jobs=[];foreach($inputs as $input)$jobs[]=$this->queue->queue(new QueueQuestionPdfImportRequestDto($user->id,$input->originalName,$input->mimeType,$input->contents));return $this->responses->success($response,$jobs,(string)$request->getAttribute('request_id'),201);}catch(\InvalidArgumentException|DomainException){return $this->responses->problem($response,'VALIDATION_FAILED','Nao foi possivel enfileirar os PDFs.',422,(string)$request->getAttribute('request_id'));}} public function get(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access,string $id):ResponseInterface{$user=$this->admin($request,$response,$access);if($user instanceof ResponseInterface)return$user;$job=$this->get->get($id,$user->id);return $job===null?$this->responses->problem($response,'RESOURCE_NOT_FOUND','Recurso nao encontrado.',404,(string)$request->getAttribute('request_id')):$this->responses->success($response,$job,(string)$request->getAttribute('request_id'));} private function admin(ServerRequestInterface $request,ResponseInterface $response,AccessTokenRequestDto $access):\App\Application\Identity\DTO\Response\CurrentUserResponseDto|ResponseInterface{try{$u=$this->auth->currentUser($access);return in_array('ADMIN',$u->roles,true)?$u:$this->responses->problem($response,'FORBIDDEN','Permissao insuficiente.',403,(string)$request->getAttribute('request_id'));}catch(DomainException|UnavailableUserException){return $this->responses->problem($response,'UNAUTHENTICATED','Credenciais invalidas ou expiradas.',401,(string)$request->getAttribute('request_id'));}} }
+use App\Application\Identity\DTO\Request\AccessTokenRequestDto;
+use App\Application\Identity\Service\AuthService;
+use App\Application\QuestionBank\DTO\Request\ListQuestionPdfImportJobsRequestDto;
+use App\Application\QuestionBank\DTO\Request\QueueQuestionPdfImportRequestDto;
+use App\Application\QuestionBank\Service\GetQuestionPdfImportJobService;use App\Application\QuestionBank\Service\CancelQuestionPdfImportJobService;
+use App\Application\QuestionBank\Service\ListQuestionPdfImportJobsService;
+use App\Application\QuestionBank\Service\QueueQuestionPdfImportService;
+use App\Domain\Identity\Exception\UnavailableUserException;
+use App\Infrastructure\Http\ApiResponseFactory;
+use DomainException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+final class QuestionPdfImportController
+{
+    public function __construct(private readonly AuthService $auth, private readonly QueueQuestionPdfImportService $queue, private readonly GetQuestionPdfImportJobService $get, private readonly ListQuestionPdfImportJobsService $list, private readonly CancelQuestionPdfImportJobService $cancel, private readonly ApiResponseFactory $responses) {}
+    /** @param list<QueueQuestionPdfImportRequestDto> $inputs */
+    public function queue(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, array $inputs): ResponseInterface
+    {
+        $user = $this->admin($request, $response, $access); if ($user instanceof ResponseInterface) return $user;
+        try { $jobs = []; foreach ($inputs as $input) $jobs[] = $this->queue->queue(new QueueQuestionPdfImportRequestDto($user->id, $input->originalName, $input->mimeType, $input->contents)); return $this->responses->success($response, $jobs, (string) $request->getAttribute('request_id'), 201); }
+        catch (\InvalidArgumentException|DomainException) { return $this->responses->problem($response, 'VALIDATION_FAILED', 'Nao foi possivel enfileirar os PDFs.', 422, (string) $request->getAttribute('request_id')); }
+    }
+    public function list(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, ListQuestionPdfImportJobsRequestDto $input): ResponseInterface
+    {
+        $user = $this->admin($request, $response, $access); if ($user instanceof ResponseInterface) return $user;
+        $result = $this->list->list($user->id, $input);
+        return $this->responses->paginated($response, $result->items, (string) $request->getAttribute('request_id'), $result->page, $result->perPage, $result->total);
+    }
+    public function cancel(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, string $id): ResponseInterface { $user=$this->admin($request,$response,$access); if($user instanceof ResponseInterface)return $user; return $this->cancel->cancel($id,$user->id)?$this->responses->success($response,['id'=>$id,'status'=>'CANCELLED'],(string)$request->getAttribute('request_id')):$this->responses->problem($response,'STATE_CONFLICT','A importação não pode mais ser interrompida.',409,(string)$request->getAttribute('request_id')); }
+    public function get(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access, string $id): ResponseInterface
+    {
+        $user = $this->admin($request, $response, $access); if ($user instanceof ResponseInterface) return $user;
+        $job = $this->get->get($id, $user->id);
+        return $job === null ? $this->responses->problem($response, 'RESOURCE_NOT_FOUND', 'Recurso nao encontrado.', 404, (string) $request->getAttribute('request_id')) : $this->responses->success($response, $job, (string) $request->getAttribute('request_id'));
+    }
+    private function admin(ServerRequestInterface $request, ResponseInterface $response, AccessTokenRequestDto $access): \App\Application\Identity\DTO\Response\CurrentUserResponseDto|ResponseInterface
+    {
+        try { $user = $this->auth->currentUser($access); return in_array('ADMIN', $user->roles, true) ? $user : $this->responses->problem($response, 'FORBIDDEN', 'Permissao insuficiente.', 403, (string) $request->getAttribute('request_id')); }
+        catch (DomainException|UnavailableUserException) { return $this->responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id')); }
+    }
+}

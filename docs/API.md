@@ -1,4 +1,4 @@
-# API REST
+;  (interrompe job pendente ou em processamento)# API REST
 
 Base: `/api/v1`. Respostas usam JSON, datas ISO 8601 UTC e erros no formato `{ "error": { "code", "message", "details" } }`. Listagens sao paginadas por `page` e `per_page` (maximo 100) e retornam `meta`. Rotas autenticadas usam `Authorization: Bearer <access-token>`.
 
@@ -17,13 +17,13 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 
 | Recurso | Rotas |
 | --- | --- |
-| Concursos | `GET, POST /exams`; `POST /admin/exams/with-notice` (multipart, concurso + PDF); `GET, PUT, DELETE /exams/{id}` |
+| Concursos | `GET, POST /exams` (itens DRAFT e REVIEW); `POST /admin/exams/with-notice` (multipart, concurso + PDF); `GET, PUT, DELETE /exams/{id}` |
 | Cargos | `GET, POST /exams/{examId}/positions`; `PATCH, DELETE /positions/{id}` |
 | Editais | `GET, POST /exams/{examId}/syllabi`; `POST /admin/syllabi/{id}/document` (multipart PDF); `PATCH, DELETE /syllabi/{id}` |
 | Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `PUT /admin/subjects/{id}/taxonomy-subjects`; `GET, PATCH, DELETE /subjects/{id}` |
 | Tags | `GET, POST /tags` |
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
-| Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit`; `POST /admin/question-pdf-imports` (PDFs em lote); `GET /admin/question-pdf-imports/{id}` |
+| Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit`; `POST /admin/question-pdf-imports` (PDFs em lote); `GET /admin/question-pdf-imports` (histórico paginado do administrador); `GET /admin/question-pdf-imports/{id}` |
 | Revisão editorial | `GET /admin/questions/drafts`; `POST /admin/questions/{id}/publish` |
 | Taxonomia | `GET, POST, PATCH /admin/taxonomy/subjects` (lista paginada e cria assunto canônico); `POST /admin/taxonomy/aliases` (cria alias canônico) |
 | Fusão de Taxonomia | `POST /admin/taxonomy/subjects/{id}/merge` recebe `{ "target_subject_id": "uuid", "reason": "texto" }`, exige ADMIN, elimina associações duplicadas, reatribui vínculos canônicos de questões e assuntos locais, e grava auditoria |
@@ -171,3 +171,7 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 ### Seleção global por edital
 
 As questões são globais e classificadas por taxonomia canônica; não pertencem a concurso ou edital. Ao criar um caderno, o filtro opcional `syllabus_id` restringe a seleção a questões cujos assuntos canônicos constem no edital informado. Banca, concurso de origem e ano são apenas metadados de cada questão.
+
+### Histórico de importações de PDFs
+
+`GET /api/v1/admin/question-pdf-imports?page=1&per_page=25` requer `ADMIN` e retorna somente os jobs criados pelo administrador autenticado, em ordem decrescente de criação. A resposta é paginada e cada item possui o mesmo resumo do job individual. Isso permite retomar o acompanhamento após sair da tela, sem expor documentos de outro administrador.
