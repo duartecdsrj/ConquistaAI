@@ -11,7 +11,7 @@
         <q-card flat class="metric-card"><q-card-section><span>Questões concluídas</span><strong>{{ statistics?.total ?? 0 }}</strong><small>{{ statistics?.correct ?? 0 }} acertos registrados</small></q-card-section></q-card>
         <q-card flat class="metric-card success"><q-card-section><span>Taxa de acerto</span><strong>{{ percentage }}%</strong><small>sobre tentativas concluídas</small></q-card-section></q-card>
         <q-card flat class="metric-card violet"><q-card-section><span>Tempo médio</span><strong>{{ elapsed }}</strong><small>por tentativa</small></q-card-section></q-card>
-        <q-card flat class="metric-card amber"><q-card-section><span>Para praticar</span><strong>{{ notebooks.length }}</strong><small>cadernos disponíveis</small></q-card-section></q-card>
+        <q-card flat class="metric-card amber"><q-card-section><span>Para praticar</span><strong>{{ notebookTotal }}</strong><small>cadernos disponíveis</small></q-card-section></q-card>
       </section>
       <section class="content-grid">
         <q-card flat class="progress-card"><q-card-section><div class="section-title"><div><p class="eyebrow">VISÃO GERAL</p><h2>Seu desempenho</h2></div><q-btn flat no-caps color="primary" label="Ver desempenho" @click="emit('navigate', 'performance')" /></div>
@@ -32,7 +32,7 @@ import { useDashboard } from './useDashboard'
 import type { ApplicationSection } from '../Layout/AppShell.vue'
 defineProps<{ readonly user: AuthenticatedUser }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection] }>()
-const { error, load, loading, notebooks, statistics } = useDashboard()
+const { error, load, loading, notebooks, notebookTotal, statistics } = useDashboard()
 const percentage = computed(() => Math.round(statistics.value?.percentage ?? 0))
 const elapsed = computed(() => { const value = Math.round(statistics.value?.averageElapsedSeconds ?? 0); return value > 59 ? String(Math.floor(value / 60)) + ' min' : String(value) + ' s' })
 onMounted(load)

@@ -158,9 +158,9 @@ GET /api/v1/notebooks/{id}/questions?page=1&per_page=25 requer autenticação e 
 
 `PUT /api/v1/admin/subjects/{id}/taxonomy-subjects` requer `ADMIN` e recebe `{ "taxonomy_subject_ids": ["uuid"] }`. A operação substitui, em transação, somente as associações canônicas do assunto local informado. Cada assunto canônico precisa existir e estar ativo. Ela não cria taxonomia, não executa fusões e não modifica associações de questões. A resposta devolve `subjectId` e `taxonomySubjectIds` no envelope padrão.
 
-### Dashboard por edital
+### Dashboard por concurso e edital
 
-`GET /api/v1/dashboard/me?syllabus_id={uuid}` requer autenticação. Sem `syllabus_id`, seleciona o primeiro edital no qual o usuário tenha tentativas concluídas. A resposta retorna os editais disponíveis, totais únicos de respostas finais e métricas por assunto canônico. Cada resposta classificada contribui também para seus ancestrais; `sufficientData` só é verdadeiro com pelo menos 10 respostas em 3 dias distintos.
+`GET /api/v1/dashboard/me?syllabus_id={uuid}` ou `GET /api/v1/dashboard/me?exam_id={uuid}` requer autenticação. Com `exam_id`, inclui apenas tentativas cujas questões globais tenham assunto canônico associado a pelo menos um cargo daquele concurso. Sem `syllabus_id`, seleciona o primeiro edital no qual o usuário tenha tentativas concluídas. A resposta retorna os editais disponíveis, totais únicos de respostas finais e métricas por assunto canônico. Cada resposta classificada contribui também para seus ancestrais; `sufficientData` só é verdadeiro com pelo menos 10 respostas em 3 dias distintos.
 
 ### Plano de estudos inteligente
 

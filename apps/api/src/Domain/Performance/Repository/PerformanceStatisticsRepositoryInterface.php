@@ -17,6 +17,8 @@ interface PerformanceStatisticsRepositoryInterface
     public function syllabiWithCompletedAnswersForUser(string $userId): array;
     /** @return list<SyllabusCompletedAnswer> */
     public function completedAnswersForUserAndSyllabus(string $userId, string $syllabusId): array;
+    /** @return list<SyllabusCompletedAnswer> */
+    public function completedAnswersForUserAndExam(string $userId, string $examId): array;
     /** @return list<TaxonomyHierarchyNode> */
     public function taxonomyHierarchyForSyllabus(string $syllabusId): array;
     /** @return list<StudyPlanAnswer> */

@@ -792,3 +792,21 @@ docker compose exec -T frontend npm run build
 - Catálogo: cada cargo passa a ter a ação **Assuntos**, com seleção múltipla dos assuntos canônicos. Cadernos e simulados só exibem os assuntos do cargo escolhido; o backend também rejeita IDs que não pertençam à matriz do cargo.
 - Migração aplicada no ambiente local. Validações: PHPUnit 47 testes / 116 assertions aprovado; build frontend aprovado.
 - Pendência operacional: para concursos já cadastrados, o administrador deve preencher a matriz de cada cargo na nova ação antes de criar o estudo direcionado; uma futura análise de edital poderá propor essa matriz, mas não deve inferi-la silenciosamente.
+
+
+## 2026-09-25 — Revisão global de telas (em andamento)
+
+- Auditoria inicial confirmou que páginas e composables consultam repositórios Axios; não foram encontrados arrays de dados de produto fixos nas telas. Listas de rótulos de UI (modos, dificuldades, filtros e tipos) permanecem deliberadamente locais.
+- Corrigido o contrato de estatísticas: `completedAnswersForUserAndExam` agora é método declarado pela porta de domínio, eliminando a chamada implícita usada pelo dashboard por concurso.
+- A tela de Desempenho passou a distinguir claramente visão consolidada por concurso e detalhada por edital. O gráfico de assuntos agora é composto por barras proporcionais aos totais, acertos, percentual e amostra retornados pela API; não usa valores demonstrativos.
+- Validações: PHPUnit aprovado (47 testes / 116 assertions) e build do frontend aprovado. Playwright: Login e Catálogo aprovados em desktop e mobile; Caderno e Revisão falharam porque a fixture visual não corresponde às credenciais E2E ativas e não contém os registros esperados. A correção exige mudança de ambiente/carga persistente, cuja execução foi recusada pelo controle de permissões; não houve tentativa de contorno.
+- Formulário de Cadernos ajustado: o seletor passou a se chamar “Assuntos do cargo”, coerente com a matriz cargo–assunto aplicada pela API.
+- Dashboard por concurso corrigido: a agregação deixa de depender da matriz editorial legada do edital e usa `position_taxonomy_subjects`, a associação canônica cargo–assunto que também orienta cadernos e simulados.
+- Banco de Questões corrigido: a listagem agora preserva filtros e paginação real; o total não sugere mais que os primeiros 25 itens sejam o conjunto completo.
+- Catálogo corrigido: o seletor de assuntos por cargo agora percorre toda a paginação da taxonomia e não limita a associação aos primeiros 100 itens.
+- Cabeçalho revisado: removidos os controles de busca global e notificações que não possuíam endpoint ou ação implementada, evitando affordances sem efeito.
+- Questões públicas agora reutilizam os renderizadores de conteúdo e ativos do PDF, mantendo figuras, tabelas e código consistentes com Revisão e Caderno. Assistente passou a exibir provider/modelo da última resposta real, removendo o rótulo fixo.
+- Importação estruturada corrigida: o fluxo JSON/CSV passou a exibir Concurso de referência e Edital de referência obtidos da API; a confirmação, antes permanentemente bloqueada por não haver seletor de edital, agora recebe o `syllabus_id` real.
+- Home corrigida: o card de cadernos agora usa o `total` paginado retornado pela API, não o tamanho da lista resumida; a meta semanal não exibe mais o valor provisório fixo `20` antes da resposta da API.
+- Playwright público reexecutado após os ajustes: Login aprovado em desktop e mobile (2/2).
+- Próximo passo: com autorização explícita para ajustar o ambiente E2E e sua carga, executar novamente os quatro cenários autenticados e seguir a auditoria visual das telas restantes.

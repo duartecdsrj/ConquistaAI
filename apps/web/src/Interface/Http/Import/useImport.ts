@@ -1,14 +1,13 @@
 import { computed, onBeforeUnmount, readonly, ref } from 'vue'
-import type { Exam, Position, Syllabus } from '../../../Domain/Catalog/CatalogRepository'
+import type { Exam, Syllabus } from '../../../Domain/Catalog/CatalogRepository'
 import type { ImportReport, QuestionPdfImportJob } from '../../../Domain/Import/ImportRepository'
 import { catalogUseCases, importUseCases } from '../../../Infrastructure/Container'
 const active = (job: QuestionPdfImportJob): boolean => job.status === 'PENDING' || job.status === 'PROCESSING'
 export function useImport() {
-  const loading = ref(false); const historyLoading = ref(false); const error = ref(''); const success = ref(''); const report = ref<ImportReport | null>(null); const pdfJobs = ref<readonly QuestionPdfImportJob[]>([]); const pdfJobTotal = ref(0); const exams = ref<readonly Exam[]>([]); const positions = ref<readonly Position[]>([]); const syllabi = ref<readonly Syllabus[]>([]); let timer: ReturnType<typeof setInterval> | undefined
+  const loading = ref(false); const historyLoading = ref(false); const error = ref(''); const success = ref(''); const report = ref<ImportReport | null>(null); const pdfJobs = ref<readonly QuestionPdfImportJob[]>([]); const pdfJobTotal = ref(0); const exams = ref<readonly Exam[]>([]); const syllabi = ref<readonly Syllabus[]>([]); let timer: ReturnType<typeof setInterval> | undefined
   const activePdfJobs = computed(() => pdfJobs.value.filter(active)); const finishedPdfJobs = computed(() => pdfJobs.value.filter((job) => !active(job)))
   async function loadExams() { try { exams.value = await catalogUseCases.listExams() } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar concursos.' } }
-  async function loadPositions(examId: string) { positions.value = await catalogUseCases.listPositions(examId); syllabi.value = [] }
-  async function loadSyllabi(positionId: string) { syllabi.value = await catalogUseCases.listSyllabi(positionId) }
+  async function loadSyllabi(examId: string) { syllabi.value = []; if (!examId) return; try { syllabi.value = await catalogUseCases.listSyllabi(examId) } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar editais.' } }
   async function preview(format: 'JSON' | 'CSV', content: string) { loading.value = true; error.value = ''; success.value = ''; try { report.value = await importUseCases.preview(format, content) } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível validar a importação.' } finally { loading.value = false } }
   async function commit(syllabusId: string) { if (!report.value?.importId) return; loading.value = true; error.value = ''; try { const result = await importUseCases.commit(report.value.importId, syllabusId); success.value = String(result.createdQuestions) + ' questões criadas como rascunho.' } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível confirmar.' } finally { loading.value = false } }
   async function loadPdfJobs() { historyLoading.value = true; error.value = ''; try { const result = await importUseCases.listPdfImportJobs(); pdfJobs.value = result.items; pdfJobTotal.value = result.total; if (activePdfJobs.value.length) startPolling() } catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível recuperar o histórico de importações.' } finally { historyLoading.value = false } }
@@ -18,5 +17,5 @@ export function useImport() {
   function startPolling() { if (!timer) timer = setInterval(() => { void refreshPdfJobs() }, 3000) }
   function stopPolling() { if (timer) { clearInterval(timer); timer = undefined } }
   onBeforeUnmount(stopPolling)
-  return { loading: readonly(loading), historyLoading: readonly(historyLoading), error: readonly(error), success: readonly(success), report: readonly(report), pdfJobs: readonly(pdfJobs), activePdfJobs: readonly(activePdfJobs), finishedPdfJobs: readonly(finishedPdfJobs), pdfJobTotal: readonly(pdfJobTotal), exams: readonly(exams), positions: readonly(positions), syllabi: readonly(syllabi), loadExams, loadPositions, loadSyllabi, loadPdfJobs, cancelPdfJob, preview, commit, queuePdfs, refreshPdfJobs }
+  return { loading: readonly(loading), historyLoading: readonly(historyLoading), error: readonly(error), success: readonly(success), report: readonly(report), pdfJobs: readonly(pdfJobs), activePdfJobs: readonly(activePdfJobs), finishedPdfJobs: readonly(finishedPdfJobs), pdfJobTotal: readonly(pdfJobTotal), exams: readonly(exams), syllabi: readonly(syllabi), loadExams, loadSyllabi, loadPdfJobs, cancelPdfJob, preview, commit, queuePdfs, refreshPdfJobs }
 }

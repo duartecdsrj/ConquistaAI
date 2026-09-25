@@ -172,3 +172,24 @@ A criação de caderno/simulado exige a seleção de concurso e cargo pretendido
 ## Métricas por concurso
 
 A página Seu desempenho permite escolher um concurso e consulta `dashboard/me` com `exam_id`. Os indicadores e a lista de assuntos consideram apenas tentativas cujas questões pertencem à matriz canônica daquele concurso.
+
+
+### Importação estruturada
+
+A seção JSON/CSV de Importar questões exige Concurso de referência e Edital de referência, ambos carregados pelo módulo Catalog. O cliente só confirma linhas validadas depois de selecionar um edital real; não há IDs fixos ou contexto implícito no componente.
+
+
+### Consistência de conteúdo
+
+A tela pública de Questões reutiliza `QuestionContent` e `QuestionAssetImage`, como Revisão e Caderno: tabelas, código e imagens de enunciados ou alternativas recebem a mesma apresentação autenticada. O Assistente exibe provider e modelo da última mensagem retornada pela API, sem rótulo fixo.
+
+
+### Controles disponíveis
+
+O cabeçalho não exibe busca global nem notificações enquanto não houver casos de uso e contratos de API correspondentes. Isso evita botões sem efeito; navegação, perfil e encerramento de sessão permanecem funcionais.
+
+
+O seletor administrativo de assuntos por cargo percorre todas as páginas da taxonomia antes de montar suas opções, preservando a árvore e sem ocultar itens após o limite de página da API.
+
+
+A lista pública de Questões preserva filtros e paginação retornada pela API. O total exibido não representa apenas a primeira página: `q-pagination` solicita explicitamente cada página ao caso de uso.

@@ -15,6 +15,7 @@ final class GetSyllabusDashboardServiceTest extends TestCase {
    public function completedAnswersForUser(string $userId): array { return []; }
    public function syllabiWithCompletedAnswersForUser(string $userId): array { return [new SyllabusOption('s','Edital','Cargo','Concurso')]; }
    public function completedAnswersForUserAndSyllabus(string $userId,string $syllabusId): array { return [new SyllabusCompletedAnswer(true,12,new \DateTimeImmutable('2026-09-20'),['child'])]; }
+   public function completedAnswersForUserAndExam(string $userId,string $examId): array { return []; }
    public function taxonomyHierarchyForSyllabus(string $syllabusId): array { return [new TaxonomyHierarchyNode('root',null,'Raiz'),new TaxonomyHierarchyNode('child','root','Filho')]; }
    public function completedPlanAnswersForUser(string $userId): array { return []; }
   };
