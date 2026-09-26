@@ -990,3 +990,11 @@ docker compose exec -T frontend npm run build
 - O recuperador por contexto localizou 36 marcadores explícitos `Gabarito: A–E`. Um segundo recuperador determinístico, `recover-question-answer-keys-from-tables.php`, reconheceu tabelas de gabarito por seção somente quando o número da questão e a alternativa ocupavam a mesma posição da tabela; ele recuperou mais 14 respostas.
 - Resultado consolidado: 625 gabaritos `OFFICIAL` e 103 questões ainda sem resposta. Nenhuma resposta foi inferida, e as pendentes seguem não publicáveis até haver fonte verificável ou revisão editorial.
 - Validação: lint PHP e prévia da recuperação tabular aprovados antes da persistência.
+
+
+## Resolução assistida de gabaritos — Redes de Computadores — 26/09/2026
+
+- Foi criado o utilitário `assign-ai-estimated-answer-keys-from-source.php`, que envia uma questão por vez ao provedor configurado junto do enunciado, alternativas e até seis páginas próximas do PDF. A resposta só é persistida quando retorna `RESPOSTA: A–E`; toda persistência recebe `answer_key_source=AI_ESTIMATED` e nunca sobrescreve gabarito oficial.
+- A prévia validou o formato. Na execução, o Gemini resolveu 14 questões e recusou 2 como indeterminadas antes de esgotar a cota gratuita de 15 requisições. O fallback OpenAI foi testado, mas a conta não possui créditos disponíveis.
+- Estado atual do job: 625 respostas `OFFICIAL`, 14 `AI_ESTIMATED` e 89 sem resposta. As 89 permanecem sem gabarito até a reposição de cota/créditos ou revisão humana; não foram preenchidas por regra aleatória.
+- O utilitário agora informa a quantidade efetivamente processada quando o provedor interrompe o lote, permitindo retomada segura somente para as pendentes.
