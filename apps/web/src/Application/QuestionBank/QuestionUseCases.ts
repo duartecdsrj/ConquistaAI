@@ -1,4 +1,4 @@
-import type { QuestionFilters, PublishedQuestion, QuestionRepository } from '../../Domain/QuestionBank/QuestionRepository'
+import type { QuestionPdfAssistance, QuestionFilters, PublishedQuestion, QuestionRepository } from '../../Domain/QuestionBank/QuestionRepository'
 import type { PageResult } from '../../Infrastructure/Http/AxiosApiClient'
 
 export class ListPublishedQuestionsUseCase {
@@ -7,3 +7,5 @@ export class ListPublishedQuestionsUseCase {
     return this.repository.listPublished(filters)
   }
 }
+
+export class AskQuestionPdfAssistanceUseCase { public constructor(private readonly repository: QuestionRepository) {} public execute(questionId:string, question:string): Promise<QuestionPdfAssistance> { if(question.trim().length<3)return Promise.reject(new Error('Descreva sua dúvida.'));return this.repository.askPdfAssistance(questionId,question.trim()) } }

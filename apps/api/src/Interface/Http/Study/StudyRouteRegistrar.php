@@ -28,6 +28,11 @@ use App\Application\Study\Service\ListStudyContestSubjectsService;
 use App\Interface\Http\Study\Controller\StudyContestController;
 use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrinePositionRepository;use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrinePositionTaxonomyAssignmentRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
+use App\Infrastructure\Persistence\Doctrine\Study\DoctrineDirectedStudyPlanRepository;
+use App\Application\Study\Service\CreateDirectedStudyPlanService;
+use App\Application\Study\Service\ListDirectedStudyPlansService;
+use App\Application\Study\Mapper\DirectedStudyPlanResponseMapper;
+use App\Interface\Http\Study\Controller\DirectedStudyPlanController;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookProgressReader;
 use App\Interface\Http\Study\Controller\StudyGoalController;
 use App\Interface\Http\Identity\IdentityRequestFactory;
@@ -51,7 +56,7 @@ final class StudyRouteRegistrar
         $mapper = new NotebookResponseMapper();
         $controller = new StudyController(
             $this->authentication,
-            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager)),
+            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager), new DoctrineStudyContestSubjectRepository($entityManager)),
             new GetNotebookService($notebooks, $mapper),
             new ListNotebooksService($notebooks, $mapper),
             new ListNotebookQuestionsService($notebooks, $questions, new PublishedQuestionResponseMapper()),
@@ -62,6 +67,7 @@ final class StudyRouteRegistrar
             $this->responses,
         );
         $contest = new StudyContestController($this->authentication, new ListStudyContestSubjectsService(new DoctrineStudyContestSubjectRepository($entityManager)), $this->responses);
+        $directedPlans = new DirectedStudyPlanController($this->authentication, new CreateDirectedStudyPlanService(new DoctrineDirectedStudyPlanRepository($entityManager), new DoctrinePositionRepository($entityManager), new DirectedStudyPlanResponseMapper(), new DoctrineTransactionManager($entityManager)), new ListDirectedStudyPlansService(new DoctrineDirectedStudyPlanRepository($entityManager), new DirectedStudyPlanResponseMapper()), $this->responses);
         $goals = new DoctrineStudyGoalRepository($entityManager);
         $goalReader = new GetStudyGoalService($goals);
         $goalController = new StudyGoalController(
@@ -75,6 +81,9 @@ final class StudyRouteRegistrar
         $responses = $this->responses;
 
         $app->get('/v1/study-positions/{positionId}/subjects', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($contest, $identity): ResponseInterface { return $contest->subjects($request, $response, $identity->accessToken($request), (string) ($arguments['positionId'] ?? '')); });
+
+        $app->get('/v1/directed-study-plans', static function (ServerRequestInterface $request, ResponseInterface $response) use ($directedPlans, $identity): ResponseInterface { return $directedPlans->list($request, $response, $identity->accessToken($request)); });
+        $app->post('/v1/directed-study-plans', static function (ServerRequestInterface $request, ResponseInterface $response) use ($directedPlans, $identity, $responses): ResponseInterface { try { $body=json_decode((string)$request->getBody(),true,512,JSON_THROW_ON_ERROR); if(!is_array($body)||!is_string($body['name']??null)||!is_string($body['exam_id']??null)||!is_string($body['position_id']??null)) throw new InvalidArgumentException(); return $directedPlans->create($request,$response,$identity->accessToken($request),$body['name'],$body['exam_id'],$body['position_id']); } catch (\JsonException|InvalidArgumentException) { return self::invalidRequest($responses,$request,$response,new InvalidArgumentException('Campos do plano invalidos.')); } });
 
         $app->get('/v1/study-goals/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($goalController, $identity, $responses): ResponseInterface {
             try {

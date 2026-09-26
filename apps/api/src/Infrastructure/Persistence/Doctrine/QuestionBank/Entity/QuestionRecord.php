@@ -17,6 +17,8 @@ class QuestionRecord
     #[ORM\Column(name: 'exam_year', type: 'smallint', nullable: true)] public ?int $examYear;
     #[ORM\Column(type: 'string', length: 255, nullable: true)] public ?string $source = null;
     #[ORM\Column(name: 'reference_url', type: 'string', length: 2048, nullable: true)] public ?string $referenceUrl = null;
+    #[ORM\Column(name: 'source_pdf_job_id', type: 'string', length: 36, nullable: true)] public ?string $sourcePdfJobId = null;
+    /** @var list<int>|null */ #[ORM\Column(name: 'source_pdf_pages', type: 'json', nullable: true)] public ?array $sourcePdfPages = null;
     #[ORM\Column(type: 'string', length: 16)] public string $origin = 'EXAM';
     #[ORM\Column(type: 'string', length: 16)] public string $status;
     #[ORM\Column(name: 'correct_option_id', type: 'string', length: 36, nullable: true)] public ?string $correctOptionId = null;

@@ -189,3 +189,9 @@ As questões são globais e classificadas por taxonomia canônica; não pertence
 ### Histórico de importações de PDFs
 
 `GET /api/v1/admin/question-pdf-imports?page=1&per_page=25` requer `ADMIN` e retorna somente os jobs criados pelo administrador autenticado, em ordem decrescente de criação. A resposta é paginada e cada item possui o mesmo resumo do job individual. Isso permite retomar o acompanhamento após sair da tela, sem expor documentos de outro administrador.
+
+### Proveniência de questões importadas
+
+Questões criadas pela importação de PDF preservam internamente o `source_pdf_job_id` e as páginas (`source_pdf_pages`) de onde foram extraídas. Essa proveniência é imutável e será usada pelo assistente para limitar evidências à fonte original da questão.
+
+| Dúvida com fonte da questão | `POST /questions/{id}/pdf-assistance` recebe `{ "question": "..." }`, exige autenticação e responde com conteúdo da IA, provider/modelo e páginas de evidência; usa exclusivamente o PDF e as páginas associados à questão importada. |

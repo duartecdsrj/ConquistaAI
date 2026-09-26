@@ -4,8 +4,8 @@ import { CreateAssistantConversationUseCase, ListAssistantConversationsUseCase, 
 import { AxiosAssistantRepository } from './Assistant/AxiosAssistantRepository'
 import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
-import { ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
-import { CreateNotebookUseCase, FinishNotebookUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
+import { AskQuestionPdfAssistanceUseCase, ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
+import { CreateNotebookUseCase, CreateDirectedStudyPlanUseCase, FinishNotebookUseCase, ListDirectedStudyPlansUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider, configureRefreshHandler } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
 import { CatalogUseCases } from '../Application/Catalog/CatalogUseCases'
@@ -38,6 +38,8 @@ export const identityUseCases = {
 }
 export const studyUseCases = {
   list: new ListNotebooksUseCase(studyRepository),
+  directedPlans: new ListDirectedStudyPlansUseCase(studyRepository),
+  createDirectedPlan: new CreateDirectedStudyPlanUseCase(studyRepository),
   positionSubjects: new ListPositionSubjectsUseCase(studyRepository),
   get: new GetNotebookUseCase(studyRepository),
   listQuestions: new ListNotebookQuestionsUseCase(studyRepository),
@@ -52,7 +54,8 @@ export const studyUseCases = {
 }
 const taxonomyRepository = new AxiosTaxonomyRepository()
 export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), duplicateSuggestions: new ListTaxonomyDuplicateSuggestionsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository), createAlias: new CreateTaxonomySubjectAliasUseCase(taxonomyRepository), merge: new MergeTaxonomySubjectsUseCase(taxonomyRepository), reconciliationProposals: new ListTaxonomyReconciliationProposalsUseCase(taxonomyRepository), update: new UpdateTaxonomySubjectUseCase(taxonomyRepository) }
-export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(new AxiosQuestionRepository()) }
+const questionRepository = new AxiosQuestionRepository()
+export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(questionRepository), askPdfAssistance: new AskQuestionPdfAssistanceUseCase(questionRepository) }
 const performanceRepository = new AxiosPerformanceRepository()
 export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), getDashboard: new GetSyllabusDashboardUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }
 export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())

@@ -26,6 +26,8 @@ export interface QuestionFilters extends PageQuery {
   readonly year?: number
   readonly difficulty?: QuestionDifficulty
 }
+export interface QuestionPdfAssistance { readonly content:string; readonly provider:string|null; readonly model:string|null; readonly pages:readonly number[] }
 export interface QuestionRepository {
   listPublished(filters?: QuestionFilters): Promise<PageResult<PublishedQuestion>>
+  askPdfAssistance(questionId:string, question:string): Promise<QuestionPdfAssistance>
 }

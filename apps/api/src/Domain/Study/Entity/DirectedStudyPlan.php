@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+namespace App\Domain\Study\Entity;
+final readonly class DirectedStudyPlan { public function __construct(public string $id,public string $userId,public string $examId,public string $positionId,public string $name,public \DateTimeImmutable $createdAt,public \DateTimeImmutable $updatedAt){} public static function create(string $userId,string $examId,string $positionId,string $name,\DateTimeImmutable $now):self { if(trim($name)==='') throw new \InvalidArgumentException('Informe um nome para o plano.'); return new self(self::id(),$userId,$examId,$positionId,trim($name),$now,$now); } private static function id():string{$b=random_bytes(16);$b[6]=chr((ord($b[6])&15)|64);$b[8]=chr((ord($b[8])&63)|128);return vsprintf('%s%s-%s-%s-%s-%s%s%s',str_split(bin2hex($b),4));} }

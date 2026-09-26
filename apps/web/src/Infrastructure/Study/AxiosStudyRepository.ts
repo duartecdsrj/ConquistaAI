@@ -1,5 +1,5 @@
 import type { PublishedQuestion } from '../../Domain/QuestionBank/QuestionRepository'
-import type { CreateNotebookCommand, Notebook, NotebookStatistics, NotebookStatus, StudyContestSubject, StudyGoal, StudyPlan, StudyRepository } from '../../Domain/Study/StudyRepository'
+import type { DirectedStudyPlan, CreateNotebookCommand, Notebook, NotebookStatistics, NotebookStatus, StudyContestSubject, StudyGoal, StudyPlan, StudyRepository } from '../../Domain/Study/StudyRepository'
 import { getData, getPage, postData, putData, type PageQuery, type PageResult } from '../Http/AxiosApiClient'
 
 interface NotebookApi {
@@ -19,6 +19,8 @@ const mapNotebook = (value: NotebookApi): Notebook => ({ ...value })
 
 export class AxiosStudyRepository implements StudyRepository {
   public positionSubjects(positionId: string): Promise<readonly StudyContestSubject[]> { return getData('/study-positions/' + encodeURIComponent(positionId) + '/subjects') }
+  public directedPlans(): Promise<readonly DirectedStudyPlan[]> { return getData('/directed-study-plans') }
+  public createDirectedPlan(command: { name:string; examId:string; positionId:string }): Promise<DirectedStudyPlan> { return postData('/directed-study-plans', { name: command.name, exam_id: command.examId, position_id: command.positionId }) }
   public async list(query?: PageQuery): Promise<PageResult<Notebook>> { const page = await getPage<NotebookApi>('/notebooks', query); return { ...page, items: page.items.map(mapNotebook) } }
   public async get(id: string): Promise<Notebook> { return mapNotebook(await getData<NotebookApi>('/notebooks/' + encodeURIComponent(id))) }
   public listQuestions(id: string, query?: PageQuery): Promise<PageResult<PublishedQuestion>> { return getPage<PublishedQuestion>('/notebooks/' + encodeURIComponent(id) + '/questions', query) }

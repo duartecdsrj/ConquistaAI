@@ -40,7 +40,7 @@
             <main class="question-workspace">
               <div class="question-meta"><q-btn flat round dense icon="arrow_back" aria-label="Questão anterior" :disable="currentIndex === 0" @click="previous" /><strong>Questão {{ currentIndex + 1 }}</strong><q-badge rounded color="amber-2" text-color="amber-10">{{ difficultyLabel }}</q-badge><q-chip v-if="currentQuestion.board" dense color="blue-1" text-color="primary">{{ currentQuestion.board }}{{ currentQuestion.year ? ' · ' + currentQuestion.year : '' }}</q-chip></div>
               <div v-if="currentQuestion.assetUrls?.length" class="question-assets"><QuestionAssetImage v-for="url in currentQuestion.assetUrls" :key="url" :url="url"/></div><div class="question-statement"><QuestionContent :value="currentQuestion.statement"/></div><div class="question-options" role="radiogroup" aria-label="Alternativas"><button v-for="option in currentQuestion.options" :key="option.id" type="button" :class="['option-card',{selected:selectedOptions[currentQuestion.id]===option.id}]" :disabled="isCurrentAnswered" @click="selectOption(option.id)"><q-icon :name="selectedOptions[currentQuestion.id]===option.id?'radio_button_checked':'radio_button_unchecked'"/><strong>{{option.label}}.</strong><QuestionContent :value="option.content"/><div v-if="option.assetUrls?.length" class="option-assets"><QuestionAssetImage v-for="url in option.assetUrls" :key="url" :url="url"/></div></button></div>
-              <q-banner v-if="notice" rounded class="success-banner"><template #avatar><q-icon name="check_circle" /></template>{{ notice }}</q-banner>
+              <q-btn flat no-caps color="primary" icon="auto_awesome" label="Tirar dúvida com a fonte" class="q-mt-sm" @click="openPdfHelp" /><q-banner v-if="notice" rounded class="success-banner"><template #avatar><q-icon name="check_circle" /></template>{{ notice }}</q-banner>
               <section v-if="isCurrentAnswered" class="answer-info"><q-icon name="info" color="primary" /><div><strong>Resposta registrada</strong><span>Continue para a próxima questão ou revise sua navegação.</span></div></section>
               <footer class="execution-actions"><q-btn outline no-caps icon="arrow_back" label="Anterior" :disable="currentIndex === 0 || savingAnswer" @click="previous" /><q-space /><q-btn v-if="!isCurrentAnswered" unelevated no-caps color="primary" icon-right="check" label="Confirmar resposta" :loading="savingAnswer" @click="submitCurrent" /><q-btn v-else unelevated no-caps color="primary" icon-right="arrow_forward" label="Próxima" :disable="currentIndex + 1 >= totalQuestions || savingAnswer" @click="next" /></footer>
             </main>
@@ -59,6 +59,8 @@
       </q-page>
     </q-page-container>
 
+    <q-dialog v-model="pdfHelpDialog"><q-card class="finish-dialog"><q-card-section><p class="eyebrow">FONTE DA QUESTÃO</p><h2>Tire sua dúvida com o PDF</h2><p>A resposta usa apenas as páginas vinculadas à questão importada.</p><q-input v-model="pdfDoubt" outlined autogrow label="Qual é sua dúvida?" class="q-mt-md" :disable="pdfHelpLoading"/><q-banner v-if="pdfHelpError" rounded class="error-banner q-mt-sm">{{ pdfHelpError }}</q-banner><q-card v-if="pdfHelpResponse" flat bordered class="q-mt-md"><q-card-section><QuestionContent :value="pdfHelpResponse.content"/><div class="q-mt-sm"><q-chip v-for="page in pdfHelpResponse.pages" :key="page" dense color="blue-1" text-color="primary">Página {{ page }}</q-chip></div></q-card-section></q-card></q-card-section><q-card-actions align="right"><q-btn flat no-caps label="Fechar" @click="pdfHelpDialog=false"/><q-btn unelevated no-caps color="primary" label="Consultar fonte" :loading="pdfHelpLoading" :disable="pdfDoubt.trim().length<3" @click="askPdfHelp"/></q-card-actions></q-card></q-dialog>
+
     <q-dialog v-model="confirmFinish" persistent><q-card class="finish-dialog"><q-card-section><p class="eyebrow">ENCERRAR SESSÃO</p><h2>Finalizar caderno?</h2><p>Você respondeu {{ statistics.answered }} de {{ totalQuestions }} questões. Depois de finalizar não será possível registrar novas respostas.</p></q-card-section><q-card-actions align="right"><q-btn flat no-caps label="Continuar estudando" @click="confirmFinish = false" /><q-btn unelevated no-caps color="negative" label="Finalizar" :loading="finishing" @click="complete" /></q-card-actions></q-card></q-dialog>
   </q-layout>
 </template>
@@ -68,16 +70,20 @@ import { computed, onMounted, ref } from 'vue'
 import QuestionContent from '../QuestionBank/QuestionContent.vue'
 import QuestionAssetImage from '../QuestionBank/QuestionAssetImage.vue'
 import { useNotebookExecution } from './useNotebookExecution'
+import { useQuestionPdfAssistance } from '../QuestionBank/useQuestionPdfAssistance'
 
 const props = defineProps<{ readonly notebookId: string }>()
 const emit = defineEmits<{ exit: [] }>()
 const confirmFinish = ref(false)
+const pdfHelpDialog = ref(false); const pdfDoubt=ref(''); const { ask:askPdf, error:pdfHelpError, loading:pdfHelpLoading, response:pdfHelpResponse }=useQuestionPdfAssistance()
 const navTab = ref('questions')
 const questionFilter = ref<'ALL' | 'ANSWERED' | 'PENDING'>('ALL')
 const filterOptions = [{ label: 'Todas', value: 'ALL' }, { label: 'Respondidas', value: 'ANSWERED' }, { label: 'Pendentes', value: 'PENDING' }]
 const { currentIndex, currentQuestion, elapsed, error, finish, finishing, goTo, isCurrentAnswered, load, loading, next, notebook, notice, pausing, previous, progress, questions, savingAnswer, selectOption, selectedOptions, statistics, submitCurrent, togglePause, totalQuestions } = useNotebookExecution()
 const visibleQuestions = computed(() => questionFilter.value === 'ANSWERED' ? questions.value.filter((question) => statistics.value.answeredQuestionIds.includes(question.id)) : questionFilter.value === 'PENDING' ? questions.value.filter((question) => !statistics.value.answeredQuestionIds.includes(question.id)) : questions.value)
 const difficultyLabel = computed(() => currentQuestion.value?.difficulty === 'EASY' ? 'Fácil' : currentQuestion.value?.difficulty === 'HARD' ? 'Difícil' : 'Médio')
+function openPdfHelp():void{pdfDoubt.value='';pdfHelpDialog.value=true}
+async function askPdfHelp():Promise<void>{if(currentQuestion.value)await askPdf(currentQuestion.value.id,pdfDoubt.value)}
 async function complete(): Promise<void> { if (await finish()) { confirmFinish.value = false; emit('exit') } }
 onMounted(() => load(props.notebookId))
 </script>

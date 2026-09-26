@@ -16,10 +16,11 @@
   </q-page>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { catalogUseCases } from '../../../Infrastructure/Container'
 import type { Exam } from '../../../Domain/Catalog/CatalogRepository'
 import { usePerformance } from './usePerformance'
+const props = defineProps<{ readonly initialExamId?: string | null }>()
 const contests = ref<readonly Exam[]>([])
 const selectedExamId = ref<string | null>(null)
 const selectedSyllabusId = ref<string | null>(null)
@@ -32,7 +33,8 @@ const visibleSubjects = computed(() => [...(dashboard.value?.subjects ?? [])].so
 function changeContest(value: string | null): void { selectedSyllabusId.value = null; void loadDashboard(undefined, value ?? undefined) }
 function changeSyllabus(value: string | null): void { selectedExamId.value = null; void loadDashboard(value ?? undefined) }
 function refresh(): void { void load(); void loadDashboard(selectedSyllabusId.value ?? undefined, selectedExamId.value ?? undefined) }
-onMounted(async () => { contests.value = await catalogUseCases.listExams(); selectedExamId.value = contests.value[0]?.id ?? null; refresh() })
+onMounted(async () => { contests.value = await catalogUseCases.listExams(); selectedExamId.value = props.initialExamId ?? contests.value[0]?.id ?? null; refresh() })
+watch(() => props.initialExamId, (value) => { if (value) { selectedExamId.value = value; selectedSyllabusId.value = null; void loadDashboard(undefined, value) } })
 </script>
 <style scoped>
 .page{max-width:1050px;margin:auto;padding:42px 34px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:26px}.eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.top h1,h2{margin:0;color:#142950}.top p,.heading p{margin:7px 0;color:#71819e}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.q-card{border:1px solid #e5ecf6;border-radius:17px;background:#fff;box-shadow:0 8px 26px rgba(33,58,105,.04)}.metrics strong{display:block;margin-top:8px;color:#172e59;font-size:27px}.metrics span{color:#7888a4;font-size:12px}.summary{margin-top:18px}.heading{margin:34px 0 14px}.subjects{overflow:hidden}.scope-controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.subject-chart{display:grid;gap:14px}.subject-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,260px) auto;gap:16px;align-items:center;padding:12px;border:1px solid #e8eff8;border-radius:12px;background:#fbfdff}.subject-label{display:grid;gap:3px;color:#17305b}.subject-label span{color:#71819e;font-size:12px}.subject-value{display:grid;gap:6px;color:#205fbb;text-align:right}.subject-value strong{font-size:15px}.warning{margin-top:14px;background:#fff8e5;color:#765812}.empty :deep(.q-card__section){display:flex;align-items:center;gap:20px;padding:30px}.error{margin-bottom:14px;background:#fff3f2;color:#ae2f25}@media(max-width:700px){.page{padding:28px 16px}.metrics{grid-template-columns:1fr 1fr}.scope-controls{grid-template-columns:1fr}.subject-row{grid-template-columns:1fr}.subject-value{text-align:left}}@media(max-width:430px){.metrics{grid-template-columns:1fr}}

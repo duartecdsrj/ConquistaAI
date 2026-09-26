@@ -1,6 +1,9 @@
 import type { PublishedQuestion } from '../../Domain/QuestionBank/QuestionRepository'
-import type { CreateNotebookCommand, Notebook, NotebookStatistics, StudyGoal, StudyPlan, StudyRepository } from '../../Domain/Study/StudyRepository'
+import type { DirectedStudyPlan, CreateNotebookCommand, Notebook, NotebookStatistics, StudyGoal, StudyPlan, StudyRepository } from '../../Domain/Study/StudyRepository'
 import type { PageQuery, PageResult } from '../../Infrastructure/Http/AxiosApiClient'
+
+export class ListDirectedStudyPlansUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(): Promise<readonly DirectedStudyPlan[]> { return this.repository.directedPlans() } }
+export class CreateDirectedStudyPlanUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(command:{ name:string; examId:string; positionId:string }): Promise<DirectedStudyPlan> { if(command.name.trim().length<3) return Promise.reject(new Error('Informe um nome com pelo menos 3 caracteres.')); return this.repository.createDirectedPlan({ ...command, name:command.name.trim() }) } }
 
 export class ListPositionSubjectsUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(positionId:string) { return this.repository.positionSubjects(positionId) } }
 

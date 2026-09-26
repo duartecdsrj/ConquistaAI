@@ -193,3 +193,11 @@ O seletor administrativo de assuntos por cargo percorre todas as páginas da tax
 
 
 A lista pública de Questões preserva filtros e paginação retornada pela API. O total exibido não representa apenas a primeira página: `q-pagination` solicita explicitamente cada página ao caso de uso.
+
+## Caderno dirigido por concurso e cargo
+
+Na criação de um caderno, o usuário informa concurso e cargo. Pode usar todos os assuntos associados ao cargo ou selecionar uma parte deles. A opção “todos” não é uma seleção local: o backend recebe a ausência de `subject_ids`, resolve a matriz do cargo e normaliza os pesos retornados pelo catálogo para a quantidade solicitada.
+
+## Dúvida baseada na fonte da questão
+
+A resolução do caderno oferece “Tirar dúvida com a fonte”. O composable `useQuestionPdfAssistance` chama o caso de uso de Banco de Questões e exibe somente a resposta e as páginas devolvidas pela API. A página não acessa HTTP diretamente.

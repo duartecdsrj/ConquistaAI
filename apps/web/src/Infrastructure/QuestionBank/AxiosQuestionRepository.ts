@@ -1,5 +1,5 @@
-import type { PublishedQuestion, QuestionFilters, QuestionRepository } from '../../Domain/QuestionBank/QuestionRepository'
-import { getPage, type PageResult } from '../Http/AxiosApiClient'
+import type { QuestionPdfAssistance, PublishedQuestion, QuestionFilters, QuestionRepository } from '../../Domain/QuestionBank/QuestionRepository'
+import { getPage, postData, type PageResult } from '../Http/AxiosApiClient'
 
 interface QuestionApi {
   readonly id: string
@@ -10,6 +10,7 @@ interface QuestionApi {
   readonly options: readonly { readonly id: string; readonly label: string; readonly content: string; readonly position: number }[]
 }
 export class AxiosQuestionRepository implements QuestionRepository {
+  public askPdfAssistance(questionId:string, question:string): Promise<QuestionPdfAssistance> { return postData('/questions/'+encodeURIComponent(questionId)+'/pdf-assistance',{question}) }
   public async listPublished(filters: QuestionFilters = {}): Promise<PageResult<PublishedQuestion>> {
     const page = await getPage<QuestionApi>('/questions', { page: filters.page, perPage: filters.perPage }, {
       ...(filters.subjectId ? { subject_id: filters.subjectId } : {}),

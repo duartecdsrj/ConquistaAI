@@ -4,7 +4,7 @@
   <NotebookExecutionPage v-else-if="!loading && user && activeNotebookId" :notebook-id="activeNotebookId" @exit="closeNotebook" />
   <AppShell v-else-if="!loading && user" :user="user" :active="section" :can-manage="user.roles.includes('ADMIN')" @navigate="section = $event" @logout="logout">
     <HomePage v-if="section === 'home'" :user="user" @navigate="section = $event" />
-    <NotebooksPage v-else-if="section === 'notebooks'" @open="openNotebook" />
+    <NotebooksPage v-else-if="section === 'notebooks'" @open="openNotebook" @performance="openPerformance" />
     <QuestionsPage v-else-if="section === 'questions'" />
     <CatalogPage v-else-if="section === 'catalog'" />
     <ImportPage v-else-if="section === 'import'" />
@@ -12,7 +12,7 @@
     <TaxonomyPage v-else-if="section === 'taxonomy'" />
     <AssistantPage v-else-if="section === 'assistant'" />
     <DiscoveryPage v-else-if="section === 'discovery'" />
-    <PerformancePage v-else />
+    <PerformancePage v-else :initial-exam-id="selectedPerformanceExamId" />
   </AppShell>
 </template>
 
@@ -35,11 +35,14 @@ import { useAuth } from './Interface/Http/Identity/useAuth'
 
 const section = ref<ApplicationSection>('home')
 const activeNotebookId = ref<string | null>(null)
+const selectedPerformanceExamId = ref<string | null>(null)
 const { authenticated, error, loading, login, logout, restore, submitting, user } = useAuth()
 
 function openNotebook(id: string): void {
   activeNotebookId.value = id
 }
+
+function openPerformance(examId: string): void { selectedPerformanceExamId.value = examId; section.value = 'performance' }
 
 function closeNotebook(): void {
   activeNotebookId.value = null

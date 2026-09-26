@@ -26,7 +26,7 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         private readonly ImportedQuestionContentSanitizer $content,
     ) {}
 
-    public function write(string $createdBy, array $questions, array $pageAssets = []): array
+    public function write(string $createdBy, array $questions, array $pageAssets = [], ?string $sourcePdfJobId = null): array
     {
         $statements = array_values(array_filter(array_map(fn(mixed $question): string => is_array($question) && is_string($question['statement'] ?? null) ? $this->content->statement($question['statement'], is_array($question['options'] ?? null) ? $question['options'] : []) : '', $questions)));
         $existing = $this->duplicates->findExistingByStatements($statements);
@@ -50,6 +50,8 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
             $record->difficulty = in_array($question['difficulty'] ?? null, ['EASY', 'MEDIUM', 'HARD'], true) ? $question['difficulty'] : 'MEDIUM';
             $record->board = is_string($question['board'] ?? null) ? mb_substr(trim($question['board']), 0, 190) ?: null : null;
             $record->examYear = is_int($question['year'] ?? null) && $question['year'] > 1900 && $question['year'] < 2100 ? $question['year'] : null;
+            $record->sourcePdfJobId = $sourcePdfJobId;
+            $record->sourcePdfPages = $this->sourcePages($question);
             $record->source = is_string($question['exam'] ?? null) ? mb_substr(trim($question['exam']), 0, 255) ?: null : null;
             $record->origin = 'EXAM';
             $record->status = 'REVIEW';
@@ -157,6 +159,9 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         $asset->createdAt = $question->createdAt;
         $this->em->persist($asset);
     }
+
+    /** @return list<int> */
+    private function sourcePages(array $source): array { $pages = array_merge((array) ($source['pages'] ?? []), (array) ($source['image_pages'] ?? [])); $pages = array_values(array_unique(array_filter(array_map(static fn(mixed $page): int => is_int($page) ? $page : (is_string($page) && ctype_digit($page) ? (int) $page : 0), $pages), static fn(int $page): bool => $page > 0))); sort($pages); return $pages; }
 
     private function hasVisualReference(string $content): bool { return preg_match('/\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|ilustra[cç][aã]o|mapa|fluxograma)\b/iu', $content) === 1; }
     private function cleanOption(string $content): string { return trim((string) preg_replace('/^\s*(?:[A-Ea-e]\s*[.)\-:]\s*)+/u', '', $content)); }

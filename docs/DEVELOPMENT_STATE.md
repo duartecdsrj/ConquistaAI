@@ -810,3 +810,59 @@ docker compose exec -T frontend npm run build
 - Home corrigida: o card de cadernos agora usa o `total` paginado retornado pela API, não o tamanho da lista resumida; a meta semanal não exibe mais o valor provisório fixo `20` antes da resposta da API.
 - Playwright público reexecutado após os ajustes: Login aprovado em desktop e mobile (2/2).
 - Próximo passo: com autorização explícita para ajustar o ambiente E2E e sua carga, executar novamente os quatro cenários autenticados e seguir a auditoria visual das telas restantes.
+
+## Validação integrada — 26/09/2026
+
+- A fixture E2E agora usa a conta configurada em `E2E_EMAIL`/`E2E_PASSWORD`, sem sobrescrever o usuário existente, e cria dados exclusivos e idempotentes para Caderno e Revisão.
+- A inserção da questão editorial respeita a chave estrangeira de alternativa correta: cria a questão, cria a alternativa e só então registra `correct_option_id`.
+- A API recebe as variáveis E2E apenas para executar a carga de validação; não há credenciais persistidas no repositório.
+- Baselines visuais foram regeneradas para a fixture autenticada. O screenshot móvel do Caderno tem tolerância máxima de 1.000 pixels, mantendo a máscara do cronômetro para eliminar apenas variações transitórias de renderização.
+- Validações executadas: `docker compose exec -T frontend npm run test:visual` (8 cenários aprovados: Login, Caderno, Catálogo e Revisão em desktop e mobile); `docker compose exec -T api ./vendor/bin/phpunit` (47 testes, 116 assertions); `docker compose exec -T frontend npm run build` (aprovado).
+- Próximo passo: usar esta suíte autenticada como verificação de regressão para evoluções de interface; avaliar divisão do bundle principal do frontend, que Vite sinalizou acima de 500 kB.
+
+## Limpeza operacional — 26/09/2026
+
+- Por solicitação explícita, foram removidos todos os dados de produto e teste: concursos, editais, cargos, assuntos locais e canônicos, questões, alternativas, vínculos, cadernos, tentativas, revisões, importações, extrações, jobs, metas, recursos descobertos e conversas.
+- Também foram removidas sessões e eventos de autenticação; todos os usuários precisarão entrar novamente.
+- Foram preservadas apenas as contas de usuários, os papéis, os vínculos de autorização e o histórico de migrações, para manter acesso administrativo e a estrutura do banco.
+- Verificação por contagem exata: todas as tabelas de produto estão em zero; preservados `users=5`, `roles=2`, `user_roles=8`, `schema_migrations=24`.
+
+## Estudo dirigido e proveniência de PDF — 26/09/2026
+
+- O caderno dirigido passou a aceitar explicitamente todos os assuntos do cargo ou uma seleção específica. Quando há um único assunto ele recebe 100% da seleção; com mais de um, os pesos do concurso são normalizados e as vagas distribuídas pelo método dos maiores restos, com preenchimento apenas entre os assuntos elegíveis.
+- A leitura da matriz cargo–assunto agrega o peso de seleção publicado no edital do concurso. Questões continuam genéricas: o filtro de seleção usa os assuntos canônicos, sem amarrá-las a um concurso de origem.
+- Migration `025_question_pdf_provenance.sql` aplicada localmente. Cada questão criada por um job de PDF passa a registrar o job/PDF de origem e as páginas declaradas pelo extrator; essa é a base imutável para evidências do assistente.
+- Validações: migration aplicada; PHPUnit 47 testes/116 assertions; build frontend aprovado.
+- Próximo passo: persistir o plano direcionado do usuário como recurso próprio e expor uma conversa de IA que use exclusivamente o PDF/páginas vinculados à questão.
+
+## Plano dirigido persistente — 26/09/2026
+
+- Migration `026_directed_study_plans.sql` cria planos pessoais com usuário, concurso e cargo, com unicidade por escopo para não duplicar o mesmo direcionamento.
+- Foram adicionadas as rotas autenticadas `GET, POST /v1/directed-study-plans`; o serviço valida que o cargo pertence ao concurso antes de persistir.
+- Próximo passo: expor os planos na tela de Cadernos, abrir o fluxo de criação contextualizado pelo plano e enviar somente todos os assuntos ou a seleção específica.
+
+## Interface do plano dirigido — 26/09/2026
+
+- O frontend recebeu contrato Domain, repositório Axios, casos de uso e composable para `GET, POST /directed-study-plans`.
+- A tela Cadernos e plano agora permite criar plano por concurso/cargo, exibe os planos pessoais e inicia um novo caderno contextualizado pelo plano; nesse modo concurso e cargo não são solicitados novamente, restando todos os assuntos ou seleção específica.
+- Validações: PHPUnit 47 testes/116 assertions e build frontend aprovado.
+- Próximo passo: expor a fonte PDF/páginas na questão e criar a consulta do assistente limitada a essa fonte.
+
+## Assistência por PDF de origem — 26/09/2026
+
+- A proveniência persistida na migration 025 é usada por `AskQuestionWithPdfEvidenceService`: ele recusa questão sem fonte, recupera somente o PDF/job e as páginas vinculadas e envia esse recorte ao provider configurado.
+- Rota autenticada entregue: `POST /v1/questions/{id}/pdf-assistance`. A resposta traz texto, provider/modelo e páginas efetivamente usadas; não entrega PDF bruto nem usa fontes externas.
+- No Caderno, o botão “Tirar dúvida com a fonte” abre um diálogo e exibe a resposta com chips das páginas de evidência.
+- Validações: PHPUnit 47 testes/116 assertions e build frontend aprovado.
+- Próximo passo: executar cenários integrados após nova importação, pois a base foi deliberadamente limpa e ainda não possui questões/PDFs para exercitar o fluxo em runtime.
+
+## Simplificação do caderno dentro do plano — 26/09/2026
+
+- Ao abrir “Criar caderno” por um plano, concurso e cargo são herdados, e nome, modo, quantidade e filtros recebem valores padrão de prática. A interface exibe apenas a decisão entre todos os assuntos do cargo ou uma seleção específica.
+- Validações repetidas após o ajuste: PHPUnit 47 testes/116 assertions; build frontend aprovado.
+
+## Dashboard próprio do estudo dirigido — 26/09/2026
+
+- Cada cartão de plano agora oferece “Ver painel”, abrindo Desempenho já filtrado pelo concurso do plano. O painel mantém indicadores de respostas, acertos, erros, tempo médio e gráfico por assunto.
+- Corrigida a fonte do escopo: `completedAnswersForUserAndExam` usa `filters.exam_id` congelado no caderno, em vez de inferir o concurso pela matriz de taxonomia. Isso impede dupla contagem quando um assunto canônico pertence a mais de um concurso.
+- Validações: build frontend e PHPUnit (47 testes/116 assertions) aprovados.

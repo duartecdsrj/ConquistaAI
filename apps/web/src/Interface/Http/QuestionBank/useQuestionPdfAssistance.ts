@@ -1,0 +1,4 @@
+import { readonly, ref } from 'vue'
+import type { QuestionPdfAssistance } from '../../../Domain/QuestionBank/QuestionRepository'
+import { questionUseCases } from '../../../Infrastructure/Container'
+export function useQuestionPdfAssistance() { const loading=ref(false);const error=ref('');const response=ref<QuestionPdfAssistance|null>(null);async function ask(questionId:string, doubt:string):Promise<boolean>{loading.value=true;error.value='';response.value=null;try{response.value=await questionUseCases.askPdfAssistance.execute(questionId,doubt);return true}catch(reason){error.value=reason instanceof Error?reason.message:'Não foi possível consultar o PDF de origem.';return false}finally{loading.value=false}}return{ask,error:readonly(error),loading:readonly(loading),response:readonly(response)} }
