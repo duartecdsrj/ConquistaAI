@@ -936,3 +936,34 @@ docker compose exec -T frontend npm run build
 - A API devolve a origem do gabarito e Revisão, Banco de Questões e Caderno exibem o selo **Gabarito estimado por IA** para transparência com o aluno e o administrador.
 - Validação operacional: 87 gabaritos `OFFICIAL`, 42 `AI_ESTIMATED`, 0 questões restantes sem resposta correta naquele job.
 - Próximo passo: revisão editorial pode confirmar ou substituir estimativas antes da publicação em massa.
+
+
+## Extração direta de questões — Segurança da Informação — 26/09/2026
+
+- Iniciada importação direta do job cancelado `Seguranca_da_Informacao_e_Armazenamento_Curso_Completo_Aulas_00_a_12.pdf`, sem worker e sem adaptadores de IA.
+- O parser aceita somente blocos multibanca de cinco alternativas completos e descarta itens CESPE de certo/errado, discursivos e teoria. Cada bloco é limpo de cabeçalhos/rodapés, vinculado ao PDF e à página de origem, com banca, concurso, ano, dificuldade e assunto específico.
+- Resultado: 42 questões criadas em REVIEW, 42 classificadas, sem duplicidades ou falhas e com 2 folhas taxonômicas específicas criadas sem duplicar nós existentes. Foram persistidos 39 gabaritos `OFFICIAL`; 3 itens sem marcador explícito permanecem sem gabarito e não podem ser publicados até revisão.
+- A correção do writer garante que alternativas são persistidas antes de atribuir `correct_option_id`, preservando a chave estrangeira nas próximas importações com gabarito.
+
+- As 3 questões inicialmente sem marcador explícito receberam estimativa editorial de IA (IPsec: D; RAID: E; AH: E), persistida como `AI_ESTIMATED`; o selo de transparência será exibido ao usuário.
+
+
+## Extração direta de questões — Governança de TI — 26/09/2026
+
+- Job `Governanca_de_TI_Curso_Completo.pdf` processado diretamente, sem worker/adaptadores. O parser isolou questões multibanca completas e descartou itens Cebraspe de certo/errado.
+- Resultado: 13 questões novas em REVIEW, 1 duplicada descartada e 1 bloco incompleto rejeitado. Metadados, páginas de origem, dificuldade e taxonomia foram persistidos; o ramo canônico Governança de TI recebeu folhas específicas para COBIT, ITIL, PMBOK, modelos de maturidade e normas.
+- Quatro gabaritos foram recuperados como `OFFICIAL`; nove respostas inferidas a partir do enunciado foram marcadas explicitamente como `AI_ESTIMATED`. Nenhum item foi publicado automaticamente.
+
+
+## Reprocessamento de alternativas minúsculas — 26/09/2026
+
+- O extrator direto passou a reconhecer alternativas tanto em `A)–E)` quanto em `a)–e)`; o writer mantém o rótulo canônico salvo como `A–E`.
+- O parser passou a limitar a procura de `Gabarito` ao bloco da própria questão, impedindo associação com o item seguinte. A deduplicação por enunciado normalizado foi mantida.
+- Governança de TI foi reprocessado: 319 blocos objetivos reconhecidos, 200 novas questões, 119 duplicadas descartadas e nenhuma falha. O job possui agora 213 questões vinculadas ao PDF, com 130 gabaritos oficiais, 9 estimados por IA e 74 ainda sem marcador explícito. Itens certo/errado continuam descartados.
+- Relatório operacional: Banco de Dados = 129 criadas (87 oficiais, 42 IA); Segurança = 42 criadas (39 oficiais, 3 IA); Governança = 213 disponíveis após reprocessamento (130 oficiais, 9 IA, 74 pendentes de gabarito).
+
+
+## Recuperação de gabaritos pendentes por fonte — 26/09/2026
+
+- As 74 questões de Governança que estavam sem resposta foram reavaliadas contra suas páginas de origem e comentários no PDF. O procedimento localiza o enunciado, delimita o bloco antes da próxima questão e aceita apenas o marcador explícito `Gabarito: [A-E]` ou `Gabarito: Letra [A-E]`.
+- Resultado: 74 gabaritos recuperados como `OFFICIAL`, nenhuma resposta inferida e nenhuma questão pendente nesse job.
