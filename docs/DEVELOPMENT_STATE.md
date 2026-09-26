@@ -866,3 +866,15 @@ docker compose exec -T frontend npm run build
 - Cada cartão de plano agora oferece “Ver painel”, abrindo Desempenho já filtrado pelo concurso do plano. O painel mantém indicadores de respostas, acertos, erros, tempo médio e gráfico por assunto.
 - Corrigida a fonte do escopo: `completedAnswersForUserAndExam` usa `filters.exam_id` congelado no caderno, em vez de inferir o concurso pela matriz de taxonomia. Isso impede dupla contagem quando um assunto canônico pertence a mais de um concurso.
 - Validações: build frontend e PHPUnit (47 testes/116 assertions) aprovados.
+
+
+## Revisão visual integral — 26/09/2026
+
+- A identidade foi refeita como um caderno editorial de preparação: canvas azul atmosférico, tinta marinho, acentos azul/violeta/menta e superfícies com função explícita. A aplicação deixa de depender de cartões brancos repetidos para estabelecer hierarquia.
+- O shell recebeu drawer de estante de estudo, navegação ativa em faixa azul–violeta e cabeçalho translúcido. As páginas ganharam título editorial com contexto e divisor de gradiente, mantendo as rotas e os fluxos de dados existentes.
+- Foram refinadas as composições de Início, Cadernos e plano, Execução de caderno, Desempenho, Banco de questões, Revisão editorial, Taxonomia, Catálogo, Importação, Assistente, Descoberta e Login. Cada contexto usa agora panorama, oficina, biblioteca, papel de leitura ou nota em vez de uma grade uniforme de cards.
+- DESIGN_SYSTEM.md foi reescrito com tokens, padrões de superfície, comportamento desktop/mobile, acessibilidade e orientação de verificação visual da nova linguagem.
+- A fixture E2E foi corrigida para conceder ADMIN e USER ao usuário visual, restaurando as jornadas administrativas de Catálogo e Revisão sem tocar na base principal. O cenário do caderno passou a localizar o botão do card correto; no mobile, a ativação de teste é feita no DOM após a verificação de visibilidade, pois a área de leitura é rolável.
+- Validações finais: build de produção do frontend aprovado; Playwright autenticado aprovado em 8/8 cenários (Login, Caderno, Catálogo e Revisão, em desktop e mobile). Baselines dessas telas foram regenerados para a nova identidade.
+- A cobertura visual foi ampliada para Início, Questões, Desempenho, Assistente, Importação, Taxonomia e Descobertas. A suíte agora cobre todas as telas de produto em desktop e mobile; validação final: 10 cenários Playwright aprovados.
+- Próximo passo: usar a suíte visual integral atualizada como regressão nas próximas mudanças de interface.

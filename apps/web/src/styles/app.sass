@@ -1,12 +1,22 @@
 :root
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
-  color: #10275b
-  background: #f5f9ff
+  color: #132750
+  background: #edf4ff
+  --ink: #132750
+  --muted: #66799b
+  --paper: #f8fbff
+  --line: #dce7f6
+  --blue: #1769f6
+  --violet: #7a62ec
+  --mint: #44c59a
+  --sun: #ffbd45
+  --coral: #ff766b
+  --shadow: 0 20px 48px rgba(44, 78, 132, .10)
 
 body
   min-width: 320px
   margin: 0
-  background: #f5f9ff
+  background: radial-gradient(circle at 88% -12%, rgba(112, 92, 235, .15), transparent 29rem), radial-gradient(circle at -8% 35%, rgba(51, 190, 224, .12), transparent 30rem), #edf4ff
 
 *
   box-sizing: border-box
@@ -98,3 +108,112 @@ input
 
   .page .grid
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important
+
+// Linguagem editorial compartilhada: áreas amplas, papel suave e poucos planos de elevação.
+.page, .app-page, .taxonomy-page
+  position: relative
+  isolation: isolate
+
+.page::before, .app-page::before, .taxonomy-page::before
+  content: ''
+  position: absolute
+  z-index: -1
+  width: 260px
+  height: 260px
+  right: -110px
+  top: 42px
+  border-radius: 44% 56% 67% 33% / 42% 37% 63% 58%
+  background: linear-gradient(145deg, rgba(100, 88, 235, .11), rgba(31, 129, 255, .02))
+  filter: blur(1px)
+
+.page .top, .app-page .hero, .taxonomy-page .page-heading
+  position: relative
+  overflow: hidden
+  padding: 6px 0 25px
+  border-bottom: 1px solid rgba(129, 157, 201, .38)
+
+.page .top::after, .app-page .hero::after, .taxonomy-page .page-heading::after
+  content: ''
+  position: absolute
+  left: 0
+  bottom: -1px
+  width: 76px
+  height: 3px
+  border-radius: 9px
+  background: linear-gradient(90deg, var(--blue), var(--violet))
+
+.eyebrow
+  color: #637bd1 !important
+  letter-spacing: .14em !important
+
+.page-title, .page h1, .app-page h1, .taxonomy-page h1
+  color: var(--ink) !important
+  font-weight: 780 !important
+
+.q-card
+  border-color: rgba(184, 203, 232, .76) !important
+  box-shadow: none !important
+
+.q-card:not(.q-dialog__inner .q-card)
+  background: rgba(255, 255, 255, .74)
+  backdrop-filter: blur(14px)
+
+.q-btn--unelevated
+  box-shadow: 0 10px 22px rgba(23, 105, 246, .2)
+
+.q-btn--outline
+  background: rgba(255, 255, 255, .52)
+
+// Superfícies que representam um momento de estudo, não cartões administrativos repetidos.
+.metric-card:nth-child(2n), .metrics .q-card:nth-child(2n), .goal-card, .summary
+  background: linear-gradient(135deg, rgba(238, 246, 255, .94), rgba(255, 255, 255, .70)) !important
+
+.metric-card:nth-child(3n), .metrics .q-card:nth-child(3n)
+  background: linear-gradient(135deg, rgba(246, 242, 255, .94), rgba(255, 255, 255, .70)) !important
+
+.plan-card, .directed-section .plan-card, .subjects
+  border-left: 3px solid var(--violet) !important
+
+.question-workspace, .chat, .workspace-card
+  background: rgba(255, 255, 255, .86) !important
+  box-shadow: var(--shadow) !important
+
+.question-nav-panel, .progress-panel, .sidebar
+  background: rgba(244, 248, 255, .82) !important
+
+.book, .notebook-card
+  position: relative
+  overflow: hidden
+  background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(232,242,255,.8)) !important
+
+.book::after, .notebook-card::after
+  content: ''
+  position: absolute
+  width: 95px
+  height: 95px
+  right: -40px
+  top: -45px
+  border-radius: 50%
+  background: radial-gradient(circle, rgba(108, 93, 232, .22), rgba(108, 93, 232, 0) 68%)
+
+@media (max-width: 599px)
+  body
+    background: radial-gradient(circle at 105% -2%, rgba(112, 92, 235, .14), transparent 18rem), #f1f6ff
+
+  .page::before, .app-page::before, .taxonomy-page::before
+    width: 160px
+    height: 160px
+    right: -82px
+    top: 8px
+
+  .page .top, .app-page .hero, .taxonomy-page .page-heading
+    padding-bottom: 19px
+
+  .page .top .q-btn
+    width: 100%
+
+  .metrics, .metric-grid
+    gap: 10px !important
+
+  .q-card:not(.q-dialog__inner .q-card)
+    backdrop-filter: none

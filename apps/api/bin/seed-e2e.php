@@ -30,7 +30,9 @@ try {
         $pdo->prepare('INSERT INTO users (id, email, name, password_hash, status, created_at, updated_at) VALUES (?, ?, ?, ?, "ACTIVE", ?, ?)')
             ->execute([$ids['user'], $email, 'Usuário Visual', password_hash($password, PASSWORD_ARGON2ID), $now, $now]);
     }
-    $pdo->prepare('INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)')->execute([$ids['user'], '00000000-0000-0000-0000-000000000002']);
+    $assignRole = $pdo->prepare('INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)');
+    $assignRole->execute([$ids['user'], '00000000-0000-0000-0000-000000000001']);
+    $assignRole->execute([$ids['user'], '00000000-0000-0000-0000-000000000002']);
     $pdo->prepare('INSERT INTO exams (id, name, organizer, year, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)')
         ->execute([$ids['exam'], 'Receita Federal', 'Cebraspe', 2023, $now, $now]);
     $pdo->prepare('INSERT INTO syllabi (id, exam_id, name, published_at, source_url, created_at, updated_at) VALUES (?, ?, ?, ?, NULL, ?, ?)')
