@@ -972,3 +972,13 @@ docker compose exec -T frontend npm run build
 ## Contagem na árvore de assuntos — 26/09/2026
 
 - A listagem de taxonomia agora devolve `questionCount` agregado por nó, somando questões do assunto e de todos os descendentes; folhas apresentam a própria contagem. A árvore exibe o total em badge ao lado de cada assunto.
+
+
+## Extração direta de questões — Redes de Computadores — 26/09/2026
+
+- O job cancelado `Redes_de_Computadores_Curso_Completo_Aulas_00_a_21.pdf` foi processado diretamente, sem worker nem adaptador de IA, pelo importador determinístico versionado em `apps/api/bin/import-networks-pdf-direct.php`.
+- Foram avaliadas 2.592 páginas e 1.164 blocos de múltipla escolha; 728 questões novas foram criadas em `REVIEW`, 436 repetições foram descartadas por enunciado normalizado e não houve falhas. Itens de certo/errado e discursivos continuam excluídos.
+- Foram reconhecidas 575 chaves explicitamente marcadas no PDF e persistidas como `OFFICIAL`; as 153 restantes permanecem sem gabarito e não são publicáveis automaticamente.
+- A classificação usa folhas específicas sob Redes de Computadores (Protocolos, TCP/IP, DNS, HTTP, DHCP, FTP, SMTP, SNMP, SSH, Modelo OSI, Roteamento, Switching e VLAN, Ethernet, Redes sem Fio, Meios de Transmissão, QoS e Topologias). As bancas reconhecidas incluem FCC (449), FGV (200), CESPE/CEBRASPE (72), Cesgranrio, Vunesp e IBFC.
+- O resumo consolidado do job foi restaurado após a execução interativa exceder o limite do terminal: status `COMPLETED`, progresso 100%, 728 criadas, 436 duplicadas, 728 classificadas e 0 falhas.
+- Validações: lint PHP e prévia sem persistência aprovados; a auditoria posterior confirma 728 registros ligados ao job.
