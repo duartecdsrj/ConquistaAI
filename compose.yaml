@@ -66,6 +66,8 @@ services:
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      E2E_EMAIL: ${E2E_EMAIL:-}
+      E2E_PASSWORD: ${E2E_PASSWORD:-}
     volumes:
       - ./apps/api:/app
       - api_vendor:/app/vendor

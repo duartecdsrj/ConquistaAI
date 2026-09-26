@@ -6,25 +6,31 @@ use App\Infrastructure\Database;
 require __DIR__ . '/../vendor/autoload.php';
 
 $pdo = Database::pdo();
-$existing = $pdo->prepare('SELECT 1 FROM users WHERE email = ?');
-$existing->execute([(string) (getenv('E2E_EMAIL') ?: 'visual@conquistaai.test')]);
-if ($existing->fetchColumn()) { echo "E2E fixture already loaded\n"; exit(0); }
+$existing = $pdo->prepare('SELECT id FROM users WHERE email = ?');
 $ids = [
     'user' => '10000000-0000-0000-0000-000000000001',
-    'exam' => '20000000-0000-0000-0000-000000000001',
-    'syllabus' => '30000000-0000-0000-0000-000000000001',
-    'subject' => '40000000-0000-0000-0000-000000000001',
-    'notebook' => '50000000-0000-0000-0000-000000000001',
+    'exam' => '20000000-0000-0000-0000-000000000002',
+    'syllabus' => '30000000-0000-0000-0000-000000000002',
+    'subject' => '40000000-0000-0000-0000-000000000002',
+    'notebook' => '50000000-0000-0000-0000-000000000002',
 ];
 $password = (string) (getenv('E2E_PASSWORD') ?: 'VisualTest#2026');
 $email = (string) (getenv('E2E_EMAIL') ?: 'visual@conquistaai.test');
 $now = gmdate('Y-m-d H:i:s');
+$existing->execute([$email]);
+$existingUserId = $existing->fetchColumn();
+if (is_string($existingUserId) && $existingUserId !== '') $ids['user'] = $existingUserId;
+$fixture = $pdo->prepare('SELECT 1 FROM notebooks WHERE id = ? AND user_id = ?');
+$fixture->execute([$ids['notebook'], $ids['user']]);
+if ($fixture->fetchColumn()) { echo "E2E fixture already loaded\n"; exit(0); }
 
 $pdo->beginTransaction();
 try {
-    $pdo->prepare('INSERT INTO users (id, email, name, password_hash, status, created_at, updated_at) VALUES (?, ?, ?, ?, "ACTIVE", ?, ?)')
-        ->execute([$ids['user'], $email, 'Usuário Visual', password_hash($password, PASSWORD_ARGON2ID), $now, $now]);
-    $pdo->prepare('INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)')->execute([$ids['user'], '00000000-0000-0000-0000-000000000002']);
+    if ($existingUserId === false) {
+        $pdo->prepare('INSERT INTO users (id, email, name, password_hash, status, created_at, updated_at) VALUES (?, ?, ?, ?, "ACTIVE", ?, ?)')
+            ->execute([$ids['user'], $email, 'Usuário Visual', password_hash($password, PASSWORD_ARGON2ID), $now, $now]);
+    }
+    $pdo->prepare('INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)')->execute([$ids['user'], '00000000-0000-0000-0000-000000000002']);
     $pdo->prepare('INSERT INTO exams (id, name, organizer, year, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)')
         ->execute([$ids['exam'], 'Receita Federal', 'Cebraspe', 2023, $now, $now]);
     $pdo->prepare('INSERT INTO syllabi (id, exam_id, name, published_at, source_url, created_at, updated_at) VALUES (?, ?, ?, ?, NULL, ?, ?)')
@@ -51,11 +57,11 @@ try {
     $questionIds = [];
     foreach ($questions as $index => $statement) {
         $number = $index + 1;
-        $questionId = sprintf('60000000-0000-0000-0000-%012d', $number);
+        $questionId = sprintf('61000000-0000-0000-0000-%012d', $number);
         $questionIds[] = $questionId;
         $questionInsert->execute([$questionId, $ids['syllabus'], $statement, $ids['user'], $now, $now]);
         foreach (['A', 'B', 'C', 'D', 'E'] as $offset => $label) {
-            $optionId = sprintf('70000000-0000-0000-%04d-%012d', $number, $offset + 1);
+            $optionId = sprintf('71000000-0000-0000-%04d-%012d', $number, $offset + 1);
             $content = $label === 'B' ? 'Alternativa correta para a questão de teste.' : 'Alternativa de teste para revisão visual.';
             $optionInsert->execute([$optionId, $questionId, $label, $content, $offset + 1, $now]);
             if ($label === 'B') $correct->execute([$optionId, $questionId]);
@@ -63,15 +69,22 @@ try {
         $subjectLink->execute([$questionId, $ids['subject']]);
     }
 
+    $reviewId = '61000000-0000-0000-0000-000000000099';
+    $reviewOptionId = '71000000-0000-0000-0099-000000000001';
+    $pdo->prepare('INSERT INTO questions (id, syllabus_id, statement, difficulty, board, exam_year, source, reference_url, origin, status, correct_option_id, created_by, created_at, updated_at) VALUES (?, ?, ?, "MEDIUM", "Cebraspe", 2023, "Fixture E2E", NULL, "ORIGINAL", "REVIEW", NULL, ?, ?, ?)')->execute([$reviewId, $ids['syllabus'], 'Questão de revisão visual: assinale a alternativa correta sobre legalidade tributária.', $ids['user'], $now, $now]);
+    $pdo->prepare('INSERT INTO question_options (id, question_id, label, content, image_path, sort_order, created_at) VALUES (?, ?, "A", ?, NULL, 1, ?)')->execute([$reviewOptionId, $reviewId, 'A lei deve definir os elementos essenciais do tributo.', $now]);
+    $correct->execute([$reviewOptionId, $reviewId]);
+    $pdo->prepare('INSERT INTO question_subjects (question_id, subject_id) VALUES (?, ?)')->execute([$reviewId, $ids['subject']]);
+
     $pdo->prepare('INSERT INTO notebooks (id, user_id, name, type, mode, status, filters, duration_seconds, started_at, finished_at, created_at, updated_at) VALUES (?, ?, ?, "PRACTICE", "STUDY", "IN_PROGRESS", ?, 132, UTC_TIMESTAMP(), NULL, ?, ?)')
         ->execute([$ids['notebook'], $ids['user'], 'Caderno visual — Direito Tributário', '{}', $now, $now]);
     $notebookQuestion = $pdo->prepare('INSERT INTO notebook_questions (notebook_id, question_id, position) VALUES (?, ?, ?)');
     foreach ($questionIds as $index => $questionId) $notebookQuestion->execute([$ids['notebook'], $questionId, $index + 1]);
 
     foreach ([1 => true, 2 => false] as $position => $isCorrect) {
-        $attemptId = sprintf('80000000-0000-0000-0000-%012d', $position);
-        $answerId = sprintf('90000000-0000-0000-0000-%012d', $position);
-        $answerOption = sprintf('70000000-0000-0000-%04d-%012d', $position, $isCorrect ? 2 : 1);
+        $attemptId = sprintf('81000000-0000-0000-0000-%012d', $position);
+        $answerId = sprintf('91000000-0000-0000-0000-%012d', $position);
+        $answerOption = sprintf('71000000-0000-0000-%04d-%012d', $position, $isCorrect ? 2 : 1);
         $pdo->prepare('INSERT INTO attempts (id, user_id, notebook_id, question_id, number, started_at, completed_at, context, final_answer_id, created_at) VALUES (?, ?, ?, ?, 1, ?, NULL, "STUDY", NULL, ?)')
             ->execute([$attemptId, $ids['user'], $ids['notebook'], $questionIds[$position - 1], $now, $now]);
         $pdo->prepare('INSERT INTO answers (id, attempt_id, option_id, sequence, submitted_at, elapsed_seconds, created_at) VALUES (?, ?, ?, 1, ?, ?, ?)')

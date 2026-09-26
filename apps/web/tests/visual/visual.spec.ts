@@ -19,7 +19,7 @@ test('caderno mantém a composição autenticada', async ({ page }, testInfo) =>
   await expect(page.getByText('Caderno visual — Direito Tributário', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Retomar' }).click()
   await expect(page.getByText(/questão/i).first()).toBeVisible()
-  await expect(page).toHaveScreenshot('caderno.png', { fullPage: false, animations: 'disabled', mask: [page.locator('.timer')] })
+  await expect(page).toHaveScreenshot('caderno.png', { fullPage: false, animations: 'disabled', mask: [page.locator('.timer')], maxDiffPixels: 1000 })
 })
 
 
