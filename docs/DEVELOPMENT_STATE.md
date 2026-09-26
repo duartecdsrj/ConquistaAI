@@ -878,3 +878,61 @@ docker compose exec -T frontend npm run build
 - Validações finais: build de produção do frontend aprovado; Playwright autenticado aprovado em 8/8 cenários (Login, Caderno, Catálogo e Revisão, em desktop e mobile). Baselines dessas telas foram regenerados para a nova identidade.
 - A cobertura visual foi ampliada para Início, Questões, Desempenho, Assistente, Importação, Taxonomia e Descobertas. A suíte agora cobre todas as telas de produto em desktop e mobile; validação final: 10 cenários Playwright aprovados.
 - Próximo passo: usar a suíte visual integral atualizada como regressão nas próximas mudanças de interface.
+
+
+## Processamento automático após anexo de edital — 26/09/2026
+
+- Diagnóstico do concurso Transpetro: a criação com PDF já havia persistido o edital e o job de processamento, mas ele permanecia em PENDING porque o serviço syllabus-worker não estava ativo; o container residual ainda não resolvia o host mysql.
+- O worker foi recriado na rede atual e agora resolve o banco, permanecendo pronto para consumir jobs futuros. O concurso Transpetro, seu edital, job pendente e PDF armazenado foram removidos por solicitação explícita; a base voltou a exams=0, syllabi=0, syllabus_processing_jobs=0, exam_positions=0 e subjects=0.
+- Corrigido o fluxo de anexo posterior: POST /admin/syllabi/{id}/document agora cria o job PENDING na própria transação, com deduplicação por hash/estado. A interface informa que o envio inicia a análise automaticamente.
+- A descoberta de logos foi disparada na criação, mas a chamada Gemini retornou 429 RESOURCE_EXHAUSTED por quota esgotada; os campos permaneceram nulos de forma segura. A próxima criação voltará a consultar automaticamente quando a quota estiver disponível.
+- Validações: PHPUnit 47 testes / 119 assertions e build frontend aprovados; teste unitário do upload confirma a criação do job.
+- Próximo passo: cadastrar novamente o concurso pela interface com o PDF; o worker ativo deve retirar o job de PENDING em até cinco segundos.
+- Verificação adicional de modelos: gemini-flash-lite-latest também retornou 429 RESOURCE_EXHAUSTED; a indisponibilidade de logos é de quota da chave, não do nome de modelo configurado.
+
+
+## Carga direta do edital Transpetro — 26/09/2026
+
+- Por solicitação explícita, o edital Transpetro foi analisado sem worker e sem adaptador de IA. Foram reutilizadas as 84 páginas de texto já extraídas e aplicadas regras determinísticas de normalização, deduplicação de travessões e exclusão de rótulos editoriais genéricos.
+- Resultado: 33 cargos/ênfases únicos, 28 assuntos programáticos canônicos/locais e 33 vínculos na matriz cargo–assunto. As três variações tipográficas duplicadas do PDF foram removidas antes da conclusão.
+- O job original permanece interrompido em 1%; esta carga não o reabre nem depende da cota Gemini.
+
+
+## Refinamento da taxonomia de TI — 26/09/2026
+
+- A revisão direta das páginas 59–64 do edital Transpetro identificou lacunas na carga inicial. Foram adicionados 52 nós específicos sob Tecnologia da Informação, com relações pai–filho para Redes de Computadores, Protocolos, Sistemas Operacionais, Infraestrutura, Segurança da Informação, Banco de Dados e Desenvolvimento de Software.
+- Protocolos incluídos: TCP/IP, DNS, DHCP, FTP, HTTP, LDAP, NFS, Telnet, SMTP, IPsec, SSH, SNMP, NAT e IPv6. Os cargos de Análise de Sistemas e Ciência de Dados receberam a matriz atualizada para esses assuntos.
+
+
+## Extração direta de questões — Banco de Dados — 26/09/2026
+
+- O job cancelado foi processado diretamente, sem worker e sem adaptadores de IA, usando o texto local do PDF e o writer editorial existente.
+- Resultado auditado: 169 blocos objetivos detectados, 129 questões novas em REVIEW, 39 duplicadas descartadas e 1 bloco incompleto rejeitado. Todas as questões criadas registram o job/PDF de origem e ao menos uma página.
+- A dificuldade foi estimada deterministicamente a partir da extensão/complexidade do enunciado. A classificação usa folhas específicas de Banco de Dados e Dados; assuntos ausentes foram criados somente sob pai canônico existente. Banca e ano foram preenchidos apenas quando reconhecidos no texto da página; valores parciais foram anulados.
+
+
+## Publicação editorial em lote — 26/09/2026
+
+- Adicionada a rota administrativa `POST /admin/questions/publish-batch` e o fluxo frontend correspondente. Ela publica, em uma única operação, somente questões em `DRAFT` com gabarito válido, preservando a regra de que itens sem resposta correta não entram em cadernos.
+- A revisão agora permite selecionar separadamente itens em revisão para marcar e itens já marcados para publicação em lote; o rótulo de `DRAFT` foi esclarecido como aprovado e aguardando gabarito/publicação.
+- Validações: build frontend aprovado; PHPUnit 47 testes / 119 asserções aprovado.
+
+- Revisão editorial: adicionado seletor global **Selecionar todas as aprovadas** para itens , permitindo enviá-los juntos à publicação em lote.
+
+- Revisão editorial: adicionado seletor global Selecionar todas as aprovadas para itens DRAFT, permitindo enviá-los juntos à publicação em lote.
+
+
+## Recuperação de gabaritos por PDF — 26/09/2026
+
+- A leitura determinística do PDF de Banco de Dados localizou e aplicou 87 gabaritos A–E explicitamente declarados após os respectivos enunciados/comentários. A associação exige localizar o enunciado na página de origem e o marcador Gabarito subsequente, sem inferir respostas.
+- Permaneceram 42 questões sem gabarito porque o PDF não apresentou resposta A–E verificável no trecho delimitado; elas continuam para revisão humana e não são publicáveis.
+- O writer de importação de PDF foi corrigido para aceitar correct_option quando o extrator direto localizar um marcador explícito, persistindo o ID da alternativa correta para futuras importações.
+
+
+## Gabaritos estimados por IA — 26/09/2026
+
+- Migration `027_question_answer_key_provenance.sql` adiciona `answer_key_source` à questão. Gabaritos explicitamente localizados no PDF são preservados como `OFFICIAL`; estimativas nunca são apresentadas como fonte oficial.
+- As 42 questões restantes da importação Banco de Dados receberam alternativa estimada a partir do conteúdo e padrão de cobrança da banca, sem uma nova leitura de gabarito no PDF. Todas foram gravadas como `AI_ESTIMATED`; nenhuma questão foi publicada automaticamente.
+- A API devolve a origem do gabarito e Revisão, Banco de Questões e Caderno exibem o selo **Gabarito estimado por IA** para transparência com o aluno e o administrador.
+- Validação operacional: 87 gabaritos `OFFICIAL`, 42 `AI_ESTIMATED`, 0 questões restantes sem resposta correta naquele job.
+- Próximo passo: revisão editorial pode confirmar ou substituir estimativas antes da publicação em massa.

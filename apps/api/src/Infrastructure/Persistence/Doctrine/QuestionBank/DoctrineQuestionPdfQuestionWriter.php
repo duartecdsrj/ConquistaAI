@@ -60,7 +60,9 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
             $record->updatedAt = $record->createdAt;
             $this->em->persist($record);
             $this->persistQuestionAssets($record, $statement, $question, $pageAssets);
-            $this->persistOptions($record, $options, $pageAssets);
+            $optionIds = $this->persistOptions($record, $options, $pageAssets);
+            $correctLabel = strtoupper((string) ($question['correct_option'] ?? ''));
+            if (isset($optionIds[$correctLabel])) { $record->correctOptionId = $optionIds[$correctLabel]; $record->answerKeySource = in_array($question['answer_key_source'] ?? null, ['OFFICIAL', 'AI_ESTIMATED'], true) ? $question['answer_key_source'] : 'OFFICIAL'; }
             $this->assignments->replaceForQuestion($record->id, [$taxonomy->id]);
             $existing[$key] = $record->id;
             $created++;
@@ -130,8 +132,9 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         foreach ((array) ($source['image_pages'] ?? []) as $page) foreach ($pageAssets[(int) $page] ?? [] as $path) $this->persistAsset($question, null, (int) $page, $path, ++$order);
     }
 
-    private function persistOptions(QuestionRecord $question, array $options, array $pageAssets): void
+    private function persistOptions(QuestionRecord $question, array $options, array $pageAssets): array
     {
+        $optionIds = [];
         $assetOrder = 0;
         foreach ($options as $index => $option) {
             $record = new QuestionOptionRecord();
@@ -142,8 +145,10 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
             $record->sortOrder = $index + 1;
             $record->createdAt = $question->createdAt;
             $this->em->persist($record);
+            $optionIds[$record->label] = $record->id;
             if ($this->hasVisualReference($record->content)) foreach ((array) ($option['image_pages'] ?? []) as $page) foreach ($pageAssets[(int) $page] ?? [] as $path) $this->persistAsset($question, $record->id, (int) $page, $path, ++$assetOrder);
         }
+        return $optionIds;
     }
 
     private function persistAsset(QuestionRecord $question, ?string $optionId, int $page, string $path, int $order): void

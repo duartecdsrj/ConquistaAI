@@ -8,6 +8,7 @@ interface QuestionApi {
   readonly board: string | null
   readonly year: number | null
   readonly options: readonly { readonly id: string; readonly label: string; readonly content: string; readonly position: number }[]
+  readonly answerKeySource?: 'OFFICIAL' | 'AI_ESTIMATED' | null
 }
 export class AxiosQuestionRepository implements QuestionRepository {
   public askPdfAssistance(questionId:string, question:string): Promise<QuestionPdfAssistance> { return postData('/questions/'+encodeURIComponent(questionId)+'/pdf-assistance',{question}) }

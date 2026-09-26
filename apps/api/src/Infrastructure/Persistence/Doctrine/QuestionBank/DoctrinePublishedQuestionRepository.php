@@ -131,6 +131,7 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
             $question->status,
             $question->source,
             array_map(fn (object $asset): string => 'question-assets/'.$asset->id, $this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord', 'asset')->where('asset.questionId = :questionId')->setParameter('questionId', $question->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),
+            $question->answerKeySource,
         );
     }
 }

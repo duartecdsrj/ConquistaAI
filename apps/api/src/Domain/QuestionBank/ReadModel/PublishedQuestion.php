@@ -17,6 +17,7 @@ final readonly class PublishedQuestion
         public string $status = 'PUBLISHED',
         public ?string $source = null,
         /** @var list<string> */ public array $assetUrls = [],
+        public ?string $answerKeySource = null,
     ) {
     }
 }

@@ -31,7 +31,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Taxonomia editorial | `PUT /admin/questions/{id}/taxonomy-subjects` recebe `{ "taxonomy_subject_ids": ["uuid"] }` e substitui as associações canônicas da questão para usuários ADMIN |
 | Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
 
-`GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
+`GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. Cada questão retornada inclui `answerKeySource`, que é `OFFICIAL` quando o gabarito foi explicitamente recuperado da fonte e `AI_ESTIMATED` quando foi inferido pela IA; o cliente deve sinalizar visualmente a segunda hipótese. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
 
 ### Logos automáticos de concursos
 
@@ -41,7 +41,7 @@ As respostas de concurso incluem `institutionLogoUrl` e `organizerLogoUrl`, amba
 
 `POST /api/v1/admin/exams/with-notice` requer `ADMIN` e recebe `multipart/form-data` com `document` opcional e os metadados `name`, `organizer` opcional e `year` opcional; clientes web os enviam como parâmetros da requisição para compatibilidade com o parser multipart. Em uma única transação cria o concurso e seu edital principal; quando há PDF válido, persiste o arquivo, agenda a extração e devolve `{ "exam", "syllabus", "processingJob" }`.
 
-`POST /api/v1/admin/syllabi/{id}/document` requer `ADMIN` e recebe `multipart/form-data` com o campo `document`. O arquivo deve declarar `application/pdf` e iniciar com a assinatura `%PDF-`. O serviço calcula SHA-256, mantém o conteúdo em armazenamento local idempotente e atualiza o edital existente sem criar um novo registro.
+`POST /api/v1/admin/syllabi/{id}/document` requer `ADMIN` e recebe `multipart/form-data` com o campo `document`. O arquivo deve declarar `application/pdf` e iniciar com a assinatura `%PDF-`. O serviço calcula SHA-256, mantém o conteúdo em armazenamento local idempotente e atualiza o edital existente sem criar um novo registro. Na mesma transação, cria um job PENDING para o hash enviado, salvo quando já existir um job pendente, em processamento ou concluído para o mesmo documento.
 
 A resposta segue o envelope padrão e devolve `{ "id": "uuid", "document_sha256": "..." }`. A listagem de editais inclui `documentSha256`, `documentOriginalName`, `documentMimeType` e `documentSize`; não expõe o caminho interno do arquivo.
 
@@ -195,3 +195,8 @@ As questões são globais e classificadas por taxonomia canônica; não pertence
 Questões criadas pela importação de PDF preservam internamente o `source_pdf_job_id` e as páginas (`source_pdf_pages`) de onde foram extraídas. Essa proveniência é imutável e será usada pelo assistente para limitar evidências à fonte original da questão.
 
 | Dúvida com fonte da questão | `POST /questions/{id}/pdf-assistance` recebe `{ "question": "..." }`, exige autenticação e responde com conteúdo da IA, provider/modelo e páginas de evidência; usa exclusivamente o PDF e as páginas associados à questão importada. |
+
+
+### Aprovação editorial em lote
+
+ requer ADMIN e recebe . Publica somente questões em  que já tenham gabarito válido; a resposta devolve  quando nenhuma questão selecionada é elegível.

@@ -19,6 +19,7 @@ export interface PublishedQuestion {
   readonly status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED'
   readonly source?: string | null
   readonly assetUrls?: readonly string[]
+  readonly answerKeySource?: 'OFFICIAL' | 'AI_ESTIMATED' | null
 }
 export interface QuestionFilters extends PageQuery {
   readonly subjectId?: string

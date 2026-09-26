@@ -8,6 +8,8 @@ use App\Application\Catalog\Port\SyllabusDocumentStorageInterface;
 use App\Application\Catalog\Port\TransactionManagerInterface;
 use App\Application\Catalog\Service\UploadSyllabusDocumentService;
 use App\Domain\Catalog\Entity\Syllabus;
+use App\Domain\Catalog\Entity\SyllabusProcessingJob;
+use App\Domain\Catalog\Repository\SyllabusProcessingJobRepositoryInterface;
 use App\Domain\Catalog\Repository\SyllabusRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -32,9 +34,15 @@ final class UploadSyllabusDocumentServiceTest extends TestCase
         $transactions = new class implements TransactionManagerInterface {
             public function transactional(callable $callback): mixed { return $callback(); }
         };
+        $jobs = new class implements SyllabusProcessingJobRepositoryInterface {
+            public ?SyllabusProcessingJob $saved = null;
+            public function save(SyllabusProcessingJob $job): void { $this->saved = $job; }
+            public function findLatestForSyllabus(string $syllabusId): ?SyllabusProcessingJob { return null; }
+            public function claimNext(): ?SyllabusProcessingJob { return null; }
+        };
         $contents = "%PDF-1.7\nexample";
 
-        $result = (new UploadSyllabusDocumentService($repository, $storage, $transactions))
+        $result = (new UploadSyllabusDocumentService($repository, $storage, $transactions, $jobs))
             ->upload(new UploadSyllabusDocumentRequestDto('syllabus-1', 'edital.pdf', 'application/pdf', $contents));
 
         self::assertSame(hash('sha256', $contents), $result->documentSha256);
@@ -43,6 +51,9 @@ final class UploadSyllabusDocumentServiceTest extends TestCase
         self::assertSame(strlen($contents), $result->documentSize);
         self::assertSame($result, $repository->saved);
         self::assertSame($result->documentSha256, $storage->storedHash);
+        self::assertSame('syllabus-1', $jobs->saved?->syllabusId);
+        self::assertSame($result->documentSha256, $jobs->saved?->documentSha256);
+        self::assertSame('PENDING', $jobs->saved?->status);
     }
 
     public function testRejectsNonPdfPayload(): void
