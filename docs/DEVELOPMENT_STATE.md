@@ -967,3 +967,8 @@ docker compose exec -T frontend npm run build
 
 - As 74 questões de Governança que estavam sem resposta foram reavaliadas contra suas páginas de origem e comentários no PDF. O procedimento localiza o enunciado, delimita o bloco antes da próxima questão e aceita apenas o marcador explícito `Gabarito: [A-E]` ou `Gabarito: Letra [A-E]`.
 - Resultado: 74 gabaritos recuperados como `OFFICIAL`, nenhuma resposta inferida e nenhuma questão pendente nesse job.
+
+
+## Contagem na árvore de assuntos — 26/09/2026
+
+- A listagem de taxonomia agora devolve `questionCount` agregado por nó, somando questões do assunto e de todos os descendentes; folhas apresentam a própria contagem. A árvore exibe o total em badge ao lado de cada assunto.

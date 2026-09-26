@@ -1,7 +1,7 @@
 import type { PageQuery, PageResult } from '../../Infrastructure/Http/AxiosApiClient'
 export interface TaxonomyReconciliationProposal { readonly sourceSubjectId:string; readonly targetSubjectId:string; readonly confidence:number; readonly reason:string }
 export interface TaxonomyDuplicateSuggestion { readonly sourceId:string; readonly sourceName:string; readonly candidateId:string; readonly candidateName:string; readonly similarity:number }
-export interface TaxonomySubject { readonly id:string; readonly parentId:string|null; readonly name:string; readonly slug:string; readonly description:string|null; readonly level:number; readonly active:boolean }
+export interface TaxonomySubject { readonly id:string; readonly parentId:string|null; readonly name:string; readonly slug:string; readonly description:string|null; readonly level:number; readonly active:boolean; readonly questionCount:number }
 export interface TaxonomySubjectAlias { readonly id:string; readonly subjectId:string; readonly alias:string }
 export interface UpdateTaxonomySubject { readonly id:string; readonly name:string; readonly parentId:string|null; readonly description:string|null }
 export interface CreateTaxonomySubject { readonly name:string; readonly parentId:string|null; readonly description:string|null }

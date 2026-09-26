@@ -103,6 +103,13 @@ final class DoctrineTaxonomySubjectRepository implements TaxonomySubjectReposito
         return (int) $this->entityManager->createQueryBuilder()->select("COUNT(subject.id)")->from(TaxonomySubjectRecord::class, "subject")->where("subject.parentId = :parentId")->setParameter("parentId", $subjectId)->getQuery()->getSingleScalarResult() > 0;
     }
 
+    public function questionCountsBySubjectId(): array
+    {
+        $rows = $this->entityManager->createQueryBuilder()->select('assignment.taxonomySubjectId AS subjectId, COUNT(DISTINCT assignment.questionId) AS questionCount')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionTaxonomySubjectRecord', 'assignment')->groupBy('assignment.taxonomySubjectId')->getQuery()->getArrayResult();
+        $counts = []; foreach ($rows as $row) $counts[(string) $row['subjectId']] = (int) $row['questionCount'];
+        return $counts;
+    }
+
     public function count(): int
     {
         return (int) $this->entityManager->createQueryBuilder()->select('COUNT(subject.id)')->from(TaxonomySubjectRecord::class, 'subject')->getQuery()->getSingleScalarResult();

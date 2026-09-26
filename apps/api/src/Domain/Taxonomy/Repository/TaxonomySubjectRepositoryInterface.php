@@ -23,5 +23,7 @@ interface TaxonomySubjectRepositoryInterface extends TaxonomyHierarchyRepository
     public function list(int $offset, int $limit): array;
 
     public function hasChildren(string $subjectId): bool;
+    /** @return array<string,int> contagem direta de questões por assunto canônico */
+    public function questionCountsBySubjectId(): array;
     public function count(): int;
 }

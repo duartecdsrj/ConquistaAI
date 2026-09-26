@@ -5,6 +5,7 @@ import { taxonomyUseCases } from '../../../Infrastructure/Container'
 export interface TaxonomyTreeNode {
   readonly id: string
   readonly label: string
+  readonly questionCount: number
   children: TaxonomyTreeNode[]
 }
 
@@ -17,7 +18,7 @@ export function useTaxonomy() {
   const reconciliationProposals = ref<readonly import('../../../Domain/Taxonomy/TaxonomyRepository').TaxonomyReconciliationProposal[]>([])
 
   const tree = computed<TaxonomyTreeNode[]>(() => {
-    const nodes = new Map(subjects.value.map((subject) => [subject.id, { id: subject.id, label: subject.name, children: [] as TaxonomyTreeNode[] }]))
+    const nodes = new Map(subjects.value.map((subject) => [subject.id, { id: subject.id, label: subject.name, questionCount: subject.questionCount, children: [] as TaxonomyTreeNode[] }]))
     const roots: TaxonomyTreeNode[] = []
     for (const subject of subjects.value) {
       const node = nodes.get(subject.id)!
