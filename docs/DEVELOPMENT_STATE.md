@@ -982,3 +982,11 @@ docker compose exec -T frontend npm run build
 - A classificação usa folhas específicas sob Redes de Computadores (Protocolos, TCP/IP, DNS, HTTP, DHCP, FTP, SMTP, SNMP, SSH, Modelo OSI, Roteamento, Switching e VLAN, Ethernet, Redes sem Fio, Meios de Transmissão, QoS e Topologias). As bancas reconhecidas incluem FCC (449), FGV (200), CESPE/CEBRASPE (72), Cesgranrio, Vunesp e IBFC.
 - O resumo consolidado do job foi restaurado após a execução interativa exceder o limite do terminal: status `COMPLETED`, progresso 100%, 728 criadas, 436 duplicadas, 728 classificadas e 0 falhas.
 - Validações: lint PHP e prévia sem persistência aprovados; a auditoria posterior confirma 728 registros ligados ao job.
+
+
+## Recuperação de gabaritos — Redes de Computadores — 26/09/2026
+
+- Foram reavaliadas as 153 questões inicialmente sem gabarito do job de Redes, exclusivamente contra o texto do PDF de origem.
+- O recuperador por contexto localizou 36 marcadores explícitos `Gabarito: A–E`. Um segundo recuperador determinístico, `recover-question-answer-keys-from-tables.php`, reconheceu tabelas de gabarito por seção somente quando o número da questão e a alternativa ocupavam a mesma posição da tabela; ele recuperou mais 14 respostas.
+- Resultado consolidado: 625 gabaritos `OFFICIAL` e 103 questões ainda sem resposta. Nenhuma resposta foi inferida, e as pendentes seguem não publicáveis até haver fonte verificável ou revisão editorial.
+- Validação: lint PHP e prévia da recuperação tabular aprovados antes da persistência.
