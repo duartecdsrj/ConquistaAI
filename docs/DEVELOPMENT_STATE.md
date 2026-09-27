@@ -35,6 +35,12 @@ Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de in
 - Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
 - Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
 
+## 2026-09-27 — Extração direta de Big Data, BI e Governança de Dados
+
+- Quatro jobs cancelados foram recuperados por extração determinística local: Big Data (5), Business Intelligence (8), Big Data avançado (8 detectadas, 7 novas e 1 duplicata) e Governança de Dados (2). Foram criadas 22 questões objetivas completas, sem falhas.
+- O classificador passou a associar esses materiais sob Tecnologia da Informação > Banco de Dados, nos ramos Big Data, Business Intelligence e Governança de Dados. Os quatro ramos foram criados apenas quando inexistentes.
+- Validações: simulação anterior à escrita, lint PHP, auditoria Doctrine dos jobs concluídos e das associações de taxonomia.
+
 ## 2026-09-27 — Extração direta de XML, Linux, DevOps, Python e Git
 
 - Cinco jobs cancelados foram simulados e concluídos por extração determinística local: XML/JSON/CSV (19), Linux (2), DevOps (2), Python (14) e Git (23). As 60 questões objetivas completas foram criadas sem duplicatas ou falhas, todas com gabarito explícito recuperado do próprio material.

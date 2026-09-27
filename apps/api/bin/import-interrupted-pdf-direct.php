@@ -86,6 +86,7 @@ function placement(string $name, string $content): array
     $development = 'Desenvolvimento de Software';
     $softwareEngineering = 'Engenharia de Software';
     $projectManagement = 'Gestão de Projetos';
+    $database = 'Banco de Dados';
     $infrastructure = 'Infraestrutura';
     $operatingSystems = 'Sistemas Operacionais';
     $security = 'Segurança da Informação';
@@ -93,6 +94,9 @@ function placement(string $name, string $content): array
     $protocols = 'Protocolos';
 
     $normalizedName = mb_strtolower($name);
+    if (str_contains($normalizedName, 'big data')) return [[$root, $database, 'Big Data'], $database];
+    if (str_contains($normalizedName, 'business intelligence')) return [[$root, $database, 'Business Intelligence'], $database];
+    if (str_contains($normalizedName, 'governança de dados')) return [[$root, $database, 'Governança de Dados'], $database];
     if (preg_match('/(?:xml|json|csv)/u', $normalizedName)) return [[$root, $development, 'Formatos de Dados e Integração'], $development];
     if (str_contains($normalizedName, 'devops')) return [[$root, $development, $softwareEngineering, 'DevOps'], $softwareEngineering];
     if (str_contains($normalizedName, 'python')) return [[$root, $development, 'Linguagens de Programação', 'Python'], $development];
