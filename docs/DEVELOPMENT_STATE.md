@@ -1,6 +1,34 @@
 # Estado de desenvolvimento — ConquistaAI
 
-Atualizado em 24/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
+Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
+
+## 2026-09-27 — Backup local para restauração
+
+- Backup consistente criado em `/var/www/concursos/backups/conquistaai-20260927-100642` (ignorado pelo Git).
+- Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
+- Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
+
+## 2026-09-27 — Recuperação direta de jobs cancelados
+
+- Os quatro jobs cancelados foram concluídos sem worker ou provedor externo por `bin/import-interrupted-pdf-direct.php`: Computação em Nuvem (teoria: 3 criadas), Computação em Nuvem (questões: 16 criadas, 13 duplicadas), Virtualização (79 criadas, 67 duplicadas) e Contêineres (7 criadas).
+- O importador aceita somente blocos objetivos A–E completos, preserva metadados explícitos, descarta itens de certo/errado e discursivos, deduplica enunciados e classifica em Computação em Nuvem, Virtualização ou Contêineres sob Infraestrutura.
+- Das 104 questões atualmente associadas a esses jobs, 100 receberam gabarito `OFFICIAL` recuperado do próprio material e 4 receberam `AI_ESTIMATED` por solução local documentada. Um bloco inválido que mesclava um item CEBRASPE com outra questão foi removido.
+- A questão de atores em nuvem recebeu o recorte visual recuperado do PDF como `question_asset`; a questão de paravirtualização já possuía asset extraído.
+- Validações aprovadas: lint do novo script, integridade dos gabaritos/assets via Doctrine, `docker compose config --quiet` e healthcheck da API.
+
+## 2026-09-27 — Correção visual e editorial do lote de Redes
+
+- Foram corrigidos cinco registros pendentes do job `65e72f46-6635-4e75-a1b4-39f7ee207e76` diretamente a partir do PDF: ATM (B), NAT (B), captura DNS (C), arquitetura de firewall/DMZ (E) e códigos maliciosos (D). Todos foram confirmados pelo gabarito/comentário do material e agora usam `OFFICIAL`.
+- A tabela da captura DNS e a matriz de códigos maliciosos foram extraídas do PDF e associadas às respectivas questões como `question_assets`. O Compose agora mantém `question_pdf_assets` em volume nomeado, montado na API e no worker de importação.
+- Foram removidos dois registros inválidos: um item de certo/errado que havia sido convertido indevidamente em múltipla escolha e uma duplicata fragmentada da questão de DNS. O lote ficou com 630 `OFFICIAL`, 96 `AI_ESTIMATED` e nenhuma questão sem gabarito.
+- Validações: alternativas, chaves oficiais, páginas de evidência e assets persistidos foram consultados via Doctrine; `docker compose config --quiet` e o healthcheck da API foram aprovados após a recriação dos serviços.
+
+## 2026-09-26 — Gabaritos locais do lote de Redes
+
+- Para o job `65e72f46-6635-4e75-a1b4-39f7ee207e76` (Redes de Computadores), foram resolvidas localmente 97 questões que estavam sem gabarito, sem chamada ao Gemini, OpenAI ou outro provedor.
+- As respostas gravadas foram marcadas como `AI_ESTIMATED`; os 625 gabaritos extraídos diretamente do material permanecem `OFFICIAL`.
+- Seis registros permaneceram sem resposta: dependem de figura ou tabela não preservada pela extração, têm alternativas vazias ou foram corrompidos pela segmentação. Não se deve inferir uma alternativa sem a evidência ausente.
+- Validação: lote com 625 `OFFICIAL`, 97 `AI_ESTIMATED` e 6 sem gabarito. A decisão protege o sinal editorial e permite tratar essas seis questões numa correção posterior de extração de imagens/tabelas.
 
 
 ## 2026-09-25 — Correção do worker de editais

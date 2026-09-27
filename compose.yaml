@@ -73,6 +73,7 @@ services:
       - api_vendor:/app/vendor
       - syllabus_documents:/app/storage/syllabi
       - question_pdf_documents:/app/storage/question-pdfs
+      - question_pdf_assets:/app/storage/question-pdf-assets
     depends_on:
       mysql:
         condition: service_healthy
@@ -128,6 +129,7 @@ services:
       - ./apps/api:/app
       - api_vendor:/app/vendor
       - question_pdf_documents:/app/storage/question-pdfs
+      - question_pdf_assets:/app/storage/question-pdf-assets
     depends_on:
       mysql:
         condition: service_healthy
@@ -163,3 +165,4 @@ volumes:
   web_node_modules:
   syllabus_documents:
   question_pdf_documents:
+  question_pdf_assets:
