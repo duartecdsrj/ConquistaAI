@@ -77,17 +77,29 @@ function hasVisualReference(string $value): bool { return preg_match('/\\b(?:fig
 function placement(string $name, string $content): array
 {
     $root = 'Tecnologia da Informação';
-    $infra = 'Infraestrutura';
+    $infrastructure = 'Infraestrutura';
     $operatingSystems = 'Sistemas Operacionais';
-    if (str_contains(mb_strtolower($name), 'contêiner') || preg_match('/\b(?:docker|kubernetes|podman|container|conteiner)\b/u', $content)) return [[$root, $infra, 'Contêineres'], $infra];
-    if (preg_match('/\b(?:hypervisor|virtualiza[cç][aã]o|vmware|máquina virtual|virtual machine)\b/u', $content)) return [[$root, $infra, 'Virtualização'], $infra];
-    if (preg_match('/\b(?:cloud|nuvem|iaas|paas|saas|azure|aws|openstack)\b/u', $content)) return [[$root, $infra, 'Computação em Nuvem'], $infra];
+    $security = 'Segurança da Informação';
+    $networks = 'Redes de Computadores';
+    $protocols = 'Protocolos';
+
+    if (preg_match('/\b(?:ssl|tls|https)\b/u', $content)) return [[$root, $security, 'SSL e TLS'], $security];
+    if (preg_match('/\b(?:ipsec|vpn|openvpn|wireguard|tor|deepweb)\b/u', $content)) return [[$root, $security, 'Segurança de Redes'], $security];
+    if (preg_match('/\b(?:criptografia|criptogr[aá]f|aes|rsa|diffie|hash|sha-?d*|md5|esteganografia)\b/u', $content)) return [[$root, $security, 'Criptografia e Certificação Digital'], $security];
+    if (preg_match('/\b(?:assinatura digital|certifica[cç][aã]o digital|pki|icp[- ]?brasil|autoridade certificadora|crl)\b/u', $content)) return [[$root, $security, 'Criptografia e Certificação Digital'], $security];
+    if (preg_match('/\b(?:oauth|jwt|identidade digital|controle de acesso|gest[aã]o de identidade|iam|mfa|sso|autentica[cç][aã]o)\b/u', $content)) return [[$root, $security, 'Gestão de Identidade e Acesso'], $security];
+    if (preg_match('/\b(?:ldap|x\.500)\b/u', $content)) return [[$root, $networks, $protocols, 'LDAP'], $protocols];
+    if (preg_match('/\b(?:nfs|samba|cifs)\b/u', $content)) return [[$root, $networks, $protocols, 'Compartilhamento de Arquivos em Rede'], $protocols];
+    if (preg_match('/\b(?:active directory|\bad\b|dom[ií]nio windows)\b/u', $content)) return [[$root, $operatingSystems, 'Active Directory'], $operatingSystems];
+    if (str_contains(mb_strtolower($name), 'contêiner') || preg_match('/\b(?:docker|kubernetes|podman|container|conteiner)\b/u', $content)) return [[$root, $infrastructure, 'Contêineres'], $infrastructure];
+    if (preg_match('/\b(?:hypervisor|virtualiza[cç][aã]o|vmware|máquina virtual|virtual machine)\b/u', $content)) return [[$root, $infrastructure, 'Virtualização'], $infrastructure];
+    if (preg_match('/\b(?:cloud|nuvem|iaas|paas|saas|azure|aws|openstack)\b/u', $content)) return [[$root, $infrastructure, 'Computação em Nuvem'], $infrastructure];
     if (preg_match('/\b(?:linux|unix|bash|shell script|chmod|grep|systemd)\b/u', $content)) return [[$root, $operatingSystems, 'Linux e Unix'], $operatingSystems];
-    if (preg_match('/\b(?:windows|active directory|powershell|ntfs|registry)\b/u', $content)) return [[$root, $operatingSystems, 'Microsoft Windows'], $operatingSystems];
+    if (preg_match('/\b(?:windows|powershell|ntfs|registry)\b/u', $content)) return [[$root, $operatingSystems, 'Microsoft Windows'], $operatingSystems];
     if (preg_match('/\b(?:arquivo|file system|fat32|ext4|inode|diretório)\b/u', $content)) return [[$root, $operatingSystems, 'Sistemas de Arquivos'], $operatingSystems];
     if (preg_match('/\b(?:processo|thread|escalonamento|deadlock|memória virtual|paginação|kernel)\b/u', $content)) return [[$root, $operatingSystems, 'Gerenciamento de Processos e Memória'], $operatingSystems];
-    if (preg_match('/\b(?:storage|armazenamento|raid|nas|san|iscsi|fc )\b/u', $content)) return [[$root, $infra, 'Storage NAS e SAN'], $infra];
-    if (preg_match('/\b(?:servidor web|apache|nginx|iis|httpd)\b/u', $content)) return [[$root, $infra, 'Servidores Web'], $infra];
-    if (preg_match('/\b(?:distribu[ií]do|cluster|replica[cç][aã]o|consenso|resili)\b/u', $content)) return [[$root, $infra, 'Sistemas Distribuídos'], $infra];
-    return [[$root, $infra, 'Arquitetura de Computadores'], $infra];
+    if (preg_match('/\b(?:storage|armazenamento|raid|nas|san|iscsi|fc )\b/u', $content)) return [[$root, $infrastructure, 'Storage NAS e SAN'], $infrastructure];
+    if (preg_match('/\b(?:servidor web|apache|nginx|iis|httpd)\b/u', $content)) return [[$root, $infrastructure, 'Servidores Web'], $infrastructure];
+    if (preg_match('/\b(?:distribu[ií]do|cluster|replica[cç][aã]o|consenso|resili)\b/u', $content)) return [[$root, $infrastructure, 'Sistemas Distribuídos'], $infrastructure];
+    return [[$root, $infrastructure, 'Arquitetura de Computadores'], $infrastructure];
 }

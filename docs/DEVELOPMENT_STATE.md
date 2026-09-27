@@ -2,6 +2,13 @@
 
 Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
 
+## 2026-09-27 — Extração direta dos jobs de Segurança interrompidos
+
+- Os cinco jobs cancelados em 27/09 foram concluídos sem worker ou provedor externo por `bin/import-interrupted-pdf-direct.php`: SSL/TLS e VPN (146 páginas, sem item A–E elegível), Criptografia (122 páginas, 26 detectadas, 5 novas e 21 duplicadas), Certificação Digital (65 páginas, 10 detectadas, 2 novas e 8 duplicadas), LDAP/Active Directory (104 páginas, sem item A–E elegível) e Gestão de Identidade e Acesso (29 páginas, sem item A–E elegível).
+- O classificador local passou a priorizar SSL/TLS, segurança de redes, criptografia/certificação, gestão de identidade/acesso, LDAP, compartilhamento de arquivos em rede e Active Directory. As sete novas questões foram associadas ao assunto canônico existente `Criptografia e Certificação Digital`; nenhuma taxonomia genérica ou nó novo foi criado.
+- Os PDFs sem criação continham somente teoria ou itens de certo/errado; continuam descartados pela política de aceitar apenas múltipla escolha completa. Cinco das sete questões novas possuem gabarito `OFFICIAL`; duas permanecem sem gabarito explícito e não receberam inferência.
+- Validações: simulação antes da escrita, conclusão em 100% de todos os jobs, consulta de questões/gabaritos/taxonomia por Doctrine e lint do importador aprovados.
+
 ## 2026-09-27 — Ordenação da fila editorial
 
 - A listagem administrativa passou a incluir os três estados editoriais em ordem determinística: `REVIEW` (revisar), `DRAFT` (aprovar/publicar) e `VOID` (somente consulta). A paginação é aplicada após essa ordenação, impedindo que itens inválidos ocupem posições prioritárias.
