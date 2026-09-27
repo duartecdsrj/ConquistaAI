@@ -12,6 +12,7 @@ final readonly class PublishedQuestionFilter
         public ?string $board,
         public ?int $year,
         public ?string $difficulty,
+        public ?string $content = null,
         public ?string $syllabusId = null,
         /** @var list<string> */ public array $taxonomySubjectIds = [],
         public ?string $examId = null,

@@ -50,4 +50,12 @@ final class QuestionAuditAnalyzerTest extends TestCase
         self::assertContains('CONTEUDO_DOCUMENTAL_MESCLADO', array_column($findings, 'code'));
     }
 
+    public function testDetectsStatementsLeakedIntoAnOptionWithoutChangingContent(): void
+    {
+        $optionA = "A esse respeito, assinale V para a afirmativa verdadeira e F para a falsa.\n\n( ) Primeira afirmação\n\n( ) Segunda afirmação\n\n( ) Terceira afirmação\n\nAs afirmativas são, respectivamente,\n\nA) F – V – F – V.";
+        $findings = (new QuestionAuditAnalyzer())->inspect('Enunciado original.', [$optionA, 'F – V – V – F.', 'V – F – F – V.', 'F – F – V – V.']);
+
+        self::assertContains('ALTERNATIVAS_INCORPORADAS', array_column($findings, 'code'));
+    }
+
 }

@@ -33,7 +33,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 
 `GET /admin/taxonomy/subjects` devolve `questionCount` por assunto canônico. O valor é agregado e inclui somente questões PUBLISHED ligadas ao nó e a todos os seus descendentes; em folhas, representa apenas as questões publicadas ligadas à própria folha.
 
-`GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. Cada questão retornada inclui `answerKeySource`, que é `OFFICIAL` quando o gabarito foi explicitamente recuperado da fonte e `AI_ESTIMATED` quando foi inferido pela IA; o cliente deve sinalizar visualmente a segunda hipótese. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
+`GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `content`, `status` (admin) e `origin`. `content` recebe até 200 caracteres e localiza o texto no enunciado ou em qualquer alternativa publicada. Cada questão retornada inclui `answerKeySource`, que é `OFFICIAL` quando o gabarito foi explicitamente recuperado da fonte e `AI_ESTIMATED` quando foi inferido pela IA; o cliente deve sinalizar visualmente a segunda hipótese. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
 
 ### Logos automáticos de concursos
 

@@ -35,6 +35,11 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
         if ($filter->difficulty !== null) {
             $query->andWhere('question.difficulty = :difficulty')->setParameter('difficulty', $filter->difficulty);
         }
+        if ($filter->content !== null) {
+            $query->andWhere('LOWER(question.statement) LIKE :content OR question.id IN (SELECT matchingOption.questionId FROM ' . QuestionOptionRecord::class . ' matchingOption WHERE LOWER(matchingOption.content) LIKE :content)')
+                ->setParameter('content', '%' . mb_strtolower($filter->content) . '%');
+        }
+
         if ($filter->syllabusId !== null) {
             $query->innerJoin('App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionTaxonomySubjectRecord', 'taxonomyQuestion', 'WITH', 'taxonomyQuestion.questionId = question.id')
                 ->innerJoin('App\Infrastructure\Persistence\Doctrine\Catalog\Entity\SubjectTaxonomyAssignmentRecord', 'taxonomySyllabus', 'WITH', 'taxonomySyllabus.taxonomySubjectId = taxonomyQuestion.taxonomySubjectId')

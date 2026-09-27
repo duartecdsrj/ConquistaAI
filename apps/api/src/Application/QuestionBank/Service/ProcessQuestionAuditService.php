@@ -24,7 +24,7 @@ final class ProcessQuestionAuditService
         $runId = $this->audit->start(self::ALGORITHM_VERSION, 'PUBLISHED'); $offset = 0; $summary = ['questions_analyzed' => 0, 'findings' => 0, 'requires_review' => 0];
         try {
             do {
-                $page = $this->questions->findPublished(new PublishedQuestionFilter($offset, 100, null, null, null, null));
+                $page = $this->questions->findPublished(new PublishedQuestionFilter($offset, 100, null, null, null, null, null));
                 foreach ($page->items as $question) $this->inspect($runId, $question, $summary);
                 $offset += count($page->items);
             } while ($offset < $page->total && $page->items !== []);

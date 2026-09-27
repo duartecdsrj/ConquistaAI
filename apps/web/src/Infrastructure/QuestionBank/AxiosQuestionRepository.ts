@@ -18,6 +18,7 @@ export class AxiosQuestionRepository implements QuestionRepository {
       ...(filters.board ? { board: filters.board } : {}),
       ...(filters.year ? { year: filters.year } : {}),
       ...(filters.difficulty ? { difficulty: filters.difficulty } : {}),
+      ...(filters.content ? { content: filters.content } : {}),
     })
     return { ...page, items: page.items }
   }

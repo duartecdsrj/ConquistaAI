@@ -13,9 +13,10 @@ $em = DoctrineEntityManagerFactory::create();
 $questions = $em->createQueryBuilder()->select('question')
     ->from(QuestionRecord::class, 'question')
     ->where('question.status = :status')
-    ->andWhere('question.statement LIKE :footer')
+    ->andWhere('(question.statement LIKE :footer OR question.statement LIKE :courseFooter)')
     ->setParameter('status', 'PUBLISHED')
-    ->setParameter('footer', '%Equipe Informática e TI%')
+    ->setParameter('footer', '%Equipe Inform%')
+    ->setParameter('courseFooter', '%Concursos da %Fiscal Especialidade TI%')
     ->orderBy('question.id', 'ASC')
     ->getQuery()->getResult();
 
@@ -43,8 +44,12 @@ echo json_encode([
 /** Removes only a standalone publisher footer; it never repairs, translates or rewrites text. */
 function removeKnownFooterLines(string $value): string
 {
-    $clean = preg_replace('/^\h*Equipe Informática e TI,[^\n]*\R?/mu', '', $value);
+    $clean = preg_replace(
+        "/^\h*(?:[\p{L}. ]+,\h*)?Equipe\h+Inform.{0,8}tica\h+e\h+TI(?:,\h*[\p{L}. ]+)?\h*\R?|^\h*Concursos da .{0,8}rea Fiscal Especialidade TI[^\n]*\R?/mu",
+        "",
+        $value,
+    );
     if ($clean === null || $clean === $value) return $value;
-    $clean = (string) preg_replace('/\n{3,}/u', "\n\n", $clean);
+    $clean = (string) preg_replace("/\n{3,}/u", "\n\n", $clean);
     return trim($clean);
 }

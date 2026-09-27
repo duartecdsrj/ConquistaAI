@@ -26,6 +26,7 @@ export interface QuestionFilters extends PageQuery {
   readonly board?: string
   readonly year?: number
   readonly difficulty?: QuestionDifficulty
+  readonly content?: string
 }
 export interface QuestionPdfAssistance { readonly content:string; readonly provider:string|null; readonly model:string|null; readonly pages:readonly number[] }
 export interface QuestionRepository {

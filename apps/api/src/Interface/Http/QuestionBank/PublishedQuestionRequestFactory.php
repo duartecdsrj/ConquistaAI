@@ -19,7 +19,8 @@ final class PublishedQuestionRequestFactory
         $board = $this->nullableString($query['board'] ?? null, 'board');
         $difficulty = $this->nullableString($query['difficulty'] ?? null, 'difficulty');
 
-        return new ListPublishedQuestionsRequestDto($page, $perPage, $subjectId, $board, $year, $difficulty);
+        $content = $this->nullableString($query['content'] ?? null, 'content');
+        return new ListPublishedQuestionsRequestDto($page, $perPage, $subjectId, $board, $year, $difficulty, $content);
     }
 
     private function integer(mixed $value, string $field): int

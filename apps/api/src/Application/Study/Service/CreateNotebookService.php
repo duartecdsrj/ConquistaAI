@@ -50,7 +50,7 @@ final class CreateNotebookService
             if ($selectedSubjects !== []) {
                 $ids = $this->weightedQuestionIds($request, $selectedSubjects, $subjectWeights);
             } else {
-                $page = $this->questions->findPublished(new PublishedQuestionFilter(0,$request->quantity,$request->filters['subject_id'] ?? null,$request->filters['board'] ?? null,$request->filters['year'] ?? null,$request->filters['difficulty'] ?? null,$request->filters['syllabus_id'] ?? null,isset($request->filters['subject_ids']) && is_array($request->filters['subject_ids']) ? array_values($request->filters['subject_ids']) : [],$request->filters['exam_id'] ?? null));
+                $page = $this->questions->findPublished(new PublishedQuestionFilter(0, $request->quantity, $request->filters['subject_id'] ?? null, $request->filters['board'] ?? null, $request->filters['year'] ?? null, $request->filters['difficulty'] ?? null, null, $request->filters['syllabus_id'] ?? null, isset($request->filters['subject_ids']) && is_array($request->filters['subject_ids']) ? array_values($request->filters['subject_ids']) : [], $request->filters['exam_id'] ?? null));
                 $ids = array_map(static fn ($question): string => $question->id, $page->items);
             }
             $selection = FrozenQuestionSelection::fromQuestionIds($ids,$request->quantity);
@@ -71,11 +71,11 @@ final class CreateNotebookService
         foreach (array_keys($remainders) as $id) { if ($allocated >= $request->quantity) break; $quotas[$id]++; $allocated++; }
         $ids=[];
         foreach ($subjectIds as $id) {
-            $page=$this->questions->findPublished(new PublishedQuestionFilter(0,max($request->quantity,$quotas[$id]),null,$request->filters['board'] ?? null,$request->filters['year'] ?? null,$request->filters['difficulty'] ?? null,null,[$id],null));
+            $page = $this->questions->findPublished(new PublishedQuestionFilter(0, max($request->quantity, $quotas[$id]), null, $request->filters['board'] ?? null, $request->filters['year'] ?? null, $request->filters['difficulty'] ?? null, null, null, [$id], null));
             foreach ($page->items as $question) { if (count($ids) >= $request->quantity || count(array_filter($ids, static fn(string $chosen):bool=>$chosen===$question->id)) > 0) continue; if ($quotas[$id]-- <= 0) break; $ids[]=$question->id; }
         }
         if (count($ids) < $request->quantity) {
-            $page=$this->questions->findPublished(new PublishedQuestionFilter(0,$request->quantity*3,null,$request->filters['board'] ?? null,$request->filters['year'] ?? null,$request->filters['difficulty'] ?? null,null,$subjectIds,null));
+            $page = $this->questions->findPublished(new PublishedQuestionFilter(0, $request->quantity * 3, null, $request->filters['board'] ?? null, $request->filters['year'] ?? null, $request->filters['difficulty'] ?? null, null, null, $subjectIds, null));
             foreach ($page->items as $question) { if (count($ids) >= $request->quantity) break; if (!in_array($question->id,$ids,true)) $ids[]=$question->id; }
         }
         return $ids;

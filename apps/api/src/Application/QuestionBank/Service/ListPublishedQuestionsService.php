@@ -27,6 +27,7 @@ final class ListPublishedQuestionsService
             $request->board,
             $request->year,
             $request->difficulty,
+            $request->content,
         ));
 
         return [

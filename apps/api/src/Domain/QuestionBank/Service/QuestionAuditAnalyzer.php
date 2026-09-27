@@ -17,6 +17,7 @@ final class QuestionAuditAnalyzer
         $normalized = array_map($this->normalize(...), $options);
         if (count($normalized) !== count(array_filter($normalized))) $findings[] = $this->finding('EXTRACAO_INCOMPLETA', 'HIGH', 'Há alternativa vazia.');
         if (count(array_unique($normalized)) !== count($normalized)) $findings[] = $this->finding('POSSIVEL_DUPLICATA', 'HIGH', 'Há alternativas duplicadas.');
+        if ($this->hasStatementLeakInOption($options)) $findings[] = $this->finding('ALTERNATIVAS_INCORPORADAS', 'HIGH', 'Uma alternativa contém afirmações e uma opção de resposta que pertencem ao enunciado.');
         if (preg_match('/(?:^|\n)\s*[A-E][.)]\s+.{1,}(?:\n|\s+)[B-E][.)]\s+/u', $statement) === 1) $findings[] = $this->finding('POSSIVEL_QUESTAO_MESCLADA', 'HIGH', 'Alternativas aparecem dentro do enunciado.');
         if (preg_match('/(?:^|\n)\s*(?:Quest[aã]o\s+)?\d{1,3}\s*[.)].{0,200}(?:\n|\s+)(?:Quest[aã]o\s+)?\d{1,3}\s*[.)]/iu', $statement) === 1) $findings[] = $this->finding('POSSIVEL_QUESTAO_MESCLADA', 'MEDIUM', 'Há mais de um marcador de questão no enunciado.');
         if ($this->hasDocumentBodyLeak($statement)) $findings[] = $this->finding('CONTEUDO_DOCUMENTAL_MESCLADO', 'HIGH', 'O enunciado contém sumário, gabarito ou texto documental alheio à questão; exige comparação com o PDF original.');
@@ -31,6 +32,15 @@ final class QuestionAuditAnalyzer
 
     private function finding(string $code, string $confidence, string $message): array { return compact('code', 'confidence', 'message'); }
     private function normalize(string $value): string { return mb_strtolower((string) preg_replace('/\s+/u', ' ', trim($value))); }
+    /** @param list<string> $options */
+    private function hasStatementLeakInOption(array $options): bool
+    {
+        foreach ($options as $option) {
+            if (preg_match('/(?:^|\n)\s*\(\s*\).*(?:\n.*){2,}\n\s*As\s+afirmativas\s+s[aã]o.*\n\s*[A-E][.)]\s+/isu', $option) === 1) return true;
+        }
+
+        return false;
+    }
     private function referencesVisual(string $value): bool { return preg_match('/\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|mapa|fluxograma)\b/iu', $value) === 1; }
     private function hasDocumentBodyLeak(string $value): bool { return preg_match('/(?:^|\n)\s*(?:[Ii]ndice|Sum.rio|REFER.NCIAS)\b|\bGABARITO\s*\n\s*\d+[.)]/iu', $value) === 1; }
     private function hasExtractionNoise(string $value): bool { return preg_match('/(?:www\.|p[aá]gina\s+\d+|licen[cs]ed to|concursos?\s+da\s+|equipe\s+inform[aá]tica)/iu', $value) === 1; }

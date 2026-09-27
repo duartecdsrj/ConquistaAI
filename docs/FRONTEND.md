@@ -77,7 +77,7 @@ A marca oficial do produto está em apps/web/public/images/concursos-study-mark.
 ## Módulos já conectados à API
 
 - Study: lista, criação, início, execução em tela inteira, finalização e navegação pela seleção congelada. A tela de execução apresenta apenas uma questão por vez, cronômetro persistido com pausa/retomada, estatísticas reais do caderno, restauração de respostas já registradas, ações Anterior/Próxima e confirmação de finalização.
-- Question Bank: consulta de questões publicadas com filtros.
+- Question Bank: consulta de questões publicadas com filtros, inclusive busca textual no enunciado e nas alternativas. Os resultados usam a mesma composição visual do Caderno: metadados, conteúdo rico, assets e alternativas em cartões legíveis.
 - Performance: métricas básicas do usuário.
 - Catalog: administração em cascata de concursos, cargos, editais, assuntos e tags para usuários ADMIN.
 - Editorial: listagem de rascunhos e publicação administrativa de questões validadas.

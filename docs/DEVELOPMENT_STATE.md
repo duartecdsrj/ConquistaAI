@@ -75,6 +75,25 @@
 
 Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
 
+## 2026-09-27 — Busca textual e leitura de questões
+
+- `GET /questions` agora aceita `content` (até 200 caracteres) e aplica a busca parametrizada no enunciado e nas alternativas das questões publicadas, preservando filtros e paginação. A validação real por Doctrine para `IPv4` retornou 67 resultados.
+- A tela Banco de Questões inclui o campo “Pesquisar no conteúdo” e apresenta cada resultado aberto, com metadados, conteúdo rico, anexos e alternativas no mesmo padrão visual do Caderno.
+- Validações: PHPUnit completo aprovado (64 testes, 150 asserções), build de produção do frontend aprovado e `git diff --check` limpo. Permanece apenas o aviso não bloqueante de bundle acima de 500 kB.
+
+## 2026-09-27 — Correção dos achados estruturais verificáveis
+
+- Executada a rotina direta `repair-published-pdf-footers-direct.php --apply`, sem job ou IA. Uma questão adicional (`ddd7eea9-731b-4088-9db1-cfcc07c3b2fa`) teve somente linhas completas de rodapé editorial removidas; alternativas, gabarito, imagens, metadados e demais trechos foram preservados.
+- A reauditoria direta `11875e5c-b1c5-4e9d-b21d-573677ba37d3` reduziu `RUIDO_EXTRACAO` de 19 para 18. Código (393) e correlação (27) permanecem corrigidos na apresentação compartilhada, sem reescrita de dados.
+- Permanecem em revisão manual 314 imagens sem associação segura, 97 extrações incompletas, 84 duplicatas possíveis, 52 mesclas possíveis, 5 conteúdos documentais misturados e 18 ruídos residuais; não há base determinística para alterar esses conteúdos sem risco de mudar a questão original.
+- Validações: lint da rotina, PHPUnit completo (64 testes, 150 asserções), build de produção do frontend e `git diff --check` aprovados.
+
+## 2026-09-27 — Reparo estrutural verificado de alternativa incorporada
+
+- Corrigida diretamente, sem job ou IA, a questão publicada `0025b8cc-c6f9-407f-99ba-e5b8de21be61` (FGV/Prefeitura de Caraguatatuba-SP/2024). A comparação com a página física 889 do PDF recuperado (referência de origem persistida: `[883]`) confirmou que as quatro afirmações e a instrução estavam indevidamente no conteúdo da alternativa A.
+- A rotina idempotente `bin/repair-published-question-0025b8cc-direct.php` move exclusivamente esse trecho literal para o fim do enunciado e mantém a alternativa A como `F – V – F – V.`. Gabarito, alternativas B–E, metadados e proveniência não foram modificados.
+- A auditoria passa a sinalizar o padrão como `ALTERNATIVAS_INCORPORADAS` com confiança alta e sem reescrever conteúdo; o teste unitário cobre a detecção.
+
 ## 2026-09-27 — Versionamento de reprocessamento de PDFs
 
 - Aplicada a migration `030_question_pdf_reprocess_version.sql`, que adiciona versão de algoritmo e vínculo com o job de origem aos imports de PDF.
