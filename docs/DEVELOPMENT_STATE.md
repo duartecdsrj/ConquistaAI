@@ -35,6 +35,19 @@ Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de in
 - Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
 - Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
 
+## 2026-09-27 — Priorização de gabarito na aprovação editorial
+
+- A fila editorial preserva a prioridade de estados REVIEW, DRAFT e VOID. Dentro de DRAFT, a ordenação agora coloca primeiro as questões com correctOptionId preenchido e somente depois as que ainda dependem de gabarito.
+- Assim, a ação de publicação em lote encontra primeiro os itens efetivamente publicáveis, sem esconder questões pendentes de resposta.
+- O contrato da rota administrativa foi atualizado. Validações: primeira página real com 100 itens continha 100 DRAFT com gabarito, nenhum DRAFT sem gabarito antes deles; PHPUnit do contexto QuestionBank aprovou 13 testes e 32 asserções.
+
+## 2026-09-27 — Recuperação direta de cursos consolidados de Desenvolvimento
+
+- Os dois jobs cancelados de cursos consolidados foram simulados e extraídos sem worker ou provedor externo. Desenvolvimento de Software detectou 2.195 questões, com 1.192 novas e 1.003 duplicatas; Engenharia de Software detectou 3.490, com 1.636 novas e 1.854 duplicatas. Nenhum item falhou.
+- A regra de fallback passou a apontar para folhas, nunca para nós que possuem filhos: Fundamentos de Desenvolvimento de Software e Fundamentos de Engenharia de Software. Assim, questões sem sinal suficiente para uma taxonomia mais específica permanecem classificadas sem serem descartadas; os reconhecedores específicos existentes continuam sendo aplicados antes desse fallback.
+- O sanitizador passou a remover também o rodapé recorrente do curso de Desenvolvimento de Software. O relatório do primeiro job foi consolidado após sua retomada, para refletir ambas as passagens.
+- Validações: simulações individuais, monitoramento dos processos locais até o relatório final, auditoria Doctrine de totais/status e lint PHP.
+
 ## 2026-09-27 — Contagem editorial da árvore de assuntos
 
 - A contagem exibida na árvore canônica estava agregando vínculos de todos os estados editoriais. O repositório Doctrine agora une a questão ao vínculo de taxonomia e filtra explicitamente status PUBLISHED antes da agregação de ancestrais.

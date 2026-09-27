@@ -33,7 +33,7 @@ final class ImportedQuestionContentSanitizer
         $clean = (string) (preg_replace('/\\\\r?\\\\n/u', "\n", $clean) ?? $clean);
         $clean = (string) (preg_replace('/\\\\n(?!et(?:[\\\\\/]|$)|etwork(?:[\\\\\/]|$))/iu', "\n", $clean) ?? $clean);
         $clean = (string) (preg_replace('/\n\s*(?:Coment[aá]rios?|Resolu[cç][aã]o|Gabarito)\s*:\s*[\s\S]*$/iu', '', $clean) ?? $clean);
-        $clean = (string) (preg_replace('/(?im)^.*(?:Concursos da [^\n]*\d+|(?:Evandro Dalla Vecchia|Andr[eé] Castro), Equipe Informática e TI(?:, Marcos Vin[ií]cius Alves Franco)?|www\.estrategiaconcursos\.com\.br|Eletronica Em Arte|Licensed to [^\n]*|==[0-9a-f]{6,}==).*(?:\n|$)/u', '', $clean) ?? $clean);
+        $clean = (string) (preg_replace('/(?im)^.*(?:Concursos da [^\n]*\d+|(?:Evandro Dalla Vecchia|Andr[eé] Castro), Equipe Informática e TI(?:, Marcos Vin[ií]cius Alves Franco)?|Diego Carvalho, Equipe Informática e TI, Paolla Ramos, Vinicius Borges|www\.estrategiaconcursos\.com\.br|Eletronica Em Arte|Licensed to [^\n]*|==[0-9a-f]{6,}==).*(?:\n|$)/u', '', $clean) ?? $clean);
 
         $lines = [];
         $previousBlank = false;

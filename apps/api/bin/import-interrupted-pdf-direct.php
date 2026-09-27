@@ -133,5 +133,7 @@ function placement(string $name, string $content): array
     if (preg_match('/\b(?:storage|armazenamento|raid|nas|san|iscsi|fc )\b/u', $content)) return [[$root, $infrastructure, 'Storage NAS e SAN'], $infrastructure];
     if (preg_match('/\b(?:servidor web|apache|nginx|iis|httpd)\b/u', $content)) return [[$root, $infrastructure, 'Servidores Web'], $infrastructure];
     if (preg_match('/\b(?:distribu[ií]do|cluster|replica[cç][aã]o|consenso|resili)\b/u', $content)) return [[$root, $infrastructure, 'Sistemas Distribuídos'], $infrastructure];
+    if (str_contains($normalizedName, 'desenvolvimento_de_software')) return [[$root, $development, 'Fundamentos de Desenvolvimento de Software'], $development];
+    if (str_contains($normalizedName, 'engenharia_de_software')) return [[$root, $development, $softwareEngineering, 'Fundamentos de Engenharia de Software'], $softwareEngineering];
     return [[$root, $infrastructure, 'Arquitetura de Computadores'], $infrastructure];
 }
