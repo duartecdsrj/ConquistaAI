@@ -35,6 +35,18 @@ Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de in
 - Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
 - Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
 
+## 2026-09-27 — Contagem editorial da árvore de assuntos
+
+- A contagem exibida na árvore canônica estava agregando vínculos de todos os estados editoriais. O repositório Doctrine agora une a questão ao vínculo de taxonomia e filtra explicitamente status PUBLISHED antes da agregação de ancestrais.
+- Assim, badges de folhas e nós-pai mostram somente questões aprovadas/publicadas; DRAFT, REVIEW e VOID não compõem nenhum total da árvore.
+- O contrato de GET /admin/taxonomy/subjects foi documentado com essa regra. Validações: consulta real retornou 2.527 vínculos publicados, igual ao total de questões PUBLISHED; PHPUnit focalizado aprovou 18 testes e 39 asserções.
+
+## 2026-09-27 — Extração direta de Arquitetura, Mensageria e Serviços Web
+
+- Cinco jobs cancelados foram recuperados por extração local. A aula repetida de XML/JSON/CSV detectou 19 itens, todos duplicados e sem nova criação. Arquitetura de Software criou 1 questão, Mensageria 3, Padrões de Projeto 3 e Web Services 5; não houve falhas.
+- O classificador passou a usar ramos específicos sob Engenharia de Software: Arquitetura de Software, Mensageria, Padrões de Projeto e Web Services. Nenhuma questão desse lote usou o fallback de Arquitetura de Computadores.
+- Validações: simulação antes de cada gravação, lint PHP, consulta Doctrine dos status/totais e auditoria das associações persistidas.
+
 ## 2026-09-27 — Extração direta de Big Data, BI e Governança de Dados
 
 - Quatro jobs cancelados foram recuperados por extração determinística local: Big Data (5), Business Intelligence (8), Big Data avançado (8 detectadas, 7 novas e 1 duplicata) e Governança de Dados (2). Foram criadas 22 questões objetivas completas, sem falhas.

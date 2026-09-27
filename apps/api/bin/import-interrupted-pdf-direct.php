@@ -94,6 +94,10 @@ function placement(string $name, string $content): array
     $protocols = 'Protocolos';
 
     $normalizedName = mb_strtolower($name);
+    if (str_contains($normalizedName, 'arquitetura de software')) return [[$root, $development, $softwareEngineering, 'Arquitetura de Software'], $softwareEngineering];
+    if (str_contains($normalizedName, 'mensageria')) return [[$root, $development, $softwareEngineering, 'Mensageria'], $softwareEngineering];
+    if (str_contains($normalizedName, 'padrões de projeto')) return [[$root, $development, $softwareEngineering, 'Padrões de Projeto'], $softwareEngineering];
+    if (str_contains($normalizedName, 'web services')) return [[$root, $development, $softwareEngineering, 'Web Services'], $softwareEngineering];
     if (str_contains($normalizedName, 'big data')) return [[$root, $database, 'Big Data'], $database];
     if (str_contains($normalizedName, 'business intelligence')) return [[$root, $database, 'Business Intelligence'], $database];
     if (str_contains($normalizedName, 'governança de dados')) return [[$root, $database, 'Governança de Dados'], $database];

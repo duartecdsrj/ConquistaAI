@@ -31,7 +31,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Taxonomia editorial | `PUT /admin/questions/{id}/taxonomy-subjects` recebe `{ "taxonomy_subject_ids": ["uuid"] }` e substitui as associações canônicas da questão para usuários ADMIN |
 | Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
 
-`GET /admin/taxonomy/subjects` devolve `questionCount` por assunto canônico. O valor é agregado: inclui questões ligadas ao nó e a todos os seus descendentes; em folhas, representa apenas as questões ligadas à própria folha.
+`GET /admin/taxonomy/subjects` devolve `questionCount` por assunto canônico. O valor é agregado e inclui somente questões PUBLISHED ligadas ao nó e a todos os seus descendentes; em folhas, representa apenas as questões publicadas ligadas à própria folha.
 
 `GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `status` (admin) e `origin`. Cada questão retornada inclui `answerKeySource`, que é `OFFICIAL` quando o gabarito foi explicitamente recuperado da fonte e `AI_ESTIMATED` quando foi inferido pela IA; o cliente deve sinalizar visualmente a segunda hipótese. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
 
