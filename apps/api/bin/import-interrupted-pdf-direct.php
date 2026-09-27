@@ -93,6 +93,10 @@ function placement(string $name, string $content): array
     $protocols = 'Protocolos';
 
     $normalizedName = mb_strtolower($name);
+    if (preg_match('/(?:xml|json|csv)/u', $normalizedName)) return [[$root, $development, 'Formatos de Dados e Integração'], $development];
+    if (str_contains($normalizedName, 'devops')) return [[$root, $development, $softwareEngineering, 'DevOps'], $softwareEngineering];
+    if (str_contains($normalizedName, 'python')) return [[$root, $development, 'Linguagens de Programação', 'Python'], $development];
+    if (str_contains($normalizedName, 'git')) return [[$root, $development, $softwareEngineering, 'Controle de Versão'], $softwareEngineering];
     if (str_contains($normalizedName, 'curso-220899') || str_contains($normalizedName, 'agile')) return [[$root, $development, $softwareEngineering, 'Metodologias Ágeis'], $softwareEngineering];
     if (str_contains($normalizedName, 'pmbok')) return [[$administration, $projectManagement, 'PMBOK'], $projectManagement];
     if (preg_match('/(?:bpmn|\bbpm\b|mpsbr|mps\.br|cmmi)/u', $normalizedName)) return [[$root, $development, $softwareEngineering, 'Processos e Qualidade de Software'], $softwareEngineering];

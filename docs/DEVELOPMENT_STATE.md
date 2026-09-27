@@ -35,6 +35,12 @@ Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de in
 - Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
 - Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
 
+## 2026-09-27 — Extração direta de XML, Linux, DevOps, Python e Git
+
+- Cinco jobs cancelados foram simulados e concluídos por extração determinística local: XML/JSON/CSV (19), Linux (2), DevOps (2), Python (14) e Git (23). As 60 questões objetivas completas foram criadas sem duplicatas ou falhas, todas com gabarito explícito recuperado do próprio material.
+- O classificador passou a usar o nome do arquivo para estabilizar temas de curso e criar somente os ramos canônicos necessários: Formatos de Dados e Integração, DevOps, Python e Controle de Versão; Linux foi associado ao ramo existente Linux e Unix.
+- Validações: simulação dos cinco PDFs antes da escrita, lint PHP, consulta por Doctrine de status/totais e auditoria das associações de taxonomia persistidas.
+
 ## 2026-09-27 — Extração direta de Desenvolvimento, Processos e Projetos
 
 - Os dez jobs que permaneciam CANCELLED foram simulados e recuperados sem worker ou provedor externo. Foram detectadas 799 questões objetivas completas; 481 novas foram gravadas, 318 duplicatas foram descartadas e nenhuma escrita falhou.
