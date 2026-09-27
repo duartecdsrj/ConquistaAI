@@ -32,4 +32,13 @@ final class DoctrineQuestionPdfQuestionWriterTest extends TestCase
         $method = new \ReflectionMethod(DoctrineQuestionPdfQuestionWriter::class, 'specificTaxonomy');
         self::assertNull($method->invoke($writer, ['taxonomy_path' => ['Tecnologia da Informação']]));
     }
+    public function testDoesNotTreatPageCandidatesAsVerifiedImages(): void
+    {
+        $writer = (new \ReflectionClass(DoctrineQuestionPdfQuestionWriter::class))->newInstanceWithoutConstructor();
+        $method = new \ReflectionMethod(DoctrineQuestionPdfQuestionWriter::class, 'verifiedAssets');
+
+        self::assertSame([], $method->invoke($writer, ['image_pages' => [7]]));
+        self::assertSame([['path' => '/assets/figure.png', 'page' => 7]], $method->invoke($writer, ['verified_assets' => [['path' => ' /assets/figure.png ', 'page' => '7']]]));
+    }
+
 }

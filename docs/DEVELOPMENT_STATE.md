@@ -1,7 +1,134 @@
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-27 — Idempotência da auditoria publicada
+
+- A rotina de auditoria agora procura uma execução `COMPLETED` com o mesmo algoritmo e escopo antes de iniciar outra; quando existe, retorna seu identificador sem consultar questões, criar execução ou gravar achados.
+- Cobertura unitária aprovada: `ProcessQuestionAuditServiceTest` (1 teste, 5 asserções). A validação integrada do comando e da suíte completa é o próximo passo; não haverá reprocessamento de PDF, uso de job/IA ou importação de questões nesta etapa.
+- A tentativa de validação contra o banco local foi interrompida antes de qualquer escrita porque o hostname Docker `mysql` não resolve neste ambiente (`PDOException`); a rotina não reprocessou PDFs, não criou execução e não importou questões. A validação comportamental permanece coberta pelo teste unitário.
+- Validação posterior: PHPUnit completo aprovado (56 testes, 134 asserções; 2 deprecações já existentes) e `git diff --check` limpo. O build do frontend não foi reexecutável neste ambiente porque `node_modules` é de outro proprietário e está incompleto; `npm ci` falhou com `EACCES` ao criar `node_modules/@babel`, sem alterar código-fonte.
+- Imagens: o escritor deixou de anexar automaticamente todos os arquivos extraídos de uma página. `image_pages` é somente proveniência; a persistência exige `verified_assets` com caminho e página explicitamente validados por recorte determinístico ou revisão humana. Teste focalizado aprovado (2 testes, 6 asserções).
+- Renderização: corrigido o parser compartilhado para manter todos os caracteres e quebras dos blocos de código legados; ele também reconhece Shell, comandos e outras linguagens sem aplicar formatter. O build permanece pendente apenas pelo `node_modules` incompleto e protegido por proprietário externo.
+- Idempotência refinada: após uma execução concluída, o repositório verifica alterações de questões ou assets publicados desde a data final. Sem mudança, reutiliza o relatório; com mudança, abre nova execução. A porta de domínio isola essa verificação e os dois fluxos estão cobertos por `ProcessQuestionAuditServiceTest` (2 testes, 11 asserções).
+- Deduplicação: detector Doctrine, escritor PDF e prévia de importação compartilham `QuestionStatementFingerprint`. A chave remove somente artefatos de extração (ligaturas, diacríticos, pontuação e layout) e usa SHA-256; assim, a mesma questão não é reimportada por diferença formal. Testes focalizados aprovados (3 testes, 6 asserções).
+- A simulação direta `import-interrupted-pdf-direct.php --dry-run` agora usa a mesma impressão digital canônica do escritor; seus totais de duplicatas e candidatos novos não divergem mais da proteção efetiva contra reimportação.
+- O renderizador também trata `c#` como identificador de linguagem da cerca Markdown; o rótulo é removido da apresentação e o corpo literal permanece intacto.
+- Relatórios estruturais: `RUIDO_EXTRACAO`, `CODIGO_SEM_BLOCO` e `ESTRUTURA_CORRELACAO` passaram a ser achados distintos. Código e correlação gravam em `structure_after` apenas a apresentação proposta (`CODE_BLOCK`/`MATCHING_COLUMNS`), sem alterar o texto de origem. Cobertura focalizada aprovada (5 testes, 16 asserções).
+- A API e a tela administrativa agora expõem `structureAfter` quando a auditoria propõe somente a apresentação de código ou correlação. A proposta é informativa, persistida e não aciona atualização de conteúdo.
+- A análise persistida de código foi alinhada ao frontend: SQL, linguagens comuns, XML/HTML, JSON e comandos Shell passam a gerar `CODIGO_SEM_BLOCO` quando não delimitados. Teste de Shell aprovado.
+- Validação integrada no Compose: `bin/audit-published-questions.php` reutilizou com sucesso a execução `7fd441ae-c5fd-4d4b-afe7-bfd84a2ce3e8`, sem escrita em questões; `npm run build` no contêiner frontend foi aprovado. Permanece somente aviso não bloqueante de bundle acima de 500 kB.
+- A versão `question-audit-v2` foi criada para materializar os novos códigos e propostas de apresentação; execução direta no contêiner concluiu como `d21bc10a-f0c1-4e2d-8ba7-f4f5318f6123`, sem job, IA ou alteração de questões. A conferência de totais no banco é o próximo passo.
+- Conferência somente leitura no MySQL: a v2 concluiu 4.973 questões publicadas e 1.228 achados; 393 códigos sem bloco, 27 correlações, 314 imagens sem localização segura, 261 ruídos, 97 extrações incompletas, 84 duplicatas possíveis e 52 mesclas possíveis. O acervo permanece com 4.973 `PUBLISHED`, 506 `DRAFT` e 231 `VOID`.
+- Validação final da etapa: PHPUnit completo aprovado (61 testes, 147 asserções), build de produção do frontend aprovado no Compose e `git diff --check` limpo. O único aviso é o chunk JS acima de 500 kB.
+- Inspeção de ruídos v2: 250 dos 261 incluem o rodapé editorial conhecido; porém a mesma amostra contém caracteres já corrompidos (`�`). Não foi aplicada limpeza em massa para não combinar remoção segura de rodapé com reconstrução inferida de conteúdo. Os casos permanecem em revisão até existir operação isolada, auditável e reversível.
+- A auditoria agora separa `CARACTERE_CORROMPIDO` (substituto `�`) como achado de alta confiança, exigindo comparação com o PDF original e impedindo qualquer reconstrução inferida.
+- A auditoria `question-audit-v3` foi executada diretamente no Compose como `a54c568e-5026-471a-93c8-f5040d4d6e64`. Não houve achado `CARACTERE_CORROMPIDO`: a amostra em hexadecimal confirmou UTF-8 válido; o símbolo exibido na consulta anterior era artefato de codificação do terminal.
+- Correção estrutural aplicada diretamente, sem job/IA: a rotina `repair-published-pdf-footers-direct.php --apply` removeu somente a linha de rodapé editorial conhecida de 243 enunciados, com prévia confirmada e conteúdo anterior preservado nos achados v3. A reauditoria `18838fe7-01a6-45c3-85a0-6eec5a6a77c9` reduziu `RUIDO_EXTRACAO` de 261 para 19; estes 19 permanecem manuais. Nenhuma alternativa, gabarito, asset, PDF ou estado editorial foi modificado.
+- A auditoria `question-audit-v4` (`4f0bddb2-3467-415c-ba80-6cd8c7e18875`) classificou 5 casos como `CONTEUDO_DOCUMENTAL_MESCLADO` (sumário/gabarito/documento inteiro no enunciado), separando-os dos 19 ruídos residuais. Nenhum deles foi alterado automaticamente.
+- Verificação de fonte dos 5 casos documentais: todos apontam para o PDF completo de Desenvolvimento de Software. A página 668 contém questões consecutivas, comentários e gabaritos adjacentes, enquanto o enunciado publicado incorporou material de outras partes; não existe corte automático seguro baseado apenas na página. Os cinco permanecem em revisão manual.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 2026-09-27 — Recuperação das fontes originais de PDF
+
+- As 43 fontes de `question_pdf_import_jobs` foram restauradas a partir de `backups/pdfs-originais`: 36 por nome idêntico e 7 por correspondência manual inequívoca de aula/título.
+- A validação determinística com `pdftotext` na primeira página de cada fonte concluiu `readable=43 failed=0`; o bloqueio anterior de streams Flate corrompidos foi removido.
+- Não foi criado, reimportado ou alterado nenhum registro de questão. O próximo passo é usar exclusivamente essas fontes recuperadas para localizar assets ausentes e executar simulações deduplicadas antes de qualquer escrita.
+
+## 2026-09-27 — Triagem segura de imagens ausentes
+
+- As 314 ocorrências de imagem ausente representam 287 páginas distintas. A inspeção de `pdfimages -list` em todas elas encontrou duas ou mais imagens incorporadas por página; não há associação unívoca segura.
+- Nenhum asset foi associado automaticamente: os achados continuam em `IMAGEM_NAO_LOCALIZADA` para revisão manual, preservando a questão e evitando anexar logos, cabeçalhos ou elementos visuais alheios.
+
+## 2026-09-27 — Simulação integral com deduplicação explícita
+
+- A extração direta, local e sem IA concluiu `--dry-run` dos 43 PDFs restaurados: 23.761 blocos, 12.902 candidatos objetivos e 6.744 candidatos com gabarito oficial. Nenhuma questão foi escrita.
+- A simulação agora informa duplicatas exatas, inclusive internas ao PDF. Na amostra de Banco de Dados, 212 de 855 candidatos já existem exatamente; os 643 restantes exigem deduplicação por similaridade/proveniência antes de qualquer aplicação.
+- O detector passou a normalizar exclusivamente ligaturas, diacríticos, pontuação e layout de extração antes da comparação exata; o teste focalizado aprovou 2 testes e 5 asserções. A amostra permaneceu em 212 duplicatas, portanto nenhum candidato ambíguo foi liberado.
+- O read model tipado e a consulta Doctrine agora são expostos por `GET /admin/question-audits/latest`, com DTO, mapper, caso de uso, controlador fino e autorização ADMIN; a rota não altera questões.
+- Criada a seção administrativa Auditoria no frontend (porta de domínio, caso de uso, repositório Axios, composable e página Quasar) para visualizar totais da última execução sem ações de correção.
+- Validações: build frontend aprovado, PHPUnit QuestionBank aprovado (17 testes, 37 asserções), lint PHP e `git diff --check` aprovados; a rota sem credenciais devolve `401 UNAUTHENTICATED`.
+- `QuestionContent.vue` deixou de exibir o identificador de linguagem como código e não aplica mais `trim` ao corpo entre cercas; o build de produção foi aprovado após a alteração.
+- A listagem detalhada foi concluída em `GET /admin/question-audits/latest/findings`, com Request/Response DTOs, mapper, service, QueryBuilder Doctrine, paginação e autorização ADMIN; sem mutação de questões ou achados.
+- A tela Auditoria passa a exibir código, confiança, estado, mensagem, questão e PDF/página de origem de cada achado, com paginação Quasar. Build frontend, lint PHP, testes QuestionBank e `git diff --check` foram aprovados; a rota sem credenciais devolve `401`.
+- Validação integrada final desta etapa: PHPUnit completo aprovado (55 testes, 129 asserções), build frontend aprovado e `git diff --check` limpo. Persiste somente aviso não bloqueante de chunk acima de 500 kB.
+- O renderizador compartilhado passou a identificar visualmente blocos legados de SQL, comandos, código-fonte e XML/JSON, sem alterar seu conteúdo, e os apresenta com fonte monoespaçada preservando espaços e quebras. Build frontend aprovado.
+
 Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
 
+## 2026-09-27 — Versionamento de reprocessamento de PDFs
+
+- Aplicada a migration `030_question_pdf_reprocess_version.sql`, que adiciona versão de algoritmo e vínculo com o job de origem aos imports de PDF.
+- O mapeamento Doctrine de `QuestionPdfImportJobRecord` foi atualizado e a suíte completa da API foi aprovada com 54 testes e 128 asserções.
+- Os 43 jobs históricos permanecem preservados em `legacy`; nenhum novo job foi criado até a rotina de clonagem idempotente estar disponível.
+
+## 2026-09-27 — Testes da auditoria determinística
+
+- Adicionada cobertura unitária para referência visual sem asset e para deduplicação de achados `EXTRACAO_INCOMPLETA` por questão.
+- Teste focalizado aprovado: 2 testes, 3 asserções. A suite completa e o build de frontend permanecem verdes na validação anterior.
+
+## 2026-09-27 — Integridade dos estados de auditoria
+
+- Corrigida a semântica do relatório: detecção automática não representa correção aplicada. Achados sem mutação efetiva passam a `REQUER_REVISAO`.
+- A migration `029_question_audit_review_status.sql` atualizou relatórios anteriores sem modificar questões; a nova execução `7fd441ae-c5fd-4d4b-afe7-bfd84a2ce3e8` confirmou 523 em revisão, 314 imagens não localizadas, 52 possíveis mesclas, 84 possíveis duplicatas e 97 extrações incompletas.
+- Essa separação impede publicação ou alteração inferida e mantém fidelidade ao material como prioridade.
+
+## 2026-09-27 — Proveniência dos achados para recuperação visual
+
+- A leitura de questões publicadas passou a disponibilizar internamente o job e as páginas de origem já persistidos; a auditoria grava essas referências em cada achado.
+- A execução `27b8695a-0f61-497b-b313-409ed0d78922` concluiu e os 314 achados `IMAGEM_NAO_LOCALIZADA` possuem agora job e página de origem, viabilizando extração verificável do asset sem criação artificial.
+- Validação: suíte completa da API aprovada (52 testes, 125 asserções). Próximo passo: recuperar visualmente apenas os casos cujo recorte de página possa ser associado com segurança; os demais mantêm revisão manual.
+
+## 2026-09-27 — Correlação com indicadores preservados no frontend
+
+- O componente compartilhado `QuestionContent.vue`, usado em Banco de Questões, Caderno e Revisão, passou a reconhecer e exibir indicadores numéricos, alfabéticos e romanos com o delimitador original.
+- A coluna de itens não converte mais os identificadores em numeração artificial; isso preserva a estrutura da questão de origem.
+- Build de produção aprovado (`vue-tsc` + Vite); permanece apenas o aviso não bloqueante de chunk acima de 500 kB.
+
+## 2026-09-27 — Validação da fundação de auditoria
+
+- A suíte completa da API foi aprovada após a inclusão da auditoria persistida: 52 testes e 125 asserções.
+- O build de produção do frontend também foi aprovado (`vue-tsc` e Vite); permanece apenas o aviso não bloqueante de chunk JavaScript acima de 500 kB.
+- A auditoria real permanece concluída e somente leitura; o próximo incremento é a interface administrativa do relatório e a evolução do componente compartilhado de renderização, sem promover correções de baixa confiança.
+
+## 2026-09-27 — Primeira auditoria persistida de questões publicadas
+
+- Aplicada a migration `028_question_audit.sql` e executada a rotina `bin/audit-published-questions.php`, sem qualquer alteração de enunciado, alternativa, gabarito, asset ou estado editorial.
+- A execução `8412ccad-ea04-4897-a4cd-50dff292819b` concluiu com 4.973 questões analisadas e 1.070 achados: 523 sinais de formatação automática, 314 referências visuais sem asset, 52 possíveis mesclas, 84 possíveis duplicatas e 97 extrações incompletas.
+- Há 628 ocorrências de confiança média que exigem revisão ou evidência do PDF antes de correção. O relatório e todas as ocorrências permanecem persistidos nas tabelas de auditoria.
+- Próximo passo: expor relatório administrativo, recuperar assets a partir da página/fonte e criar somente correções de alta confiança; não realizar atualização em massa por inferência.
+
+## 2026-09-27 — Persistência de auditoria editorial
+
+- Criada a migration `028_question_audit.sql`: execuções versionadas (`question_audit_runs`) e ocorrências por questão (`question_audit_findings`) com PDF/página, confiança, estado final e estruturas antes/depois.
+- A chave única por execução, questão e código protege o relatório de repetição acidental; as ocorrências mantêm os estados exigidos para revisão e nunca substituem conteúdo de origem.
+- Próximo passo: implementar o repositório Doctrine, a rotina em lotes retomável e a visualização administrativa do relatório antes de aplicar a migration ou auditar dados publicados.
+
+## 2026-09-27 — Fundação de fidelidade para auditoria de questões
+
+- A importação de PDFs passou a aceitar exclusivamente questões objetivas com quatro ou cinco alternativas e rejeita alternativas duplicadas após a normalização. Itens binários ou incompletos permanecem fora da publicação e devem seguir para revisão.
+- O sanitizador agora preserva integralmente conteúdo delimitado como bloco de código, sem remover indentação, quebras de linha, comentários, espaços ou operadores.
+- Validações: PHPUnit focalizado do QuestionBank aprovado (8 testes, 12 asserções), incluindo o caso de preservação literal de código; `git diff --check` aprovado.
+- Próximo passo: persistir a auditoria idempotente e seu relatório por questão/PDF, antes de executar qualquer correção em massa de conteúdo publicado.
 ## 2026-09-27 — Extração direta dos jobs de Segurança interrompidos
 
 - Os cinco jobs cancelados em 27/09 foram concluídos sem worker ou provedor externo por `bin/import-interrupted-pdf-direct.php`: SSL/TLS e VPN (146 páginas, sem item A–E elegível), Criptografia (122 páginas, 26 detectadas, 5 novas e 21 duplicadas), Certificação Digital (65 páginas, 10 detectadas, 2 novas e 8 duplicadas), LDAP/Active Directory (104 páginas, sem item A–E elegível) e Gestão de Identidade e Acesso (29 páginas, sem item A–E elegível).
@@ -34,6 +161,12 @@ Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de in
 - Backup consistente criado em `/var/www/concursos/backups/conquistaai-20260927-100642` (ignorado pelo Git).
 - Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
 - Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
+
+## 2026-09-27 — Backup completo para restauração
+
+- Backup consistente criado em /var/www/concursos/backups/conquistaai-20260927T160247Z (diretório ignorado pelo Git).
+- Conteúdo: database.sql com dump MySQL em transação única, rotinas, triggers e eventos; question-pdfs.tar.gz; syllabus-pdfs.tar.gz; question-assets.tar.gz; README.txt e SHA256SUMS.
+- Integridade validada com sha256sum -c e leitura integral dos três arquivos tar. A restauração deve ser feita em ambiente controlado, importando o dump e extraindo cada arquivo no respectivo volume nomeado.
 
 ## 2026-09-27 — Priorização de gabarito na aprovação editorial
 

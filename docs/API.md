@@ -206,3 +206,9 @@ GET /api/v1/admin/questions/drafts requer ADMIN, é paginado e retorna os estado
 ### Aprovação editorial em lote
 
 POST /api/v1/admin/questions/publish-batch requer ADMIN e recebe { question_ids: [uuid] }. Publica somente questões em DRAFT que já tenham gabarito válido; a resposta devolve STATE_CONFLICT quando nenhuma questão selecionada é elegível.
+
+### Relatório de auditoria de questões
+
+`GET /api/v1/admin/question-audits/latest` requer `ADMIN` e devolve no envelope padrão a última execução persistida, com `id`, `algorithmVersion`, `scope`, `status`, `summary`, datas e eventual `errorMessage`. O endpoint é estritamente somente leitura: não corrige, publica, reimporta ou modifica questões. Quando ainda não há execução, retorna `404 RESOURCE_NOT_FOUND`.
+
+`GET /api/v1/admin/question-audits/latest/findings?page=1&per_page=25` requer `ADMIN`, aceita no máximo 100 itens por página e devolve os achados da última auditoria na paginação padrão. Cada item contém `questionId`, `sourcePdfJobId`, `sourcePage`, `code`, `confidence`, `status`, `message`, `createdAt` e, quando houver proposta estrutural não mutante, `structureAfter` (por exemplo, `rendering: CODE_BLOCK` ou `MATCHING_COLUMNS`). É uma rota estritamente somente leitura; ausência de auditoria retorna `404 RESOURCE_NOT_FOUND`.

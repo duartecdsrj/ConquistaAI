@@ -30,7 +30,7 @@ import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import type { AuthenticatedUser } from '../../../Domain/Identity/AuthRepository'
 
-export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'assistant' | 'catalog' | 'import' | 'editorial' | 'taxonomy' | 'discovery'
+export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'assistant' | 'catalog' | 'import' | 'editorial' | 'taxonomy' | 'discovery' | 'audit'
 
 const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection; readonly canManage: boolean }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection]; logout: [] }>()
@@ -49,6 +49,7 @@ const navigationItems = computed<readonly { id: ApplicationSection; label: strin
     { id: 'import' as const, label: 'Importar questões', caption: 'PDFs em lote e arquivos', icon: 'cloud_upload_outlined' },
     { id: 'editorial' as const, label: 'Revisar questões', caption: 'Publicação editorial', icon: 'fact_check' },
     { id: 'taxonomy' as const, label: 'Taxonomia', caption: 'Assuntos canônicos', icon: 'account_tree' },
+    { id: 'audit' as const, label: 'Auditoria', caption: 'Qualidade das questões', icon: 'rule' },
   ] : []),
 ])
 

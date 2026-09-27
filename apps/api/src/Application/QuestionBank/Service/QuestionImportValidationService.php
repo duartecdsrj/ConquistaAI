@@ -5,6 +5,7 @@ namespace App\Application\QuestionBank\Service;
 
 use App\Application\QuestionBank\DTO\Response\ImportRowValidationResponseDto;
 use App\Application\QuestionBank\DTO\Response\ImportValidationReportResponseDto;
+use App\Domain\QuestionBank\ValueObject\QuestionStatementFingerprint;
 
 final class QuestionImportValidationService
 {
@@ -57,6 +58,6 @@ final class QuestionImportValidationService
 
     private function statementFingerprint(string $statement): string
     {
-        return hash('sha256', mb_strtolower((string) preg_replace('/\\s+/u', ' ', trim($statement))));
+        return QuestionStatementFingerprint::of($statement);
     }
 }

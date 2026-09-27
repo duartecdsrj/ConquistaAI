@@ -18,6 +18,8 @@ final readonly class PublishedQuestion
         public ?string $source = null,
         /** @var list<string> */ public array $assetUrls = [],
         public ?string $answerKeySource = null,
+        public ?string $sourcePdfJobId = null,
+        /** @var list<int> */ public array $sourcePdfPages = [],
     ) {
     }
 }

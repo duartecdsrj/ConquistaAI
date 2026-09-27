@@ -5,6 +5,7 @@ import { AxiosAssistantRepository } from './Assistant/AxiosAssistantRepository'
 import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { AskQuestionPdfAssistanceUseCase, ListPublishedQuestionsUseCase } from '../Application/QuestionBank/QuestionUseCases'
+import { GetLatestQuestionAuditReportUseCase, ListLatestQuestionAuditFindingsUseCase } from '../Application/QuestionBank/QuestionAuditUseCases'
 import { CreateNotebookUseCase, CreateDirectedStudyPlanUseCase, FinishNotebookUseCase, ListDirectedStudyPlansUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider, configureRefreshHandler } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
@@ -15,6 +16,7 @@ import { AxiosImportRepository } from './Import/AxiosImportRepository'
 import { BrowserSessionStore } from './Identity/BrowserSessionStore'
 import { AxiosPerformanceRepository } from './Performance/AxiosPerformanceRepository'
 import { AxiosQuestionRepository } from './QuestionBank/AxiosQuestionRepository'
+import { AxiosQuestionAuditRepository } from './QuestionBank/AxiosQuestionAuditRepository'
 import { AxiosStudyRepository } from './Study/AxiosStudyRepository'
 import { AxiosTaxonomyRepository } from './Taxonomy/AxiosTaxonomyRepository'
 import { AxiosEditorialRepository } from './Editorial/AxiosEditorialRepository'
@@ -56,6 +58,8 @@ const taxonomyRepository = new AxiosTaxonomyRepository()
 export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), duplicateSuggestions: new ListTaxonomyDuplicateSuggestionsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository), createAlias: new CreateTaxonomySubjectAliasUseCase(taxonomyRepository), merge: new MergeTaxonomySubjectsUseCase(taxonomyRepository), reconciliationProposals: new ListTaxonomyReconciliationProposalsUseCase(taxonomyRepository), update: new UpdateTaxonomySubjectUseCase(taxonomyRepository) }
 const questionRepository = new AxiosQuestionRepository()
 export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(questionRepository), askPdfAssistance: new AskQuestionPdfAssistanceUseCase(questionRepository) }
+const questionAuditRepository = new AxiosQuestionAuditRepository()
+export const questionAuditUseCases = { latest: new GetLatestQuestionAuditReportUseCase(questionAuditRepository), findings: new ListLatestQuestionAuditFindingsUseCase(questionAuditRepository) }
 const performanceRepository = new AxiosPerformanceRepository()
 export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), getDashboard: new GetSyllabusDashboardUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }
 export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())

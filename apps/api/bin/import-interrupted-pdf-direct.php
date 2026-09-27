@@ -4,6 +4,7 @@ declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
 
 use App\Domain\QuestionBank\Service\ImportedQuestionContentSanitizer;
+use App\Domain\QuestionBank\ValueObject\QuestionStatementFingerprint;
 use App\Domain\Taxonomy\Service\SubjectTaxonomyService;
 use App\Infrastructure\Extraction\PdftotextPdfTextExtractor;
 use App\Infrastructure\Extraction\PdfimagesQuestionPdfAssetExtractor;
@@ -30,7 +31,7 @@ $writer = new DoctrineQuestionPdfQuestionWriter(
     new ImportedQuestionContentSanitizer(),
 );
 $pages = (new PdftotextPdfTextExtractor())->extractPages($job->documentPath);
-$pageAssets = (new PdfimagesQuestionPdfAssetExtractor())->extract($job->documentPath, $job->documentSha256);
+$pageAssets = $dryRun ? [] : (new PdfimagesQuestionPdfAssetExtractor())->extract($job->documentPath, $job->documentSha256);
 $starts = []; $document = '';
 foreach ($pages as $index => $page) { $starts[] = ['offset' => strlen($document), 'page' => $index + 1]; $document .= "\n" . $page; }
 
@@ -66,7 +67,17 @@ foreach ($blocks as $block) {
         'difficulty' => mb_strlen($statement) > 900 ? 'HARD' : (mb_strlen($statement) > 420 ? 'MEDIUM' : 'EASY'),
     ];
 }
-if ($dryRun) { echo json_encode(['blocks' => count($blocks), 'candidates' => count($questions), 'with_official_answer' => count(array_filter($questions, static fn (array $question): bool => $question['correct_option'] !== null)), 'sample' => array_slice($questions, 0, 2)], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . PHP_EOL; exit; }
+if ($dryRun) {
+    $existing = (new DoctrineQuestionDuplicateDetector($em))->findExistingByStatements(array_column($questions, 'statement'));
+    $seen = []; $duplicates = 0;
+    foreach ($questions as $question) {
+        $key = QuestionStatementFingerprint::of($question['statement']);
+        if (isset($existing[$key]) || isset($seen[$key])) $duplicates++;
+        $seen[$key] = true;
+    }
+    echo json_encode(['blocks' => count($blocks), 'candidates' => count($questions), 'duplicates' => $duplicates, 'new_candidates' => count($questions) - $duplicates, 'with_official_answer' => count(array_filter($questions, static fn (array $question): bool => $question['correct_option'] !== null)), 'sample' => array_slice($questions, 0, 2)], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . PHP_EOL;
+    exit;
+}
 $result = ['created' => 0, 'duplicates' => 0, 'classified' => 0, 'failed' => 0, 'createdSubjects' => 0];
 foreach ($questions as $question) { $partial = $writer->write($job->createdBy, [$question], $pageAssets, $job->id); foreach ($result as $key => $value) $result[$key] += $partial[$key]; }
 $job->status = 'COMPLETED'; $job->progress = 100; $job->pageCount = count($pages); $job->candidatePages = count($pages); $job->processedChunks = count($pages);

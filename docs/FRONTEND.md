@@ -205,3 +205,9 @@ Na criação de um caderno, o usuário informa concurso e cargo. Pode usar todos
 ## Dúvida baseada na fonte da questão
 
 A resolução do caderno oferece “Tirar dúvida com a fonte”. O composable `useQuestionPdfAssistance` chama o caso de uso de Banco de Questões e exibe somente a resposta e as páginas devolvidas pela API. A página não acessa HTTP diretamente.
+
+## Auditoria de questões
+
+A seção administrativa **Auditoria** consulta somente `GET /admin/question-audits/latest` pelo repositório Axios e apresenta a execução mais recente e seus totais por estado. Ela não disponibiliza ações de correção, importação ou publicação; achados ambíguos permanecem para revisão editorial.
+
+A seção Auditoria também pagina os achados da última execução por meio de `QuestionAuditRepository`, do caso de uso e do composable próprios. Cada linha é somente informativa e mostra código, confiança, estado e PDF/página de origem; a interface não oferece correção automática.

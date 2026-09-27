@@ -7,6 +7,7 @@ use App\Application\QuestionBank\Port\QuestionPdfQuestionWriterInterface;
 use App\Domain\QuestionBank\Repository\QuestionDuplicateDetectorInterface;
 use App\Domain\QuestionBank\Repository\QuestionTaxonomyAssignmentRepositoryInterface;
 use App\Domain\QuestionBank\Service\ImportedQuestionContentSanitizer;
+use App\Domain\QuestionBank\ValueObject\QuestionStatementFingerprint;
 use App\Domain\Taxonomy\Entity\TaxonomySubject;
 use App\Domain\Taxonomy\Repository\TaxonomySubjectRepositoryInterface;
 use App\Domain\Taxonomy\Service\SubjectTaxonomyService;
@@ -37,7 +38,10 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
             if (!is_array($question) || ($question['type'] ?? null) !== 'MULTIPLE_CHOICE' || !is_string($question['statement'] ?? null)) { $failed++; continue; }
             $options = array_values(array_filter($question['options'] ?? [], static fn(mixed $option): bool => is_array($option) && is_string($option['content'] ?? null) && trim($option['content']) !== ''));
             $statement = $this->content->statement($question['statement'], $options);
-            if ($statement === '' || count($options) < 3 || count($options) > 5) { $failed++; continue; }
+            // O catálogo objetivo contém apenas questões objetivas de quatro ou cinco opções.
+            if ($statement === '' || !in_array(count($options), [4, 5], true)) { $failed++; continue; }
+            $normalizedOptions = array_map(fn (array $option): string => $this->norm($this->content->option($option['content'])), $options);
+            if (count(array_unique($normalizedOptions)) !== count($normalizedOptions)) { $failed++; continue; }
             $key = $this->norm($statement);
             if (isset($existing[$key])) { $duplicates++; continue; }
             $placement = $this->specificTaxonomy($question);
@@ -132,7 +136,7 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
     {
         if (!$this->hasVisualReference($statement)) return;
         $order = 0;
-        foreach ((array) ($source['image_pages'] ?? []) as $page) foreach ($pageAssets[(int) $page] ?? [] as $path) $this->persistAsset($question, null, (int) $page, $path, ++$order);
+        foreach ($this->verifiedAssets($source) as $asset) $this->persistAsset($question, null, $asset['page'], $asset['path'], ++$order);
     }
 
     private function persistOptions(QuestionRecord $question, array $options, array $pageAssets): array
@@ -149,9 +153,27 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
             $record->createdAt = $question->createdAt;
             $this->em->persist($record);
             $optionIds[$record->label] = $record->id;
-            if ($this->hasVisualReference($record->content)) foreach ((array) ($option['image_pages'] ?? []) as $page) foreach ($pageAssets[(int) $page] ?? [] as $path) $this->persistAsset($question, $record->id, (int) $page, $path, ++$assetOrder);
+            if ($this->hasVisualReference($record->content)) foreach ($this->verifiedAssets($option) as $asset) $this->persistAsset($question, $record->id, $asset['page'], $asset['path'], ++$assetOrder);
         }
         return $optionIds;
+    }
+
+    /**
+     * Page references are provenance only. An image is persisted solely after a
+     * deterministic crop workflow or manual review records its explicit association.
+     * @return list<array{path:string,page:int}>
+     */
+    private function verifiedAssets(array $source): array
+    {
+        $assets = [];
+        foreach ((array) ($source['verified_assets'] ?? []) as $asset) {
+            if (!is_array($asset) || !is_string($asset['path'] ?? null) || trim($asset['path']) === '') continue;
+            $page = $asset['page'] ?? null;
+            if (!is_int($page) && !(is_string($page) && ctype_digit($page))) continue;
+            if ((int) $page < 1) continue;
+            $assets[] = ['path' => trim($asset['path']), 'page' => (int) $page];
+        }
+        return $assets;
     }
 
     private function persistAsset(QuestionRecord $question, ?string $optionId, int $page, string $path, int $order): void
@@ -172,6 +194,6 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
     private function sourcePages(array $source): array { $pages = array_merge((array) ($source['pages'] ?? []), (array) ($source['image_pages'] ?? [])); $pages = array_values(array_unique(array_filter(array_map(static fn(mixed $page): int => is_int($page) ? $page : (is_string($page) && ctype_digit($page) ? (int) $page : 0), $pages), static fn(int $page): bool => $page > 0))); sort($pages); return $pages; }
 
     private function hasVisualReference(string $content): bool { return preg_match('/\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|ilustra[cç][aã]o|mapa|fluxograma)\b/iu', $content) === 1; }
-    private function norm(string $content): string { return mb_strtolower((string) preg_replace('/\s+/u', ' ', trim($content))); }
+    private function norm(string $content): string { return QuestionStatementFingerprint::of($content); }
     private function id(): string { $bytes = random_bytes(16); $bytes[6] = chr((ord($bytes[6]) & 15) | 64); $bytes[8] = chr((ord($bytes[8]) & 63) | 128); return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4)); }
 }

@@ -7,13 +7,14 @@ use App\Domain\QuestionBank\ReadModel\PublishedQuestion;
 use App\Domain\QuestionBank\ReadModel\PublishedQuestionFilter;
 use App\Domain\QuestionBank\ReadModel\PublishedQuestionOption;
 use App\Domain\QuestionBank\ReadModel\PublishedQuestionPage;
+use App\Domain\QuestionBank\Repository\PublishedQuestionAuditChangeDetectorInterface;
 use App\Domain\QuestionBank\Repository\FrozenQuestionReaderInterface;
 use App\Domain\QuestionBank\Repository\PublishedQuestionRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionOptionRecord;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionRecord;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepositoryInterface, FrozenQuestionReaderInterface
+final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepositoryInterface, PublishedQuestionAuditChangeDetectorInterface, FrozenQuestionReaderInterface
 {
     public function __construct(private readonly EntityManagerInterface $entityManager) {}
 
@@ -68,6 +69,25 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
 
         return new PublishedQuestionPage(array_map($this->map(...), $records), $total);
     }
+
+    public function hasAuditRelevantChangesSince(\DateTimeImmutable $since): bool
+    {
+        $changedQuestions = (int) $this->entityManager->createQueryBuilder()
+            ->select('COUNT(question.id)')->from(QuestionRecord::class, 'question')
+            ->where('question.status = :status')->andWhere('question.updatedAt > :since')
+            ->setParameter('status', 'PUBLISHED')->setParameter('since', $since)
+            ->getQuery()->getSingleScalarResult();
+        if ($changedQuestions > 0) return true;
+
+        $changedAssets = (int) $this->entityManager->createQueryBuilder()
+            ->select('COUNT(asset.id)')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord', 'asset')
+            ->innerJoin(QuestionRecord::class, 'question', 'WITH', 'question.id = asset.questionId')
+            ->where('question.status = :status')->andWhere('asset.createdAt > :since')
+            ->setParameter('status', 'PUBLISHED')->setParameter('since', $since)
+            ->getQuery()->getSingleScalarResult();
+        return $changedAssets > 0;
+    }
+
 
     /** @param list<string> $ids @return list<PublishedQuestion> */
     public function findByIds(array $ids): array
@@ -132,6 +152,8 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
             $question->source,
             array_map(fn (object $asset): string => 'question-assets/'.$asset->id, $this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord', 'asset')->where('asset.questionId = :questionId')->setParameter('questionId', $question->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),
             $question->answerKeySource,
+            $question->sourcePdfJobId,
+            $question->sourcePdfPages ?? [],
         );
     }
 }

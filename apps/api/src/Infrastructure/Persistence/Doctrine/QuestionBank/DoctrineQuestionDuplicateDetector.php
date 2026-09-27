@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\QuestionBank;
 
 use App\Domain\QuestionBank\Repository\QuestionDuplicateDetectorInterface;
+use App\Domain\QuestionBank\ValueObject\QuestionStatementFingerprint;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionRecord;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -27,6 +28,6 @@ final class DoctrineQuestionDuplicateDetector implements QuestionDuplicateDetect
 
     private function normalize(string $statement): string
     {
-        return mb_strtolower((string) preg_replace('/\s+/u', ' ', trim($statement)));
+        return QuestionStatementFingerprint::of($statement);
     }
 }

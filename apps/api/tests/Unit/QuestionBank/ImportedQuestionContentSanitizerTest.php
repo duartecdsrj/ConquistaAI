@@ -47,4 +47,12 @@ c) terceira',
         self::assertSame('\\net\\web', $sanitizer->option('\\net\\web'));
         self::assertSame("Primeiro\nSegundo", $sanitizer->option('Primeiro\\nSegundo'));
     }
+    public function testPreservesFencedCodeExactly(): void
+    {
+        $sanitizer = new ImportedQuestionContentSanitizer();
+        $content = "Considere o código:\n```php\nif (true) {\n    // Comentário: não remover\n    echo \"ok\";\n}\n```";
+
+        self::assertSame($content, $sanitizer->statement($content, []));
+    }
+
 }

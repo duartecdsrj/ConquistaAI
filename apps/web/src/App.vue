@@ -10,6 +10,7 @@
     <ImportPage v-else-if="section === 'import'" />
     <EditorialPage v-else-if="section === 'editorial'" />
     <TaxonomyPage v-else-if="section === 'taxonomy'" />
+    <QuestionAuditPage v-else-if="section === 'audit'" />
     <AssistantPage v-else-if="section === 'assistant'" />
     <DiscoveryPage v-else-if="section === 'discovery'" />
     <PerformancePage v-else :initial-exam-id="selectedPerformanceExamId" />
@@ -31,6 +32,7 @@ import ImportPage from './Interface/Http/Import/ImportPage.vue'
 import DiscoveryPage from './Interface/Http/Discovery/DiscoveryPage.vue'
 import EditorialPage from './Interface/Http/Editorial/EditorialPage.vue'
 import TaxonomyPage from './Interface/Http/Taxonomy/TaxonomyPage.vue'
+import QuestionAuditPage from './Interface/Http/QuestionBank/QuestionAuditPage.vue'
 import { useAuth } from './Interface/Http/Identity/useAuth'
 
 const section = ref<ApplicationSection>('home')

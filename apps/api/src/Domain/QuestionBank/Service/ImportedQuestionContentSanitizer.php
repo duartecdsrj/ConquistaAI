@@ -32,6 +32,7 @@ final class ImportedQuestionContentSanitizer
         // Não converte caminhos como "\\net\\web": somente sequências usadas como quebra.
         $clean = (string) (preg_replace('/\\\\r?\\\\n/u', "\n", $clean) ?? $clean);
         $clean = (string) (preg_replace('/\\\\n(?!et(?:[\\\\\/]|$)|etwork(?:[\\\\\/]|$))/iu', "\n", $clean) ?? $clean);
+        if (str_contains($clean, '```')) return $this->fencedText($clean);
         $clean = (string) (preg_replace('/\n\s*(?:Coment[aá]rios?|Resolu[cç][aã]o|Gabarito)\s*:\s*[\s\S]*$/iu', '', $clean) ?? $clean);
         $clean = (string) (preg_replace('/(?im)^.*(?:Concursos da [^\n]*\d+|(?:Evandro Dalla Vecchia|Andr[eé] Castro), Equipe Informática e TI(?:, Marcos Vin[ií]cius Alves Franco)?|Diego Carvalho, Equipe Informática e TI, Paolla Ramos, Vinicius Borges|www\.estrategiaconcursos\.com\.br|Eletronica Em Arte|Licensed to [^\n]*|==[0-9a-f]{6,}==).*(?:\n|$)/u', '', $clean) ?? $clean);
 
@@ -50,4 +51,10 @@ final class ImportedQuestionContentSanitizer
         }
         return trim(implode("\n", $lines));
     }
+    private function fencedText(string $content): string
+    {
+        // Código é evidência: não alteramos espaços, linhas, operadores nem comentários.
+        return trim($content);
+    }
+
 }
