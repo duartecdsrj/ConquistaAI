@@ -74,4 +74,20 @@ function clean(string $value): string { $value = preg_replace('/^.*(?:www\\.estr
 function board(string $meta): ?string { return preg_match('/\\b(FGV|FCC|CESGRANRIO|VUNESP|QUADRIX|IBFC|AOCP|CONSULPLAN|CEBRASPE|CESPE|FUNDATEC|IADES|COPEVE|COMPERVE|ESAF)\\b/iu', $meta, $match) === 1 ? strtoupper($match[1]) : null; }
 function pageForOffset(array $starts, int $offset): int { $page = 1; foreach ($starts as $start) { if ($start['offset'] > $offset) break; $page = $start['page']; } return $page; }
 function hasVisualReference(string $value): bool { return preg_match('/\\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|ilustra[cç][aã]o|mapa|fluxograma)\\b/iu', $value) === 1; }
-function placement(string $name, string $content): array { $root = 'Tecnologia da Informação'; $parent = 'Infraestrutura'; if (str_contains(mb_strtolower($name), 'contêiner') || preg_match('/\\b(?:docker|kubernetes|podman|container|conteiner)\\b/u', $content)) return [[$root, $parent, 'Contêineres'], $parent]; if (preg_match('/\\b(?:hypervisor|virtualiza[cç][aã]o|vmware|máquina virtual|virtual machine)\\b/u', $content)) return [[$root, $parent, 'Virtualização'], $parent]; return [[$root, $parent, 'Computação em Nuvem'], $parent]; }
+function placement(string $name, string $content): array
+{
+    $root = 'Tecnologia da Informação';
+    $infra = 'Infraestrutura';
+    $operatingSystems = 'Sistemas Operacionais';
+    if (str_contains(mb_strtolower($name), 'contêiner') || preg_match('/\b(?:docker|kubernetes|podman|container|conteiner)\b/u', $content)) return [[$root, $infra, 'Contêineres'], $infra];
+    if (preg_match('/\b(?:hypervisor|virtualiza[cç][aã]o|vmware|máquina virtual|virtual machine)\b/u', $content)) return [[$root, $infra, 'Virtualização'], $infra];
+    if (preg_match('/\b(?:cloud|nuvem|iaas|paas|saas|azure|aws|openstack)\b/u', $content)) return [[$root, $infra, 'Computação em Nuvem'], $infra];
+    if (preg_match('/\b(?:linux|unix|bash|shell script|chmod|grep|systemd)\b/u', $content)) return [[$root, $operatingSystems, 'Linux e Unix'], $operatingSystems];
+    if (preg_match('/\b(?:windows|active directory|powershell|ntfs|registry)\b/u', $content)) return [[$root, $operatingSystems, 'Microsoft Windows'], $operatingSystems];
+    if (preg_match('/\b(?:arquivo|file system|fat32|ext4|inode|diretório)\b/u', $content)) return [[$root, $operatingSystems, 'Sistemas de Arquivos'], $operatingSystems];
+    if (preg_match('/\b(?:processo|thread|escalonamento|deadlock|memória virtual|paginação|kernel)\b/u', $content)) return [[$root, $operatingSystems, 'Gerenciamento de Processos e Memória'], $operatingSystems];
+    if (preg_match('/\b(?:storage|armazenamento|raid|nas|san|iscsi|fc )\b/u', $content)) return [[$root, $infra, 'Storage NAS e SAN'], $infra];
+    if (preg_match('/\b(?:servidor web|apache|nginx|iis|httpd)\b/u', $content)) return [[$root, $infra, 'Servidores Web'], $infra];
+    if (preg_match('/\b(?:distribu[ií]do|cluster|replica[cç][aã]o|consenso|resili)\b/u', $content)) return [[$root, $infra, 'Sistemas Distribuídos'], $infra];
+    return [[$root, $infra, 'Arquitetura de Computadores'], $infra];
+}

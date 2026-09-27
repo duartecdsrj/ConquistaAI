@@ -16,7 +16,7 @@ export interface PublishedQuestion {
   readonly year: number | null
   readonly options: readonly PublishedQuestionOption[]
   readonly taxonomySubjectIds?: readonly string[]
-  readonly status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED'
+  readonly status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'VOID'
   readonly source?: string | null
   readonly assetUrls?: readonly string[]
   readonly answerKeySource?: 'OFFICIAL' | 'AI_ESTIMATED' | null

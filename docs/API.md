@@ -24,7 +24,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Tags | `GET, POST /tags` |
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
 | Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit`; `POST /admin/question-pdf-imports` (PDFs em lote); `GET /admin/question-pdf-imports` (histórico paginado do administrador); `GET /admin/question-pdf-imports/{id}` |
-| Revisão editorial | `GET /admin/questions/drafts`; `POST /admin/questions/{id}/publish` |
+| Revisão editorial | `GET /admin/questions/drafts` (ordem: `REVIEW`, `DRAFT`, `VOID`); `POST /admin/questions/{id}/publish` |
 | Taxonomia | `GET, POST, PATCH /admin/taxonomy/subjects` (lista paginada e cria assunto canônico); `POST /admin/taxonomy/aliases` (cria alias canônico) |
 | Fusão de Taxonomia | `POST /admin/taxonomy/subjects/{id}/merge` recebe `{ "target_subject_id": "uuid", "reason": "texto" }`, exige ADMIN, elimina associações duplicadas, reatribui vínculos canônicos de questões e assuntos locais, e grava auditoria |
 | Reconciliação de Taxonomia | `GET /admin/taxonomy/reconciliation-proposals` lista propostas determinísticas com confiança e justificativa; requer ADMIN e não executa fusões |
@@ -198,6 +198,10 @@ Questões criadas pela importação de PDF preservam internamente o `source_pdf_
 
 | Dúvida com fonte da questão | `POST /questions/{id}/pdf-assistance` recebe `{ "question": "..." }`, exige autenticação e responde com conteúdo da IA, provider/modelo e páginas de evidência; usa exclusivamente o PDF e as páginas associados à questão importada. |
 
+
+### Fila editorial
+
+`GET /api/v1/admin/questions/drafts` requer `ADMIN`, é paginado e retorna os estados editoriais nesta ordem: primeiro `REVIEW` (revisar), depois `DRAFT` (aprovadas, prontas para publicação) e por último `VOID` (inválidas ou duplicadas). Itens `VOID` são somente informativos e não podem ser aprovados, classificados ou publicados.
 
 ### Aprovação editorial em lote
 

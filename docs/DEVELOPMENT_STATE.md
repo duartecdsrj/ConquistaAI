@@ -2,6 +2,26 @@
 
 Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
 
+## 2026-09-27 — Ordenação da fila editorial
+
+- A listagem administrativa passou a incluir os três estados editoriais em ordem determinística: `REVIEW` (revisar), `DRAFT` (aprovar/publicar) e `VOID` (somente consulta). A paginação é aplicada após essa ordenação, impedindo que itens inválidos ocupem posições prioritárias.
+- A tela editorial diferencia `VOID` como “Invalidada — conteúdo incompleto ou duplicado”, sem checkbox, classificação ou ações de publicação; `DRAFT` continua sendo o único estado selecionável para publicação.
+- Validações: consulta integral pelo repositório Doctrine confirmou ordem não decrescente por prioridade; o conjunto atual contém `DRAFT` antes de `VOID` porque não há item `REVIEW`. Lint PHP e build de produção do frontend (`vue-tsc` + Vite) aprovados.
+
+## 2026-09-27 — Saneamento integral da fila de revisão de Arquitetura/SO
+
+- Foi criado o saneador reutilizável de conteúdo importado e a rotina operacional `bin/repair-review-question-content.php`. Ela decodifica quebras serializadas como `\n`, remove cabeçalhos/rodapés do PDF e marcadores de extração, conserva caminhos Windows e normaliza alternativas antes de persistir.
+- A fila inteira do job `5838793d-00d5-4e65-8dc7-942526b6fa3e` foi revisada em três passagens: 845 correções de enunciado, 274 de alternativas, 157 duplicatas exatas consolidadas e 72 registros incompletos/truncados marcados como `VOID` (nunca publicados). Trinta e seis gabaritos oficiais foram preservados por transferência para a versão mantida.
+- Resultado editorial: 847 itens permanecem em `REVIEW`; a auditoria final não encontrou rodapé, comentário/resolução do curso, marcador de extração, número de página isolado, início truncado ou quebra `\n` literal nos enunciados ou alternativas. O exemplo do comando `grep -v` agora tem apenas o conteúdo efetivo da questão.
+- Backup anterior à alteração: `backups/concursos-20260927T132426Z.sql.gz` (ignorado pelo Git). Validações aprovadas: testes de `ImportedQuestionContentSanitizer` e `DoctrineQuestionPdfQuestionWriter` (6 testes, 10 asserções) e auditoria via Doctrine/SQL de leitura.
+
+## 2026-09-27 — Extração direta de Arquitetura e Sistemas Operacionais
+
+- O job cancelado `5838793d-00d5-4e65-8dc7-942526b6fa3e` foi concluído por extração direta local: 2.524 páginas processadas, 1.931 questões objetivas detectadas, 1.076 criadas e 855 duplicadas descartadas.
+- O classificador determinístico foi ampliado para Arquitetura de Computadores, Sistemas Operacionais, Sistemas de Arquivos, Processos e Memória, Linux/Unix, Microsoft Windows, Storage, Servidores Web, Sistemas Distribuídos, Virtualização, Nuvem e Contêineres. Foram criados cinco nós canônicos específicos que ainda não existiam.
+- Dos itens criados, 910 possuem gabarito `OFFICIAL`: 886 estavam adjacentes aos enunciados e 24 foram recuperados das tabelas/comentários do PDF. Permanecem 166 sem gabarito explícito; não receberam inferência.
+- Validações: importação finalizada com progresso 100%, sem falhas de escrita; recuperação oficial por fonte local executada.
+
 ## 2026-09-27 — Backup local para restauração
 
 - Backup consistente criado em `/var/www/concursos/backups/conquistaai-20260927-100642` (ignorado pelo Git).

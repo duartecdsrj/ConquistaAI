@@ -144,7 +144,7 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
             $record->id = $this->id();
             $record->questionId = $question->id;
             $record->label = chr(65 + $index);
-            $record->content = $this->cleanOption($option['content']);
+            $record->content = $this->content->option($option['content']);
             $record->sortOrder = $index + 1;
             $record->createdAt = $question->createdAt;
             $this->em->persist($record);
@@ -172,7 +172,6 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
     private function sourcePages(array $source): array { $pages = array_merge((array) ($source['pages'] ?? []), (array) ($source['image_pages'] ?? [])); $pages = array_values(array_unique(array_filter(array_map(static fn(mixed $page): int => is_int($page) ? $page : (is_string($page) && ctype_digit($page) ? (int) $page : 0), $pages), static fn(int $page): bool => $page > 0))); sort($pages); return $pages; }
 
     private function hasVisualReference(string $content): bool { return preg_match('/\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|ilustra[cç][aã]o|mapa|fluxograma)\b/iu', $content) === 1; }
-    private function cleanOption(string $content): string { return trim((string) preg_replace('/^\s*(?:[A-Ea-e]\s*[.)\-:]\s*)+/u', '', $content)); }
     private function norm(string $content): string { return mb_strtolower((string) preg_replace('/\s+/u', ' ', trim($content))); }
     private function id(): string { $bytes = random_bytes(16); $bytes[6] = chr((ord($bytes[6]) & 15) | 64); $bytes[8] = chr((ord($bytes[8]) & 63) | 128); return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4)); }
 }

@@ -154,6 +154,10 @@ A tela apresenta os concursos na primeira aba. Na aba Cargos, a ação **Assunto
 A tela Import restaura os jobs persistidos ao ser aberta. Itens pendentes ou em processamento ficam visíveis e atualizam por polling; itens concluídos ou com falha permanecem no histórico recolhido, aberto sob demanda. A listagem é fornecida por `ImportUseCases` e `AxiosImportRepository`, sem estado local como fonte de verdade.
 
 
+## Fila editorial
+
+A tela de revisão consome a paginação editorial na ordem da API: questões em revisão, aprovadas e, ao final, itens `VOID`. Itens `VOID` exibem o motivo de invalidação como estado somente informativo e não recebem controles de seleção, classificação ou publicação.
+
 ## Conteúdo rico de questões
 
 A revisão editorial e a execução de caderno reutilizam `QuestionContent.vue` para apresentar texto, tabelas Markdown e blocos de código, e `QuestionAssetImage.vue` para imagens extraídas do PDF. Este último obtém o binário com Axios autenticado e expõe somente uma URL Blob temporária ao componente de imagem; não há rota pública de arquivos.

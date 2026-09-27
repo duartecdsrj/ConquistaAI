@@ -24,4 +24,21 @@ c) terceira',
         $result = $sanitizer->statement('Analise as afirmativas. Está correto o que se afirma em a) I, apenas. b) II, apenas. c) III, apenas.', [['content' => 'I'], ['content' => 'II'], ['content' => 'III']]);
         self::assertSame('Analise as afirmativas. Está correto o que se afirma em', $result);
     }
+    public function testRemovesPdfFooterAndDecodesSerializedLineBreaks(): void
+    {
+        $sanitizer = new ImportedQuestionContentSanitizer();
+        $result = $sanitizer->option("compressão\\n\\n Concursos da Área Fiscal Especialidade TI - Arquitetura e Sistemas Operacionais 183\\n\\nEvandro Dalla Vecchia, Equipe Informática e TI\\n\\n");
+        self::assertSame('compressão', $result);
+    }
+    public function testCutsCourseCommentaryAndStandalonePageNumber(): void
+    {
+        $sanitizer = new ImportedQuestionContentSanitizer();
+        self::assertSame('Enunciado válido.', $sanitizer->statement("Enunciado válido.\n\n4\n\nComentários:\nExplicação do curso", []));
+    }
+    public function testPreservesWindowsPathThatStartsWithBackslashN(): void
+    {
+        $sanitizer = new ImportedQuestionContentSanitizer();
+        self::assertSame('\\net\\web', $sanitizer->option('\\net\\web'));
+        self::assertSame("Primeiro\nSegundo", $sanitizer->option('Primeiro\\nSegundo'));
+    }
 }
