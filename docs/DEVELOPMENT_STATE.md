@@ -1256,3 +1256,30 @@ docker compose exec -T frontend npm run build
 - A prévia validou o formato. Na execução, o Gemini resolveu 14 questões e recusou 2 como indeterminadas antes de esgotar a cota gratuita de 15 requisições. O fallback OpenAI foi testado, mas a conta não possui créditos disponíveis.
 - Estado atual do job: 625 respostas `OFFICIAL`, 14 `AI_ESTIMATED` e 89 sem resposta. As 89 permanecem sem gabarito até a reposição de cota/créditos ou revisão humana; não foram preenchidas por regra aleatória.
 - O utilitário agora informa a quantidade efetivamente processada quando o provedor interrompe o lote, permitindo retomada segura somente para as pendentes.
+
+## 2026-09-27 — Fila segura de correção assistida por Codex (em integração de interface)
+
+- Criada a migração `030_question_correction_requests.sql`, com instantâneo original, proposta, estado, solicitante, aprovador e datas para auditoria. A proposta nunca é aplicada automaticamente.
+- A API passou a expor a criação e a consulta da solicitação de correção, além da aprovação exclusiva para ADMIN. A validação impede alteração de IDs, rótulos, número e ordem das alternativas; o gabarito não integra a proposta.
+- Criado `question-correction-worker`: ele reclama uma solicitação, prepara diretório temporário, renderiza exclusivamente as páginas do PDF associadas à questão e chama Codex em modo somente leitura. Apenas `CODEX_API_KEY` é disponibilizada ao processo; os recortes e a proposta temporária são removidos ao final.
+- Validações concluídas: lint PHP dos novos componentes, migração aplicada localmente e build do frontend (`vue-tsc` + Vite). Pendente no mesmo ciclo: expor integralmente os controles no caderno (assunto, próximo assunto e diálogo de correção) e validar o fluxo ponta a ponta com uma solicitação de teste sem aprová-la.
+
+## 2026-09-27 — Controles de correção no Caderno
+
+- A execução do Caderno agora oferece `Corrigir questão`, com diálogo que envia uma instrução tipada à fila real; a tela trata envio, erro e carregamento sem acessar HTTP diretamente.
+- Foi adicionado `Próximo assunto`, que salta para a primeira questão posterior cujo vínculo canônico primário é diferente. O botão só aparece quando existe esse próximo grupo.
+- O App repassa a capacidade administrativa à tela para a próxima etapa de aprovação imediata. Ainda falta devolver os nomes canônicos dos assuntos no payload das questões e apresentar a proposta/aprovação administrativa no Caderno.
+- Validação: `docker compose run --rm --no-deps frontend npm run build` aprovado após a alteração.
+
+## 2026-09-27 — Conclusão da correção no Caderno
+
+- As respostas de questão agora incluem `taxonomySubjectNames`, obtidos dos vínculos canônicos sem remover os IDs existentes. O Caderno mostra esses nomes e usa o primeiro vínculo para o salto ao próximo assunto.
+- O diálogo de correção consulta o estado da solicitação, apresenta o resumo estruturado da proposta quando disponível e oferece a ação `Aprovar proposta` somente a ADMIN. Usuários não administradores só submetem a solicitação; nenhuma alteração é aplicada sem aprovação.
+- Validações: build de produção do frontend (`vue-tsc` + Vite), lint PHP do mapper e repositório e `git diff --check` aprovados. A execução do worker permanece acionada pela fila; não foram criadas solicitações de teste nem alteradas questões publicadas.
+
+## 2026-09-27 — OpenSpec em pt-BR e baixo consumo de contexto
+
+- OpenSpec inicializado em `openspec/` para Codex, sem mudanças ativas.
+- Criado `openspec/README.md` com escopo, idioma obrigatório e fluxo mínimo; a referência aponta para as regras já existentes, evitando reproduzir arquitetura e contratos em cada proposta.
+- As quatro skills locais (`propose`, `apply`, `archive` e `explore`) foram reescritas em pt-BR, com instruções curtas e leitura restrita aos artefatos retornados pelo CLI.
+- Validações: `openspec list --json` retornou fila vazia e `git diff --check` aprovado.

@@ -12,6 +12,7 @@ use App\Domain\QuestionBank\Repository\FrozenQuestionReaderInterface;
 use App\Domain\QuestionBank\Repository\PublishedQuestionRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionOptionRecord;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionRecord;
+use App\Infrastructure\Persistence\Doctrine\Taxonomy\Entity\TaxonomySubjectRecord;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepositoryInterface, PublishedQuestionAuditChangeDetectorInterface, FrozenQuestionReaderInterface
@@ -145,20 +146,8 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
                 ->getResult(),
         );
 
-        return new PublishedQuestion(
-            $question->id,
-            $question->statement,
-            $question->difficulty,
-            $question->board,
-            $question->examYear,
-            $options,
-            array_map(static fn (object $assignment): string => $assignment->taxonomySubjectId, $this->entityManager->createQueryBuilder()->select('assignment')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionTaxonomySubjectRecord', 'assignment')->where('assignment.questionId = :questionId')->setParameter('questionId', $question->id)->getQuery()->getResult()),
-            $question->status,
-            $question->source,
-            array_map(fn (object $asset): string => 'question-assets/'.$asset->id, $this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord', 'asset')->where('asset.questionId = :questionId')->setParameter('questionId', $question->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),
-            $question->answerKeySource,
-            $question->sourcePdfJobId,
-            $question->sourcePdfPages ?? [],
-        );
+        $subjectIds=array_map(static fn(object $assignment):string=>$assignment->taxonomySubjectId,$this->entityManager->createQueryBuilder()->select('assignment')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionTaxonomySubjectRecord','assignment')->where('assignment.questionId=:questionId')->setParameter('questionId',$question->id)->getQuery()->getResult());
+        $subjectNames=$subjectIds===[]?[]:array_values($this->entityManager->createQueryBuilder()->select('subject.name')->from(TaxonomySubjectRecord::class,'subject')->where('subject.id IN (:ids)')->setParameter('ids',$subjectIds)->orderBy('subject.name','ASC')->getQuery()->getSingleColumnResult());
+        return new PublishedQuestion($question->id,$question->statement,$question->difficulty,$question->board,$question->examYear,$options,$subjectIds,$question->status,$question->source,array_map(fn(object $asset):string=>'question-assets/'.$asset->id,$this->entityManager->createQueryBuilder()->select('asset')->from('App\\Infrastructure\\Persistence\\Doctrine\\QuestionBank\\Entity\\QuestionAssetRecord','asset')->where('asset.questionId=:questionId')->setParameter('questionId',$question->id)->orderBy('asset.sortOrder','ASC')->getQuery()->getResult()),$question->answerKeySource,$question->sourcePdfJobId,$question->sourcePdfPages??[],$subjectNames);
     }
 }

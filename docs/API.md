@@ -23,6 +23,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Assuntos | `GET /syllabi/{id}/subjects`; `POST /subjects`; `PUT /admin/subjects/{id}/taxonomy-subjects`; `GET, PATCH, DELETE /subjects/{id}` |
 | Tags | `GET, POST /tags` |
 | Questoes | `GET /questions`; `POST /questions`; `GET, PATCH /questions/{id}`; `POST /questions/{id}/publish` |
+| Correção de questão | `POST /questions/{id}/correction-requests`; `GET /questions/{id}/correction-requests/latest`; `POST /admin/question-correction-requests/{id}/approve` |
 | Importacao | `POST /question-imports` (arquivo JSON/CSV); `GET /question-imports/{id}`; `POST /question-imports/{id}/commit`; `POST /admin/question-pdf-imports` (PDFs em lote); `GET /admin/question-pdf-imports` (histórico paginado do administrador); `GET /admin/question-pdf-imports/{id}` |
 | Revisão editorial | GET /admin/questions/drafts (ordem: REVIEW, DRAFT com gabarito, DRAFT sem gabarito, VOID); POST /admin/questions/{id}/publish |
 | Taxonomia | `GET, POST, PATCH /admin/taxonomy/subjects` (lista paginada e cria assunto canônico); `POST /admin/taxonomy/aliases` (cria alias canônico) |
@@ -34,6 +35,14 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 `GET /admin/taxonomy/subjects` devolve `questionCount` por assunto canônico. O valor é agregado e inclui somente questões PUBLISHED ligadas ao nó e a todos os seus descendentes; em folhas, representa apenas as questões publicadas ligadas à própria folha.
 
 `GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `content`, `status` (admin) e `origin`. `content` recebe até 200 caracteres e localiza o texto no enunciado ou em qualquer alternativa publicada. Cada questão retornada inclui `answerKeySource`, que é `OFFICIAL` quando o gabarito foi explicitamente recuperado da fonte e `AI_ESTIMATED` quando foi inferido pela IA; o cliente deve sinalizar visualmente a segunda hipótese. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
+### Correção assistida de questão
+
+`POST /questions/{id}/correction-requests` recebe `{ "instruction": "texto entre 3 e 2000 caracteres" }`, exige usuário autenticado e cria uma solicitação para **uma única questão publicada**. A resposta retorna a solicitação em `PENDING`; não altera a questão, o gabarito, a ordem ou o conteúdo intelectual das alternativas.
+
+`GET /questions/{id}/correction-requests/latest` retorna a última solicitação visível ao solicitante. Administradores recebem também a proposta estruturada quando o worker terminar; outros usuários recebem apenas o estado. Estados possíveis: `PENDING`, `PROCESSING`, `PROPOSED`, `APPROVED`, `REJECTED` e `FAILED`.
+
+`POST /admin/question-correction-requests/{id}/approve` exige `ADMIN` e aplica exclusivamente a proposta já validada para a mesma questão. A aprovação preserva `correct_option_id`, quantidade, identificadores e ordem das alternativas. A solicitação mantém os instantâneos anterior e proposto para auditoria. O worker não publica alterações automaticamente.
+
 
 ### Logos automáticos de concursos
 

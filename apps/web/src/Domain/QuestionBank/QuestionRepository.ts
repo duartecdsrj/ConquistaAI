@@ -1,35 +1,8 @@
 import type { PageQuery, PageResult } from '../../Infrastructure/Http/AxiosApiClient'
-
 export type QuestionDifficulty = 'EASY' | 'MEDIUM' | 'HARD'
-export interface PublishedQuestionOption {
-  readonly id: string
-  readonly label: string
-  readonly content: string
-  readonly position: number
-  readonly assetUrls?: readonly string[]
-}
-export interface PublishedQuestion {
-  readonly id: string
-  readonly statement: string
-  readonly difficulty: QuestionDifficulty
-  readonly board: string | null
-  readonly year: number | null
-  readonly options: readonly PublishedQuestionOption[]
-  readonly taxonomySubjectIds?: readonly string[]
-  readonly status?: 'DRAFT' | 'REVIEW' | 'PUBLISHED' | 'VOID'
-  readonly source?: string | null
-  readonly assetUrls?: readonly string[]
-  readonly answerKeySource?: 'OFFICIAL' | 'AI_ESTIMATED' | null
-}
-export interface QuestionFilters extends PageQuery {
-  readonly subjectId?: string
-  readonly board?: string
-  readonly year?: number
-  readonly difficulty?: QuestionDifficulty
-  readonly content?: string
-}
+export interface PublishedQuestionOption { readonly id:string; readonly label:string; readonly content:string; readonly position:number; readonly assetUrls?:readonly string[] }
+export interface PublishedQuestion { readonly id:string; readonly statement:string; readonly difficulty:QuestionDifficulty; readonly board:string|null; readonly year:number|null; readonly options:readonly PublishedQuestionOption[]; readonly taxonomySubjectIds?:readonly string[]; readonly taxonomySubjectNames?:readonly string[]; readonly status?:'DRAFT'|'REVIEW'|'PUBLISHED'|'VOID'; readonly source?:string|null; readonly assetUrls?:readonly string[]; readonly answerKeySource?:'OFFICIAL'|'AI_ESTIMATED'|null }
+export interface QuestionFilters extends PageQuery { readonly subjectId?:string; readonly board?:string; readonly year?:number; readonly difficulty?:QuestionDifficulty; readonly content?:string }
+export interface QuestionCorrectionRequest { readonly id:string; readonly questionId:string; readonly status:'PENDING'|'PROCESSING'|'PROPOSED'|'APPROVED'|'REJECTED'|'FAILED'; readonly instruction:string; readonly createdAt:string; readonly errorMessage:string|null; readonly proposal:{readonly statement:string;readonly options:readonly {readonly id:string;readonly label:string;readonly content:string}[];readonly summary:string}|null }
 export interface QuestionPdfAssistance { readonly content:string; readonly provider:string|null; readonly model:string|null; readonly pages:readonly number[] }
-export interface QuestionRepository {
-  listPublished(filters?: QuestionFilters): Promise<PageResult<PublishedQuestion>>
-  askPdfAssistance(questionId:string, question:string): Promise<QuestionPdfAssistance>
-}
+export interface QuestionRepository { listPublished(filters?:QuestionFilters):Promise<PageResult<PublishedQuestion>>; askPdfAssistance(questionId:string,question:string):Promise<QuestionPdfAssistance>; requestCorrection(questionId:string,instruction:string):Promise<QuestionCorrectionRequest>; latestCorrection(questionId:string):Promise<QuestionCorrectionRequest>; approveCorrection(id:string):Promise<QuestionCorrectionRequest> }
