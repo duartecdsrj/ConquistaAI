@@ -35,6 +35,13 @@ Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de in
 - Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
 - Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
 
+## 2026-09-27 — Extração direta de Desenvolvimento, Processos e Projetos
+
+- Os dez jobs que permaneciam CANCELLED foram simulados e recuperados sem worker ou provedor externo. Foram detectadas 799 questões objetivas completas; 481 novas foram gravadas, 318 duplicatas foram descartadas e nenhuma escrita falhou.
+- A classificação local passou a reconhecer também Metodologias Ágeis (Scrum, Kanban, XP e Lean Inception), Processos e Qualidade de Software (BPM, BPMN, MPS.BR e CMMI) e PMBOK/Gestão de Projetos. Para os PDFs de uma mesma aula, o nome do arquivo também estabiliza a categoria e evita o fallback de Arquitetura de Computadores.
+- Todas as 481 questões recuperadas foram reatribuídas por meio do repositório Doctrine ao assunto específico da aula: 434 em Metodologias Ágeis, 31 em PMBOK e 16 em Processos e Qualidade de Software. Não restaram associações desse lote a Arquitetura de Computadores, Storage ou Gerenciamento de Processos e Memória.
+- Validações: simulação integral anterior à gravação, conclusão dos dez jobs em 100%, lint PHP, auditoria dos totais/erros por job e auditoria de classificação persistida.
+
 ## 2026-09-27 — Recuperação robusta dos PDFs cancelados
 
 - A extração direta dos três jobs cancelados foi revisada após inspeção do conteúdo original. O curso curso-220898-aula-01-551d-completo.pdf possui 34 questões objetivas A–E detectadas (7 novas, 27 duplicadas); duas duplicatas do subconjunto novo foram marcadas como VOID e cinco itens íntegros permanecem em REVIEW. Rodapés de cursos passaram a ser removidos de forma genérica, incluindo variações de título e autoria, sem vincular a limpeza a uma aula específica.

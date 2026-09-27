@@ -82,12 +82,23 @@ function hasVisualReference(string $value): bool { return preg_match('/\\b(?:fig
 function placement(string $name, string $content): array
 {
     $root = 'Tecnologia da Informação';
+    $administration = 'Administração';
+    $development = 'Desenvolvimento de Software';
+    $softwareEngineering = 'Engenharia de Software';
+    $projectManagement = 'Gestão de Projetos';
     $infrastructure = 'Infraestrutura';
     $operatingSystems = 'Sistemas Operacionais';
     $security = 'Segurança da Informação';
     $networks = 'Redes de Computadores';
     $protocols = 'Protocolos';
 
+    $normalizedName = mb_strtolower($name);
+    if (str_contains($normalizedName, 'curso-220899') || str_contains($normalizedName, 'agile')) return [[$root, $development, $softwareEngineering, 'Metodologias Ágeis'], $softwareEngineering];
+    if (str_contains($normalizedName, 'pmbok')) return [[$administration, $projectManagement, 'PMBOK'], $projectManagement];
+    if (preg_match('/(?:bpmn|\bbpm\b|mpsbr|mps\.br|cmmi)/u', $normalizedName)) return [[$root, $development, $softwareEngineering, 'Processos e Qualidade de Software'], $softwareEngineering];
+    if (preg_match('/\b(?:scrum|kanban|extreme programming|\bxp\b|lean inception|sprint|product backlog|user stor)\b/u', $content)) return [[$root, $development, $softwareEngineering, 'Metodologias Ágeis'], $softwareEngineering];
+    if (preg_match('/\b(?:bpmn|business process management|\bbpm\b|mps\.br|mpsbr|cmmi|maturidade de processo|processo de software)\b/u', $content)) return [[$root, $development, $softwareEngineering, 'Processos e Qualidade de Software'], $softwareEngineering];
+    if (preg_match('/\b(?:pmbok|gerenciamento de projetos|gestão de projetos|ciclo de vida do projeto|eap|wbs)\b/u', $content)) return [[$administration, $projectManagement, 'PMBOK'], $projectManagement];
     if (preg_match('/\b(?:firewall|iptables|proxy|waf|dmz|bastion host)\b/u', $content)) return [[$root, $security, 'Firewall e Proxy'], $security];
     if (preg_match('/\b(?:ids|ips|snort|suricata|detec[cç][aã]o de intrus)\b/u', $content)) return [[$root, $security, 'IDS e IPS'], $security];
     if (preg_match('/\b(?:forense computacional|forense digital|cadeia de cust[oó]dia|antiforense|imagem forense|data carving)\b/u', $content)) return [[$root, $security, 'Forense Computacional'], $security];
