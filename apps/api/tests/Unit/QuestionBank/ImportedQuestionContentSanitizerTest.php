@@ -30,6 +30,12 @@ c) terceira',
         $result = $sanitizer->option("compressão\\n\\n Concursos da Área Fiscal Especialidade TI - Arquitetura e Sistemas Operacionais 183\\n\\nEvandro Dalla Vecchia, Equipe Informática e TI\\n\\n");
         self::assertSame('compressão', $result);
     }
+    public function testRemovesSecurityCourseFooterWithoutTyingItToOneCourse(): void
+    {
+        $sanitizer = new ImportedQuestionContentSanitizer();
+        $result = $sanitizer->option("firewall\\n\\nConcursos da Área Fiscal Especialidade TI - Seg. da Informação e Armazenamento de Dados 97\\n\\nAndré Castro, Equipe Informática e TI, Marcos Vinícius Alves Franco\\n");
+        self::assertSame('firewall', $result);
+    }
     public function testCutsCourseCommentaryAndStandalonePageNumber(): void
     {
         $sanitizer = new ImportedQuestionContentSanitizer();

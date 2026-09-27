@@ -132,8 +132,8 @@ function normalize(string $value): string
 
 function hasExtractionArtifact(string $value): bool
 {
-    return str_contains($value, 'Concursos da Área Fiscal Especialidade TI - Arquitetura e Sistemas Operacionais')
-        || str_contains($value, 'Evandro Dalla Vecchia, Equipe Informática e TI')
+    return preg_match('/Concursos da Área Fiscal Especialidade TI\b/iu', $value) === 1
+        || preg_match('/(?:Evandro Dalla Vecchia|Andr[eé] Castro), Equipe Informática e TI/iu', $value) === 1
         || str_contains($value, 'Eletronica Em Arte')
         || str_contains($value, 'Licensed to ')
         || preg_match('/==[0-9a-f]{6,}==/iu', $value) === 1;

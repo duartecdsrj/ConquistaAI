@@ -34,17 +34,22 @@ $pageAssets = (new PdfimagesQuestionPdfAssetExtractor())->extract($job->document
 $starts = []; $document = '';
 foreach ($pages as $index => $page) { $starts[] = ['offset' => strlen($document), 'page' => $index + 1]; $document .= "\n" . $page; }
 
-$header = '/^\\h*(?<number>\\d{1,3})[.\\-]\\p{Cf}*\\h+\\((?<meta>[^\\n]{8,900})\\)\\h*(?<body>[\\s\\S]*?)(?=^\\h*\\d{1,3}[.\\-]\\p{Cf}*\\h+\\(|\\z)/mu';
+// Alguns materiais usam "1. (Banca ...)"; outros usam "1. FGV - ...".
+// Ambos são aceitos, mas o segundo exige o nome explícito de uma banca para não confundir listas teóricas.
+$boards = 'FGV|FCC|CESGRANRIO|VUNESP|QUADRIX|IBFC|AOCP|CONSULPLAN|CEBRASPE|CESPE|FUNDATEC|IADES|COPEVE|COMPERVE|ESAF|FUNECE|INSTITUTO\h+AOCP|UECE-CEV';
+$header = '/^\h*(?<number>\d{1,3})[.\-]\p{Cf}*\s*(?:\((?<parenthesized>[\s\S]{8,900}?)\)|(?<boardMeta>(?:(?:' . $boards . ')\b|Ano:\h*\d{4}\h+Banca:)[^\n]{8,900}))\h*(?<body>[\s\S]*?)(?=^\h*\d{1,3}[.\-]\p{Cf}*\s*(?:\(|(?:' . $boards . ')\b|Ano:\h*\d{4}\h+Banca:)|\z)/mu';
 preg_match_all($header, $document, $blocks, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 $questions = [];
 foreach ($blocks as $block) {
     $body = $block['body'][0];
-    $optionsPattern = '/^(?<statement>[\\s\\S]{30,}?)\\n\\h*[Aa][)\\.]\\h+(?<a>[\\s\\S]*?)\\n\\h*[Bb][)\\.]\\h+(?<b>[\\s\\S]*?)\\n\\h*[Cc][)\\.]\\h+(?<c>[\\s\\S]*?)\\n\\h*[Dd][)\\.]\\h+(?<d>[\\s\\S]*?)\\n\\h*[Ee][)\\.]\\h+(?<e>[\\s\\S]*?)(?=\\n\\h*(?:Resolu[cç][aã]o:|Coment[aá]rios?:|Gabarito:|$))/msu';
-    if (preg_match($optionsPattern, $body, $parts) !== 1) continue;
+    $optionsPatternFive = '/^(?<statement>[\s\S]{30,}?)\n\h*[Aa][)\.]\h+(?<a>[\s\S]*?)\n\h*[Bb][)\.]\h+(?<b>[\s\S]*?)\n\h*[Cc][)\.]\h+(?<c>[\s\S]*?)\n\h*[Dd][)\.]\h+(?<d>[\s\S]*?)\n\h*[Ee][)\.]\h+(?<e>[\s\S]*?)(?=\n\h*(?:Resolu[cç][aã]o:|Coment[aá]rios?:|Gabarito:|$))/msu';
+    $optionsPatternFour = '/^(?<statement>[\s\S]{30,}?)\n\h*[Aa][)\.]\h+(?<a>[\s\S]*?)\n\h*[Bb][)\.]\h+(?<b>[\s\S]*?)\n\h*[Cc][)\.]\h+(?<c>[\s\S]*?)\n\h*[Dd][)\.]\h+(?<d>[\s\S]*?)(?=\n\h*(?:Resolu[cç][aã]o:|Coment[aá]rios?:|Gabarito:|$))/msu';
+    if (preg_match($optionsPatternFive, $body, $parts) !== 1 && preg_match($optionsPatternFour, $body, $parts) !== 1) continue;
     $statement = clean($parts['statement']);
-    $options = array_map(static fn (string $key): array => ['content' => clean($parts[$key])], ['a', 'b', 'c', 'd', 'e']);
+    $optionKeys = array_values(array_filter(['a', 'b', 'c', 'd', 'e'], static fn (string $key): bool => isset($parts[$key]) && trim($parts[$key]) !== ''));
+    $options = array_map(static fn (string $key): array => ['content' => clean($parts[$key])], $optionKeys);
     if (mb_strlen($statement) < 35 || array_filter($options, static fn (array $option): bool => $option['content'] === '')) continue;
-    $meta = clean($block['meta'][0]);
+    $meta = clean(($block['parenthesized'][0] ?? '') !== '' ? $block['parenthesized'][0] : ($block['boardMeta'][0] ?? ''));
     $board = board($meta);
     $year = preg_match('/\\b(20\\d{2})\\b/u', $meta, $yearMatch) === 1 ? (int) $yearMatch[1] : null;
     $offset = $block[0][1];
@@ -71,7 +76,7 @@ $em->flush();
 echo json_encode(['extracted' => count($questions), 'result' => $result], JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
 function clean(string $value): string { $value = preg_replace('/^.*(?:www\\.estrategiaconcursos\\.com\\.br|Eletronica Em Arte|TI TOTAL para|Professor [^\\n]+|Aula \\d+|Licensed to ).*$/mu', '', $value) ?? $value; return trim((string) preg_replace('/\\n{3,}/u', "\\n\\n", $value)); }
-function board(string $meta): ?string { return preg_match('/\\b(FGV|FCC|CESGRANRIO|VUNESP|QUADRIX|IBFC|AOCP|CONSULPLAN|CEBRASPE|CESPE|FUNDATEC|IADES|COPEVE|COMPERVE|ESAF)\\b/iu', $meta, $match) === 1 ? strtoupper($match[1]) : null; }
+function board(string $meta): ?string { return preg_match('/\\b(FGV|FCC|CESGRANRIO|VUNESP|QUADRIX|IBFC|AOCP|CONSULPLAN|CEBRASPE|CESPE|FUNDATEC|IADES|COPEVE|COMPERVE|ESAF|FUNECE|INSTITUTO\\h+AOCP|UECE-CEV)\\b/iu', $meta, $match) === 1 ? strtoupper((string) preg_replace('/\\s+/u', ' ', $match[1])) : null; }
 function pageForOffset(array $starts, int $offset): int { $page = 1; foreach ($starts as $start) { if ($start['offset'] > $offset) break; $page = $start['page']; } return $page; }
 function hasVisualReference(string $value): bool { return preg_match('/\\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|ilustra[cç][aã]o|mapa|fluxograma)\\b/iu', $value) === 1; }
 function placement(string $name, string $content): array
@@ -83,6 +88,10 @@ function placement(string $name, string $content): array
     $networks = 'Redes de Computadores';
     $protocols = 'Protocolos';
 
+    if (preg_match('/\b(?:firewall|iptables|proxy|waf|dmz|bastion host)\b/u', $content)) return [[$root, $security, 'Firewall e Proxy'], $security];
+    if (preg_match('/\b(?:ids|ips|snort|suricata|detec[cç][aã]o de intrus)\b/u', $content)) return [[$root, $security, 'IDS e IPS'], $security];
+    if (preg_match('/\b(?:forense computacional|forense digital|cadeia de cust[oó]dia|antiforense|imagem forense|data carving)\b/u', $content)) return [[$root, $security, 'Forense Computacional'], $security];
+    if (str_contains(mb_strtolower($name), 'monitoramento') || preg_match('/\b(?:monitoramento de rede|an[aá]lise de tr[aá]fego|network traffic analysis|sniffing|tcpdump)\b/u', $content)) return [[$root, $networks, 'Monitoramento de Redes'], $networks];
     if (preg_match('/\b(?:ssl|tls|https)\b/u', $content)) return [[$root, $security, 'SSL e TLS'], $security];
     if (preg_match('/\b(?:ipsec|vpn|openvpn|wireguard|tor|deepweb)\b/u', $content)) return [[$root, $security, 'Segurança de Redes'], $security];
     if (preg_match('/\b(?:criptografia|criptogr[aá]f|aes|rsa|diffie|hash|sha-?d*|md5|esteganografia)\b/u', $content)) return [[$root, $security, 'Criptografia e Certificação Digital'], $security];

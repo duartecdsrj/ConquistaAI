@@ -35,6 +35,13 @@ Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de in
 - Conteúdo: `database.sql` com dump MySQL de transação única, `question-pdfs.tar.gz`, `syllabus-pdfs.tar.gz`, `question-assets.tar.gz`, manifesto e `SHA256SUMS`.
 - Checksums e leitura integral dos três arquivos tar foram validados. A restauração deve ocorrer em ambiente controlado, restaurando o dump e o conteúdo de cada arquivo em seu volume nomeado correspondente.
 
+## 2026-09-27 — Recuperação robusta dos PDFs cancelados
+
+- A extração direta dos três jobs cancelados foi revisada após inspeção do conteúdo original. O curso curso-220898-aula-01-551d-completo.pdf possui 34 questões objetivas A–E detectadas (7 novas, 27 duplicadas); duas duplicatas do subconjunto novo foram marcadas como VOID e cinco itens íntegros permanecem em REVIEW. Rodapés de cursos passaram a ser removidos de forma genérica, incluindo variações de título e autoria, sem vincular a limpeza a uma aula específica.
+- O PDF de monitoramento continha questões com banca/cargo quebrados em múltiplas linhas. O reconhecedor agora aceita metadados parentéticos multilinha: foram detectadas 3 questões, criadas 2 novas e reconhecida 1 duplicata, todas com gabarito explícito do material e classificadas em Tecnologia da Informação > Redes de Computadores > Monitoramento de Redes.
+- O PDF de Forense Computacional foi inspecionado e não contém questão objetiva completa A–E; portanto, terminou com zero itens por regra de qualidade, mantendo o descarte de itens teóricos, certo/errado e discursivos.
+- Validações: lint dos scripts PHP, PHPUnit focalizado do sanitizador e writer (7 testes, 11 asserções), simulação antes da escrita, auditoria de status dos três jobs e git diff --check.
+
 ## 2026-09-27 — Recuperação direta de jobs cancelados
 
 - Os quatro jobs cancelados foram concluídos sem worker ou provedor externo por `bin/import-interrupted-pdf-direct.php`: Computação em Nuvem (teoria: 3 criadas), Computação em Nuvem (questões: 16 criadas, 13 duplicadas), Virtualização (79 criadas, 67 duplicadas) e Contêineres (7 criadas).
