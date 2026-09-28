@@ -1498,3 +1498,9 @@ docker compose exec -T frontend npm run build
 - O worker passou a reconhecer comandos de pesquisa com demonstrativos, como `localize esse trecho`, variações verbais e trechos delimitados por aspas.
 - A extração continua limitada a 160 caracteres, normaliza acentos e quebras de linha e mantém o log sem conteúdo do trecho, somente hash e páginas encontradas.
 - Próximo passo: reenviar a solicitação com o trecho entre aspas e confirmar o evento `evidence_search` no log.
+
+## 2026-09-28 — Backup completo pós-correção editorial
+
+- Backup consistente criado em `backups/conquistaai-20260928T015401Z` e mantido fora do Git.
+- Conteúdo: `database.sql` com dump MySQL de transação única, rotinas, triggers e eventos; `question-pdfs.tar.gz`; `syllabus-pdfs.tar.gz`; `question-assets.tar.gz`; `README.txt` e `SHA256SUMS`.
+- Integridade confirmada com `sha256sum -c` e leitura integral dos três arquivos compactados; o arquivo de ativos foi conferido estável após a compactação.
