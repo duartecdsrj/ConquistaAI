@@ -1,4 +1,19 @@
+## 2026-09-28 — Fundação OpenSpec da Arena Duelo
+
+- Criada a mudança OpenSpec `arena-duelo`, com proposta, decisões, requisitos e tarefas para sala privada, sincronização e proveniência de desempenho.
+- A análise encontrou Socket.IO autenticado por JWT já implantado, MySQL/Doctrine como fonte de verdade e SPA Quasar com shell reutilizável; a decisão é usar REST para comandos e Socket.IO apenas para entrega/reconciliação.
+- Criada a migration aditiva `033_arena_duel.sql` para salas, participantes, assuntos, questões congeladas e respostas imutáveis, além do contexto `ARENA_DUELO` em tentativas.
+- Adicionada a regra pura `DuelScoring`, que atribui 100/75/50/25 às corretas por ordem determinística e -25 às erradas; lint PHP e teste focalizado no contêiner API aprovados (1 teste, 5 asserções).
+- Pendências: repositórios Doctrine, serviços/rotas, integração de desempenho, gateway de sala, módulo SPA, testes de integração e validação no Compose.
+- As dependências PHP não existem no checkout local; validações futuras devem continuar sendo executadas no contêiner API.
 # Estado de desenvolvimento — ConquistaAI
+
+## 2026-09-28 — Proposta de evidência automática na correção de questões
+
+- Criada a proposta OpenSpec `automatic-question-correction-evidence` para que o worker de correção localize páginas do PDF usando o primeiro parágrafo do enunciado e uma alternativa central não vazia, mesmo sem comando de busca na instrução.
+- A proposta preserva as janelas de páginas de origem, a busca explícita por trecho, a busca de gabarito e a aprovação administrativa; não há alteração de rota ou payload.
+- Artefatos de proposta, decisão técnica, especificação e tarefas foram concluídos; nenhuma alteração no worker foi aplicada nesta etapa.
+- Próximo passo: aplicar a mudança por `/opsx:apply automatic-question-correction-evidence`.
 
 ## 2026-09-28 — Inicialização da API Study restaurada
 
@@ -104,6 +119,68 @@
 - Artefatos de proposta, design, especificações e tarefas foram concluídos; nenhuma funcionalidade, migração ou configuração externa foi aplicada nesta etapa.
 - Próximo passo: aplicar a mudança por `/opsx:apply google-auth-user-management`, começando pela documentação de contrato e fundação do contexto Identity.
 - Escopo ampliado: a proposta agora importa uma cópia validada da foto `picture` do Google apenas na criação da conta e permite que cada usuário ativo substitua sua própria foto pelo perfil. A foto manual prevalece sobre qualquer imagem futura do Google; o binário permanece protegido por autorização.
+
+## 2026-09-28 — Contrato de autenticação Google e usuários
+
+- O contrato de `POST /auth/google` foi documentado: validação OIDC exclusivamente no backend, sessão apenas para conta `ACTIVE`, criação idempotente em `PENDING_APPROVAL` e retorno seguro sem tokens durante a aprovação.
+- A documentação também fixa as rotas administrativas `/admin/users`, a paginação, os comandos separados para vínculo Google, papéis e status, além da proteção do último administrador ativo.
+- Próximo passo: documentar o módulo SPA de Identity/Administração de usuários e iniciar a migration reversível da fundação Identity.
+
+## 2026-09-28 — Fluxo SPA de Google e gestão de usuários
+
+- `docs/FRONTEND.md` registra o fluxo `Google Identity Services -> useAuth -> caso de uso -> repositório Axios -> API`, o retorno sem sessão para aprovação pendente e as mensagens seguras.
+- O módulo administrativo foi especificado nas quatro camadas DDD, com listagem paginada e formulários Quasar que preservam estado confirmado diante de erros.
+- Próximo passo: criar a migration reversível da fundação Identity.
+
+## 2026-09-28 — Migration da fundação Identity
+
+- Criada a migration `032_google_auth_user_management.sql`: senha local passa a ser opcional, o estado `PENDING_APPROVAL` é adicionado sem alterar registros existentes e os metadados privados de avatar são incluídos.
+- O vínculo Google exclusivo por usuário/e-mail e os eventos de auditoria de identidade foram definidos com chaves estrangeiras e índices. O rollback está documentado no arquivo e exige resolver previamente contas pendentes e usuários sem senha local.
+- Próximo passo: modelar os contratos de domínio Identity para esses dados.
+
+## 2026-09-28 — Modelo de domínio Identity
+
+- Adicionados `UserStatus`, `AvatarSource`, `GoogleEmail`, as entidades `GoogleIdentity`, `UserAvatar` e `IdentityAuditEvent`, além das portas de vínculo Google e auditoria.
+- `User` agora aceita ausência de senha local e informa explicitamente se ela está configurada, preservando a regra de acesso ativo existente.
+- Próximo passo: implementar a persistência Doctrine, transações e armazenamento privado para esses contratos.
+
+## 2026-09-28 — Persistência Identity e avatar privado
+
+- Implementados repositórios Doctrine para identidade Google e eventos de auditoria, com entidades mapeadas para as novas tabelas e sem campos de credenciais externas.
+- O registro Doctrine de usuário aceita senha e metadados de avatar anuláveis; `PrivateAvatarStorage` usa chaves relativas, permissões privadas e rejeita travessia de caminho.
+- Validação: lint PHP dos contratos e adaptadores Identity, além de `git diff --check`, aprovados.
+- Próximo passo: implementar a validação OIDC do Google.
+
+## 2026-09-28 — Validação OIDC Google
+
+- Implementado `GoogleOidcValidator`: busca e mantém JWKS em cache, verifica JWT RS256, emissor, público configurado, expiração e e-mail confirmado antes de expor uma identidade tipada ao caso de uso.
+- A credencial bruta não atravessa o adaptador; erros retornam mensagens seguras e não causam persistência.
+- Validação: lint PHP do adaptador e `git diff --check` aprovados.
+- Próximo passo: usar a identidade validada no caso de uso de autenticação Google.
+
+## 2026-09-28 — Caso de uso de autenticação Google
+
+- `GoogleAuthenticationService` resolve exclusivamente o vínculo Google normalizado; sem vínculo cria uma única conta `PENDING_APPROVAL` com papel `USER` e sem senha local.
+- Coincidência com e-mail local sem vínculo gera conflito, e somente vínculo de usuário `ACTIVE` recebe sessão JWT/refresh. A credencial não é persistida nem registrada.
+- Próximo passo: aplicar estados de acesso também a login local, refresh e sessão atual.
+
+## 2026-09-28 — Estados de acesso nas sessões
+
+- Login local agora rejeita usuário sem senha, devolve condição segura de aprovação pendente após validar credenciais e continua bloqueando contas não ativas.
+- Refresh e `GET /auth/me` já revogavam/rejeitavam usuários não ativos; a resposta de sessão passa a incluir o status, preservando o bloqueio sem tokens.
+- Próximo passo: expor o comando e a resposta Google pela rota HTTP.
+
+## 2026-09-28 — Rota HTTP de autenticação Google
+
+- `POST /v1/auth/google` recebe DTO validado de credencial e nome opcional de dispositivo, delega ao caso de uso e responde no envelope padrão.
+- Contas pendentes retornam dados sem token/cookie; colisão de vínculo retorna `409 STATE_CONFLICT`; credencial inválida retorna `401 UNAUTHENTICATED`.
+- Próximo passo: adicionar testes de unidade e integração para OIDC, pendência, colisão e sessão bloqueada.
+
+## 2026-09-28 — Cobertura parcial de autenticação Google
+
+- Os testes unitários Identity agora cobrem JWT OIDC RS256 assinado por JWKS controlada, e-mail não confirmado, criação pendente idempotente, colisão com conta local e emissão de sessão para vínculo ativo: 7 testes e 13 asserções aprovados no contêiner API.
+- A verificação HTTP integrada está pendente: o contêiner em execução usa a imagem anterior e não monta o fonte atualizado; a reconstrução controlada será feita junto da execução da migration na tarefa 6.2.
+- Próximo passo: importar com segurança o avatar inicial declarado pelo Google.
 
 ## 2026-09-27 — Idempotência da auditoria publicada
 
@@ -1603,3 +1680,116 @@ docker compose exec -T frontend npm run build
 - O worker passou a reconhecer comandos de pesquisa com demonstrativos, como `localize esse trecho`, variações verbais e trechos delimitados por aspas.
 - A extração continua limitada a 160 caracteres, normaliza acentos e quebras de linha e mantém o log sem conteúdo do trecho, somente hash e páginas encontradas.
 - Próximo passo: reenviar a solicitação com o trecho entre aspas e confirmar o evento `evidence_search` no log.
+
+## 2026-09-28 — Conclusão da autenticação Google
+
+- A imagem da API passou a incluir GD com JPEG/WebP. A importação do avatar inicial restringe HTTPS a domínios Google, limita tamanho/dimensões, normaliza para WebP e falha sem interromper o cadastro pendente.
+- Migration `032_google_auth_user_management.sql` foi recuperada em ambiente Compose após incompatibilidade de collation do legado: tabelas novas usam `utf8mb4_0900_ai_ci`; os `ALTER TABLE` já aplicados foram preservados e as tabelas pendentes foram criadas antes de registrar a versão.
+- Validações: API em execução, extensão GD disponível; rota interna `POST /v1/auth/google` rejeita credencial inválida com `401`; testes Identity aprovados (8 testes, 16 asserções).
+- Próximo passo: implementar a gestão administrativa de usuários no backend.
+
+## 2026-09-28 — Núcleo administrativo de usuários
+
+- Implementado `UserAdministrationService`: listagem paginada, cadastro com senha opcional, vínculo/removal Google, atualização de papéis e status em transações auditadas.
+- `DoctrineUserRepository` agora atualiza entidades existentes corretamente, sincroniza papéis e oferece paginação/contagem para administração.
+- Validação: suíte Identity aprovada (8 testes, 16 asserções).
+- Próximo passo: expor os comandos administrativos por rotas protegidas por ADMIN e ampliar a cobertura de conflitos/auditoria.
+
+## 2026-09-28 — HTTP administrativo em progresso
+
+- Criados `UserAdministrationRequestFactory` e `UserAdministrationController`; eles já validam DTOs, exigem ADMIN e implementam listagem paginada e cadastro.
+- Permanecem pendentes a composição das rotas e os handlers HTTP para vínculo Google, papéis e status; a tarefa 3.3 não foi marcada como concluída.
+- Próximo passo: registrar o controlador na AppFactory e finalizar os comandos administrativos.
+
+## 2026-09-28 — Rotas administrativas de usuários
+
+- A composição HTTP agora expõe todos os comandos administrativos: listagem/cadastro, associação e remoção de e-mail Google, alteração de papéis e alteração de status.
+- `UserAdministrationController` centraliza a autorização `ADMIN` e devolve `403 FORBIDDEN`, `409 STATE_CONFLICT` e `422 VALIDATION_FAILED` no envelope único; a fábrica de requisições passou a validar objetos JSON e campos tipados.
+- Corrigidos dois riscos de persistência: consulta Doctrine de vínculo Google por coluna não primária e contagem paginada com usuários de múltiplos papéis.
+- Validação: lint dos arquivos alterados, `git diff --check` e 13 testes unitários Identity (29 asserções) aprovados no contêiner API.
+- Próximo passo: completar testes de controlador e repositório para permissões, paginação e auditoria (tarefa 3.4).
+## 2026-09-28 — Cobertura administrativa em andamento
+
+- `UserAdministrationServiceTest` cobre cadastro com vínculo reservado, conflito de vínculo Google, auditoria, ativação de pendente, paginação por estado e preservação do último administrador ativo.
+- `UserAdministrationControllerTest` confirma que um usuário autenticado sem `ADMIN` recebe `403 FORBIDDEN` no envelope padrão, sem dados da administração.
+- A API foi reconstruída no Compose com as rotas novas; GD está disponível e a chamada interna sem credencial para `GET /v1/admin/users` responde `401`.
+- Validação: 14 testes unitários Identity e 32 asserções aprovados. Ainda falta a prova de integração Doctrine das consultas administrativas antes de concluir a tarefa 3.4.
+- Próximo passo: exercitar os repositórios Identity em ambiente controlado e então iniciar o módulo SPA Google.
+## 2026-09-28 — Cobertura concluída da administração backend
+
+- O teste de integração `DoctrineIdentityRepositoryTest` usa transação revertida no MySQL do Compose: comprova a busca de vínculo Google por e-mail não primário e que um usuário com dois papéis é contado uma única vez na paginação.
+- Combinado aos testes de serviço e controlador, há cobertura de permissão, paginação, conflito, auditoria e liberação de usuário pendente exigida pela tarefa 3.4.
+- Validação: integração Doctrine aprovada (1 teste, 4 asserções), sem dados de teste persistentes; suíte Identity anterior também permanece aprovada.
+- Próximo passo: implementar o adaptador Google Identity Services e o comando tipado de login na SPA (tarefa 4.1).
+## 2026-09-28 — Adaptador Google na SPA
+
+- O módulo Identity passou a ter `GoogleLoginCommand`, resultado discriminado entre sessão autenticada e `PENDING_APPROVAL`, e `GoogleLoginUseCase`, que salva sessão apenas quando a API confirma usuário ativo.
+- `GoogleIdentityServices` é um adaptador de infraestrutura que carrega GIS sob demanda, usa somente `VITE_GOOGLE_CLIENT_ID` público e entrega exclusivamente a credencial ao callback; token não é interpretado no navegador.
+- `AxiosAuthRepository` envia a credencial a `/auth/google`, normaliza a resposta pendente e o container compõe o adaptador/configuração.
+- Validação: build tipado/produção da SPA aprovado no Compose. Permanece o aviso não bloqueante de bundle acima de 500 kB.
+- Próximo passo: ligar o adaptador ao `useAuth` e à tela de entrada, com aviso persistente de aprovação pendente (tarefa 4.2).
+## 2026-09-28 — Entrada Google e aprovação pendente na SPA
+
+- `useAuth` inicializa o botão Google por adaptador de infraestrutura, encaminha somente a credencial ao caso de uso e distingue sessão confirmada de aprovação pendente.
+- A tela Quasar de entrada exibe o botão somente com configuração pública presente, trata falhas pela mensagem normalizada e mantém o banner de aprovação enquanto não existe sessão.
+- Nenhuma página valida token, chama Axios ou persiste sessão diretamente; o resultado pendente não escreve token no `BrowserSessionStore`.
+- Validação: build tipado/produção da SPA aprovado no Compose; único aviso é o chunk acima de 500 kB.
+- Próximo passo: criar o módulo DDD de gestão de usuários no cliente (tarefa 4.3).
+## 2026-09-28 — Módulo SPA de gestão de usuários
+
+- Criado `Domain/UserManagement` com entidades tipadas, consulta de página e comandos imutáveis para cadastro, vínculo Google, papéis e status.
+- `UserManagementUseCases` normaliza limites de paginação e dados de entrada; `AxiosUserManagementRepository` consome todos os comandos administrativos pelo envelope da API e o container realiza a composição.
+- O cliente HTTP agora dispõe de `deleteData`, mantendo o consumo Axios centralizado para a remoção de vínculo Google.
+- Validação: build tipado/produção da SPA aprovado no Compose; aviso de bundle acima de 500 kB permanece não bloqueante.
+- Próximo passo: criar a tela Quasar administrativa com filtros, paginação, estados e formulários reais (tarefa 4.4).
+## 2026-09-28 — Tela administrativa de usuários
+
+- A nova seção administrativa oferece listagem real com busca, filtro por status, paginação e estados explícitos de carregamento, erro e vazio.
+- Os formulários Quasar cadastram usuários e editam vínculo Google, papéis e status por comandos separados; erros mantêm os dados confirmados e exibem a mensagem segura da API.
+- A navegação disponibiliza **Usuários** somente a quem tem `ADMIN`; a página não importa Axios nem acessa armazenamento do navegador.
+- Validação: build tipado/produção da SPA aprovado no Compose; aviso de bundle acima de 500 kB não bloqueante.
+- Próximo passo: cobrir fluxos de interface do Google, aprovação pendente e administração (tarefa 4.5).
+## 2026-09-28 — Perfil com foto privada em andamento
+
+- Criados `ProfileAvatarService`, DTOs e controlador autenticado para metadados, leitura binária e substituição de avatar próprio.
+- O upload valida binário, tamanho e dimensões, normaliza para WebP e troca a referência em transação; caminhos de armazenamento não atravessam a API e a foto anterior só é removida após persistência bem-sucedida.
+- Contrato documentado em `docs/API.md` para `GET /profile/avatar/metadata`, `GET /profile/avatar` e `POST /profile/avatar` multipart.
+- Validação atual: lint dos novos arquivos e AppFactory aprovado; próximo passo é cobrir o serviço e integrar a experiência Quasar.
+## 2026-09-28 — Foto de perfil concluída
+
+- O perfil privado passou a disponibilizar consulta de metadados, leitura binária autenticada e troca multipart; a SPA oferece a seção Perfil com visualização e atualização pela arquitetura Domain → Application → Axios → composable → Quasar.
+- A imagem é validada por conteúdo, limitada a 5 MB e dimensões seguras, normalizada para WebP e não revela caminho de disco. A cópia Google continua como origem inicial, mas uma foto manual a substitui.
+- Validação: 16 testes unitários Identity (38 asserções) aprovados; API reconstruída e `GET /v1/profile/avatar/metadata` sem credencial retorna `401`; build SPA aprovado.
+- Próximo passo: ampliar a cobertura final de autorização/importação e documentar configuração Google (tarefas 4.5, 5.4 e 6.x).
+
+## 2026-09-28 — Configuração Google documentada
+
+- `.env.example`, Compose e documentação agora declaram `GOOGLE_OIDC_CLIENT_ID` para validação backend e `VITE_GOOGLE_CLIENT_ID` para exibição do GIS na SPA; ambos recebem somente o identificador público do mesmo cliente Web.
+- A documentação proíbe incluir client secret e exige confirmar origens/autorização Google Cloud antes da ativação em produção.
+- Próximo passo: verificar migrations e executar validações finais (tarefas 4.5, 5.4, 6.2–6.4).
+
+## 2026-09-28 — Validação controlada e pendências externas
+
+- Consulta somente leitura no MySQL confirmou a migration `032_google_auth_user_management.sql` registrada e cinco usuários `ACTIVE`; login local pela credencial de integração retornou HTTP 200 sem exibir valores sensíveis.
+- Cobertura de avatar inclui importação Google restrita, substituição manual, rejeição de arquivo inválido e rota privada sem credencial retornando 401; leitura administrativa adicional não foi criada porque a especificação a condiciona à necessidade e não há caso de uso consumidor.
+- Build SPA e lint API aprovados. PHPUnit completo executou 80 testes: 77 passaram; três falhas legadas fora de Identity permanecem em `AppendAnswerServiceTest` e `StartAttemptServiceTest`. A suíte Identity está verde com 16 testes e 38 asserções.
+- Adicionados cenários Playwright para entrada local e navegação administrativa de usuários, condicionados à fixture E2E administrativa. A confirmação Google Cloud continua pendente de acesso ao projeto/configuração externa.
+
+## 2026-09-28 — Cobertura de interface Google
+
+- O cenário Playwright de Google usa somente GIS e API simulados no navegador: aciona o botão, recebe `PENDING_APPROVAL`, confirma o aviso seguro e verifica que a tela de entrada permanece ativa, sem sessão.
+- O adaptador aceita também um identificador público injetado em runtime, sem segredo, o que torna essa configuração testável e compatível com o identificador Vite de produção.
+- A administração possui cenário visual com fixture E2E para a seção, filtro e cadastro; a execução depende de uma conta administrativa configurada no ambiente.
+- Validação executada: cenário desktop de aprovação pendente aprovado.
+
+## 2026-09-28 — Revisão Google Cloud bloqueada externamente
+
+- A verificação local confirmou que `gcloud` não está instalado/autenticado e que nenhum `GOOGLE_OIDC_CLIENT_ID` foi configurado no ambiente atual; portanto não há como inspecionar ou alterar o cliente OAuth sem acesso externo.
+- As origens que o repositório já confirma são `https://conquistaai.app.br`, `https://www.conquistaai.app.br` e o desenvolvimento local `http://localhost:8081`. Elas devem ser revisadas no cliente OAuth Web antes de habilitar produção; não foi presumida nem aplicada configuração no Google Cloud.
+- A tarefa 6.4 permanece pendente exclusivamente dessa confirmação externa.
+## 2026-09-28 — Visibilidade do login Google na entrada
+
+- A tela de entrada agora sempre apresenta a opção **Entrar com Google**. Com `VITE_GOOGLE_CLIENT_ID` configurado, ela carrega o botão oficial Google Identity Services; sem o identificador público, apresenta botão desabilitado e instrução explícita, em vez de ocultar o suporte.
+- Isso não fabrica uma autenticação sem Client ID: o botão oficial continua encaminhando a credencial OIDC apenas ao caso de uso já implementado quando a configuração real existir.
+- Validação: build SPA e cenário Playwright público de entrada aprovados.
+- A pedido do usuário, a opção Google voltou a ficar oculta quando o Client ID público não está configurado; com a variável presente, o botão oficial GIS continua disponível.

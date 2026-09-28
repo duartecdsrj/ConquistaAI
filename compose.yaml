@@ -33,6 +33,7 @@ services:
     environment:
       E2E_EMAIL: ${E2E_EMAIL:-}
       E2E_PASSWORD: ${E2E_PASSWORD:-}
+      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     networks: [public, internal]
     healthcheck:
       test: ["CMD", "node", "/app/healthcheck.js"]
@@ -59,6 +60,7 @@ services:
       JWT_ISSUER: ${JWT_ISSUER:-concursos-api}
       ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-900}
       REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-2592000}
+      GOOGLE_OIDC_CLIENT_ID: ${GOOGLE_OIDC_CLIENT_ID:-}
       SYLLABUS_DOCUMENT_DIRECTORY: ${SYLLABUS_DOCUMENT_DIRECTORY:-/app/storage/syllabi}
       QUESTION_PDF_DOCUMENT_DIRECTORY: ${QUESTION_PDF_DOCUMENT_DIRECTORY:-/app/storage/question-pdfs}
       DISCOVERY_PROVIDER_BASE_URL: ${DISCOVERY_PROVIDER_BASE_URL:-}

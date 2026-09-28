@@ -141,3 +141,33 @@ test('demais jornadas mantêm a linguagem editorial', async ({ page }, testInfo)
     await expect(page).toHaveScreenshot(section.screenshot, { fullPage: false, animations: 'disabled' })
   }
 })
+
+test('administração de usuários apresenta dados reais e filtros', async ({ page }, testInfo) => {
+  test.skip(!process.env.E2E_EMAIL || !process.env.E2E_PASSWORD, 'Defina a fixture E2E administrativa.')
+  await authenticateVisualUser(page)
+  await openVisualSection(page, testInfo.project.name, 'Usuários')
+  await expect(page.getByRole('heading', { name: 'Usuários e acessos' })).toBeVisible()
+  await expect(page.getByLabel('Buscar por nome ou e-mail')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Cadastrar usuário' })).toBeVisible()
+})
+
+test('entrada preserva a experiência local sem expor credencial Google', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByLabel('E-mail')).toBeVisible()
+  await expect(page.getByLabel('Senha')).toBeVisible()
+  await expect(page.getByText('Seu acesso aguarda liberação administrativa.')).toHaveCount(0)
+})
+
+test('login Google informa aprovação pendente sem criar sessão', async ({ page }) => {
+  await page.addInitScript(() => { (window as Window & { __CONQUISTAAI_GOOGLE_CLIENT_ID__?: string }).__CONQUISTAAI_GOOGLE_CLIENT_ID__ = 'visual-client-id' })
+  await page.route('https://accounts.google.com/gsi/client', async (route) => {
+    await route.fulfill({ contentType: 'application/javascript', body: `window.google={accounts:{id:{initialize:function(options){window.__gisCallback=options.callback},renderButton:function(element){var button=document.createElement('button');button.textContent='Continuar com Google';button.onclick=function(){window.__gisCallback({credential:'visual-credential'})};element.append(button)}}}};` })
+  })
+  await page.route('**/api/v1/auth/google', async (route) => {
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ data: { status: 'PENDING_APPROVAL', message: 'Seu acesso aguarda liberação administrativa.' }, meta: { request_id: 'visual-request' } }) })
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Continuar com Google' }).click()
+  await expect(page.getByText('Seu acesso aguarda liberação administrativa.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible()
+})

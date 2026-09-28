@@ -42,6 +42,18 @@ O modulo Identity possui:
 
 A tela de login apenas coleta os valores e emite um evento. A validacao de credenciais e a persistencia de sessao pertencem aos casos de uso e adaptadores.
 
+## Autenticação Google e aprovação
+
+Quando a configuração pública do Google estiver presente, a tela de entrada inicia o Google Identity Services por um adaptador de Infrastructure. A credencial OIDC é enviada apenas pelo comando tipado de login Google, por `AuthUseCases` e `AxiosAuthRepository`; páginas e componentes não validam tokens nem acessam a API diretamente.
+
+O retorno `PENDING_APPROVAL` não cria sessão local nem tenta restaurar token. `useAuth` mantém a mensagem segura de que a liberação administrativa é necessária enquanto a pessoa permanecer na entrada. Falhas `401`, `409` e demais erros normalizados são exibidas sem expor credenciais, tokens ou detalhes internos.
+
+## Administração de usuários
+
+O módulo UserManagement segue `Domain/UserManagement`, `Application/UserManagement`, `Infrastructure/Http/AxiosUserManagementRepository` e `Interface/Http/UserManagement`. A página Quasar administrativa usa seu composable para consultar `GET /admin/users` com filtros tipados e paginação, criar usuários, associar/remover e-mail Google e alterar papéis ou status.
+
+A interface trata carregamento, erro, vazio e paginação com dados reais. Formulários apenas emitem comandos tipados; conflitos ou validações devolvidos pela API mantêm os dados confirmados e mostram a mensagem segura correspondente. Nenhum componente consome Axios, envelope HTTP ou armazenamento do navegador diretamente.
+
 ## Execucao e validacao
 
 docker compose up -d --build

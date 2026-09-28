@@ -62,7 +62,7 @@ final class InMemoryUsers implements UserRepositoryInterface
 {
     public function findByEmail(string $email): ?User { return null; }
     public function findById(string $id): ?User { return null; }
-    public function save(User $user): void {}
+    public function save(User $user): void {} public function list(int $offset,int $limit,?string $query,?string $status): array { return []; } public function count(?string $query,?string $status): int { return 0; } public function countActiveAdmins(): int { return 0; }
 }
 final class InMemoryAuthSessions implements AuthSessionRepositoryInterface
 {

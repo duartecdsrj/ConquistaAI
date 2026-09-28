@@ -7,6 +7,7 @@ Base: `/api/v1`. Respostas usam JSON, datas ISO 8601 UTC e erros no formato `{ "
 | Metodo e rota | Regra |
 | --- | --- |
 | `POST /auth/login` | autentica e cria sessao |
+| `POST /auth/google` | valida a credencial OIDC Google e cria sessao somente para conta ativa vinculada |
 | `POST /auth/refresh` | rotaciona refresh via cookie seguro |
 | `POST /auth/logout` | revoga a sessao atual |
 | `GET /auth/me` | retorna usuario e papeis |
@@ -30,7 +31,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Fusão de Taxonomia | `POST /admin/taxonomy/subjects/{id}/merge` recebe `{ "target_subject_id": "uuid", "reason": "texto" }`, exige ADMIN, elimina associações duplicadas, reatribui vínculos canônicos de questões e assuntos locais, e grava auditoria |
 | Reconciliação de Taxonomia | `GET /admin/taxonomy/reconciliation-proposals` lista propostas determinísticas com confiança e justificativa; requer ADMIN e não executa fusões |
 | Taxonomia editorial | `PUT /admin/questions/{id}/taxonomy-subjects` recebe `{ "taxonomy_subject_ids": ["uuid"] }` e substitui as associações canônicas da questão para usuários ADMIN |
-| Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
+| Usuários | `GET, POST /admin/users`; `PUT, DELETE /admin/users/{id}/google-identity`; `PATCH /admin/users/{id}/roles`; `PATCH /admin/users/{id}/status` |
 
 `GET /admin/taxonomy/subjects` devolve `questionCount` por assunto canônico. O valor é agregado e inclui somente questões PUBLISHED ligadas ao nó e a todos os seus descendentes; em folhas, representa apenas as questões publicadas ligadas à própria folha.
 
@@ -150,9 +151,25 @@ O provider usa `DISCOVERY_PROVIDER_BASE_URL` e só aceita resposta JSON de hosts
 
 `POST /auth/login` recebe `{ "email": "user@example.com", "password": "...", "device_name": "opcional" }`. Em sucesso, devolve `data` com `access_token` e `user`; o refresh token opaco e entregue exclusivamente em cookie `HttpOnly`, `Secure` e `SameSite=Lax`.
 
+`POST /auth/google` recebe `{ "credential": "oidc-id-token" }`. A credencial é validada no servidor quanto à assinatura, emissor Google, público configurado, expiração e `email_verified`; nunca é persistida, registrada em logs ou devolvida. Para uma identidade Google explicitamente vinculada a usuário `ACTIVE`, a resposta é igual ao login local: `data` contém `access_token` e `user`, e o refresh token é entregue somente no cookie seguro.
+
+Quando a identidade Google válida ainda não possuir vínculo, a API cria uma única conta com `status: "PENDING_APPROVAL"`, papel `USER`, sem senha local e com o e-mail Google normalizado. A resposta é `200` sem cookies de refresh e contém somente `{ "status": "PENDING_APPROVAL", "message": "Seu acesso aguarda liberação administrativa." }` em `data`; ela nunca contém `access_token`. Nova tentativa da mesma identidade retorna a mesma resposta. Se o e-mail Google coincidir com uma conta local sem vínculo explícito, a API devolve `409 STATE_CONFLICT`; credencial inválida devolve `401 UNAUTHENTICATED` sem criar ou alterar registros.
+
 `POST /auth/refresh` e `POST /auth/logout` usam somente o refresh token do cookie. O refresh cria uma nova sessao na mesma familia, revoga o token anterior e revoga toda a familia se um token ja rotacionado for reutilizado.
 
-`GET /auth/me` devolve `{ "id", "email", "name", "roles" }` em `data`. Credenciais, token expirado ou revogado e usuario bloqueado retornam `401 UNAUTHENTICATED`, sem revelar qual condicao falhou.
+`GET /auth/me` devolve `{ "id", "email", "name", "roles", "status" }` em `data`. Credenciais, token expirado ou revogado e usuario bloqueado retornam `401 UNAUTHENTICATED`, sem revelar qual condicao falhou. Login local com credenciais corretas de usuário `PENDING_APPROVAL` não cria sessão e devolve o mesmo retorno seguro de aprovação pendente de `POST /auth/google`.
+
+### Foto de perfil
+
+`GET /profile/avatar/metadata` retorna disponibilidade, MIME e data de atualização da foto do próprio usuário. `GET /profile/avatar` entrega o binário privado somente ao usuário autenticado; sem foto retorna `404 RESOURCE_NOT_FOUND`. `POST /profile/avatar` recebe multipart com o campo `avatar`, valida conteúdo, tamanho máximo de 5 MB e dimensões entre 32 e 4096 pixels, normaliza para WebP e substitui a foto anterior. Caminhos internos nunca são expostos; falhas de validação retornam `422 VALIDATION_FAILED`.
+
+### Administração de usuários
+
+Todas as rotas desta seção exigem papel `ADMIN`. `GET /admin/users` aceita `page`, `per_page` (padrão 25, máximo 100), `query` e `status`. Devolve lista paginada de `{ "id", "name", "email", "googleEmail", "roles", "status" }`, sem hash de senha, tokens ou eventos de auditoria.
+
+`POST /admin/users` recebe `{ "name": "...", "email": "...", "roles": ["USER"], "status": "ACTIVE", "password": "opcional", "google_email": "opcional" }`. A senha local é opcional; e-mails local e Google são normalizados e únicos nos respectivos vínculos. Conflitos devolvem `409 STATE_CONFLICT` e validações devolvem `422 VALIDATION_FAILED`, sem criar usuário parcial.
+
+`PUT /admin/users/{id}/google-identity` recebe `{ "google_email": "verified@example.com" }` e cria ou substitui o vínculo explícito. `DELETE /admin/users/{id}/google-identity` remove-o. Ambos preservam a unicidade e gravam auditoria segura. `PATCH /admin/users/{id}/roles` recebe `{ "roles": ["USER", "ADMIN"] }`; `PATCH /admin/users/{id}/status` recebe `{ "status": "ACTIVE|PENDING_APPROVAL|BLOCKED" }`. Todas as alterações são transacionais e auditadas; uma operação que removeria ou bloquearia o último administrador ativo devolve `409 STATE_CONFLICT` e mantém o estado anterior.
 
 Os services recebem Request DTOs e retornam Response DTOs; JWT, cookies, Argon2id e Doctrine pertencem aos adaptadores de infraestrutura.
 
@@ -230,3 +247,7 @@ POST /api/v1/admin/questions/publish-batch requer ADMIN e recebe { question_ids:
 ### Notificações de correção em tempo real
 
 `GET /question-correction-requests/latest` retorna, para o usuário autenticado, o último resultado concluído (`PROPOSED` ou `FAILED`) de correção solicitado por ele. A proposta detalhada só é incluída para administradores. O endpoint serve como recuperação após reconexão do WebSocket.
+
+### Configuração Google
+
+Defina `GOOGLE_OIDC_CLIENT_ID` na API e o mesmo identificador público em `VITE_GOOGLE_CLIENT_ID` na SPA. O cliente OAuth deve ser do tipo Web e autorizar exclusivamente as origens HTTPS/publicadas e os endereços de desenvolvimento confirmados para este produto. Não use nem exponha um client secret: o fluxo usa a credencial OIDC do Google Identity Services, verificada pela API.

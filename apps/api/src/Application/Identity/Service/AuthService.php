@@ -22,6 +22,7 @@ use App\Domain\Identity\Entity\AuthSession;
 use App\Domain\Identity\Entity\User;
 use App\Domain\Identity\Exception\InvalidCredentialsException;
 use App\Domain\Identity\Exception\InvalidSessionException;
+use App\Domain\Identity\Exception\PendingApprovalException;
 use App\Domain\Identity\Exception\UnavailableUserException;
 use App\Domain\Identity\Repository\AuthEventRepositoryInterface;
 use App\Domain\Identity\Repository\AuthSessionRepositoryInterface;
@@ -52,15 +53,15 @@ final class AuthService
     public function login(LoginRequestDto $request): AuthenticationResponseDto
     {
         $user = $this->users->findByEmail(mb_strtolower(trim($request->email)));
-        if ($user === null || !$user->isActive() || !$this->passwordHasher->verify($request->password, $user->passwordHash)) {
+        if ($user === null || !$user->hasLocalPassword() || !$this->passwordHasher->verify($request->password, $user->passwordHash)) {
             $this->transactions->transactional(function () use ($user, $request): void {
-                $this->events->append(AuthEvent::loginFailed(
-                    $user?->id,
-                    $this->ipAddresses->hash($request->ipAddress),
-                    $this->clock->now(),
-                ));
+                $this->events->append(AuthEvent::loginFailed($user?->id, $this->ipAddresses->hash($request->ipAddress), $this->clock->now()));
             });
             throw new InvalidCredentialsException();
+        }
+        if (!$user->isActive()) {
+            if ($user->status === "PENDING_APPROVAL") throw new PendingApprovalException();
+            throw new UnavailableUserException();
         }
 
         return $this->transactions->transactional(function () use ($user, $request): AuthenticationResponseDto {
@@ -137,6 +138,12 @@ final class AuthService
         }
 
         return $this->mapper->currentUser($user);
+    }
+
+    public function issueSessionForActiveUser(User $user, ?string $deviceName): AuthenticationResponseDto
+    {
+        if (!$user->isActive()) { throw new UnavailableUserException(); }
+        return $this->transactions->transactional(fn (): AuthenticationResponseDto => $this->issueSession($user, null, $deviceName));
     }
 
     private function issueSession(User $user, ?string $familyId, ?string $deviceName): AuthenticationResponseDto

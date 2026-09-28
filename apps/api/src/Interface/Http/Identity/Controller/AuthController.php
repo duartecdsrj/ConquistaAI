@@ -5,6 +5,8 @@ namespace App\Interface\Http\Identity\Controller;
 
 use App\Application\Identity\DTO\Request\AccessTokenRequestDto;
 use App\Application\Identity\DTO\Request\LoginRequestDto;
+use App\Application\Identity\DTO\Request\GoogleLoginRequestDto;
+use App\Application\Identity\Service\GoogleAuthenticationService;
 use App\Application\Identity\DTO\Request\LogoutRequestDto;
 use App\Application\Identity\DTO\Request\RefreshTokenRequestDto;
 use App\Application\Identity\Mapper\IdentityResponseMapper;
@@ -12,6 +14,8 @@ use App\Application\Identity\Service\AuthService;
 use App\Domain\Identity\Exception\InvalidCredentialsException;
 use App\Domain\Identity\Exception\InvalidSessionException;
 use App\Domain\Identity\Exception\UnavailableUserException;
+use App\Domain\Identity\Exception\PendingApprovalException;
+use App\Domain\Identity\Exception\GoogleIdentityConflictException;
 use App\Infrastructure\Database;
 use App\Infrastructure\Http\ApiResponseFactory;
 use DomainException;
@@ -22,6 +26,7 @@ final class AuthController
 {
     public function __construct(
         private readonly AuthService $service,
+        private readonly GoogleAuthenticationService $google,
         private readonly IdentityResponseMapper $mapper,
         private readonly ApiResponseFactory $responses,
     ) {
@@ -31,7 +36,9 @@ final class AuthController
     {
         try {
             $authentication = $this->service->login($input);
-        } catch (InvalidCredentialsException) {
+        } catch (PendingApprovalException) {
+            return $this->pending($request, $response);
+        } catch (InvalidCredentialsException|UnavailableUserException) {
             return $this->unauthenticated($request, $response);
         }
 
@@ -43,6 +50,15 @@ final class AuthController
             ),
             $authentication->refreshToken,
         );
+    }
+
+    public function google(ServerRequestInterface $request, ResponseInterface $response, GoogleLoginRequestDto $input): ResponseInterface
+    {
+        try { $result = $this->google->authenticate($input); }
+        catch (GoogleIdentityConflictException) { return $this->responses->problem($response, "STATE_CONFLICT", "A identidade Google exige associação administrativa.", 409, $this->requestId($request)); }
+        catch (DomainException) { return $this->unauthenticated($request, $response); }
+        if ($result->authentication === null) return $this->pending($request, $response);
+        return $this->withRefreshCookie($this->responses->success($response, $this->mapper->publicAuthentication($result->authentication), $this->requestId($request)), $result->authentication->refreshToken);
     }
 
     public function refresh(ServerRequestInterface $request, ResponseInterface $response, RefreshTokenRequestDto $input): ResponseInterface
@@ -84,6 +100,9 @@ final class AuthController
             return $this->unauthenticated($request, $response);
         }
     }
+
+    private function pending(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    { return $this->responses->success($response, ["status" => "PENDING_APPROVAL", "message" => "Seu acesso aguarda liberação administrativa."], $this->requestId($request)); }
 
     private function unauthenticated(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {

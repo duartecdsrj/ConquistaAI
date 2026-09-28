@@ -22,6 +22,6 @@ final class IdentityResponseMapper
 
     public function currentUser(User $user): CurrentUserResponseDto
     {
-        return new CurrentUserResponseDto($user->id, $user->email, $user->name, $user->roles);
+        return new CurrentUserResponseDto($user->id, $user->email, $user->name, $user->roles, $user->status);
     }
 }

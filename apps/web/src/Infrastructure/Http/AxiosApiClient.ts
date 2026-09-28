@@ -37,6 +37,7 @@ export async function postData<TResponse, TRequest>(url: string, body?: TRequest
 export async function postFormData<TResponse>(url: string, body: FormData, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.post<ApiEnvelope<TResponse> | TResponse>(url, body, { ...config, headers: { ...config?.headers, 'Content-Type': undefined } })).data) }
 export async function patchData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.patch<ApiEnvelope<TResponse> | TResponse>(url, body, config)).data) }
 export async function putData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.put<ApiEnvelope<TResponse> | TResponse>(url, body, config)).data) }
+export async function deleteData<TResponse>(url: string, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.delete<ApiEnvelope<TResponse> | TResponse>(url, config)).data) }
 
 export async function getPage<T>(url: string, query: PageQuery = {}, filters: QueryParameters = {}): Promise<PageResult<T>> {
   const response = await client.get<ApiEnvelope<readonly T[]>>(url, { params: { ...paginationParams(query), ...withoutUndefined(filters) } })
