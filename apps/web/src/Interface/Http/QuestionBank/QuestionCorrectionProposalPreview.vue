@@ -9,6 +9,7 @@
         <QuestionContent :value="option.content" />
       </div>
     </div>
+    <q-banner v-if="answerEvidencePage && proposedAnswerLabel" rounded class="answer-key-evidence">Gabarito proposto: alternativa {{ proposedAnswerLabel }}. Evidência oficial: página {{ answerEvidencePage }}.</q-banner>
   </section>
 </template>
 <script setup lang="ts">
@@ -17,9 +18,11 @@ import type { QuestionCorrectionRequest } from "../../../Domain/QuestionBank/Que
 import QuestionContent from "./QuestionContent.vue"
 import QuestionStatementWithAssets from "./QuestionStatementWithAssets.vue"
 const props = defineProps<{ readonly proposal: NonNullable<QuestionCorrectionRequest["proposal"]>; readonly requestId: string }>()
+const proposedAnswerLabel = computed(() => props.proposal.options.find((option) => option.id === props.proposal.correct_option_id)?.label ?? null)
+const answerEvidencePage = computed(() => props.proposal.answer_key_evidence_page ?? null)
 const previewAssets = computed(() => { const figures = props.proposal.figures ?? []; return figures.length ? figures.map((_, index) => `admin/question-correction-requests/${props.requestId}/asset-preview/${index + 1}`) : props.proposal.asset_page ? [`admin/question-correction-requests/${props.requestId}/asset-preview`] : [] })
-</script>
 
+</script>
 <style scoped>
-.proposal-preview{margin-top:16px;padding:16px;border:1px solid #dce7f6;border-radius:16px;background:#f8fbff}.preview-label{margin:0 0 12px;color:#6682ad;font-size:10px;font-weight:800;letter-spacing:.09em}.preview-statement{margin-bottom:14px;color:#10275b;font-weight:600}.preview-options{display:grid;gap:8px}.preview-option{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:start;gap:9px;padding:11px 12px;border:1px solid #dce6f3;border-radius:12px;background:#fff;color:#344e77}.preview-option strong{color:#173768}.preview-option :deep(.content){min-width:0}.preview-option :deep(.content p){margin:0}
+.proposal-preview{margin-top:16px;padding:16px;border:1px solid #dce7f6;border-radius:16px;background:#f8fbff}.preview-label{margin:0 0 12px;color:#6682ad;font-size:10px;font-weight:800;letter-spacing:.09em}.preview-statement{margin-bottom:14px;color:#10275b;font-weight:600}.preview-options{display:grid;gap:8px}.preview-option{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:start;gap:9px;padding:11px 12px;border:1px solid #dce6f3;border-radius:12px;background:#fff;color:#344e77}.preview-option strong{color:#173768}.preview-option :deep(.content){min-width:0}.preview-option :deep(.content p){margin:0}.answer-key-evidence{margin-top:14px;background:#e9f7ff;color:#15547c}
 </style>

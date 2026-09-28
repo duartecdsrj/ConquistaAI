@@ -16,7 +16,10 @@
 - [x] 1.10 Registrar metadados não sensíveis da proposta antes da validação estrutural.
 - [x] 1.11 Completar alternativas vazias com o snapshot original, preservando IDs, ordem e conteúdo.
 - [x] 1.12 Entregar snapshot no prompt para evitar leitura de arquivo bloqueada pelo sandbox.
+- [x] 1.13.1 Ampliar comandos de busca para demonstrativos, variações verbais e trechos entre aspas.
 - [x] 1.13 Pesquisar trecho solicitado no PDF de origem e anexar páginas encontradas à evidência antes do Codex.
+- [x] 1.15 Corrigir estrutura das alternativas e permitir troca de gabarito apenas com página de evidência oficial.
+- [x] 1.16 Anexar de forma limitada páginas de gabarito quando a solicitação pedir verificação da resposta correta.
 - [x] 1.14 Extrair metadados visíveis, remover cabeçalhos redundantes e atualizar a evidência visual na aprovação.
 - [x] 2.4 Exibir prévia da questão proposta e permitir reenvio com sugestões no diálogo global.
 - [x] 2.5 Permitir reenvio de solicitação que falhou, mantendo a aprovação restrita a proposta válida.

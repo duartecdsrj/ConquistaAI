@@ -16,6 +16,7 @@ A correção conclui em worker assíncrono e hoje exige que o usuário permaneç
 - Solicitações com falha também podem ser reenviadas pelo administrador; a aprovação permanece limitada ao estado PROPOSED.
 - Após aprovação, o Caderno aberto recarrega o conteúdo editorial da questão sem alterar sua seleção, posição ou respostas.
 - Propostas podem indicar uma lista ordenada `figures`. Cada item aponta uma página de evidência e aparece no enunciado pelo marcador `[[FIGURA:n]]`; ao aprovar, cada prévia extraída é promovida como ativo autenticado e exibida pelo Caderno no marcador correspondente.
+- Propostas retornam todas as alternativas para correção exclusiva de extração e podem alterar `correct_option_id` somente com a página de evidência de um gabarito oficial explícito; a aprovação continua administrativa.
 
 ## Capacidades
 

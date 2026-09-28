@@ -1484,3 +1484,17 @@ docker compose exec -T frontend npm run build
 - O banner global passou a apresentar a ação `Ignorar`. Ela armazena localmente e de forma limitada o ID da solicitação, sem alterar fila, proposta ou histórico no servidor.
 - A recuperação REST e os novos eventos WebSocket consultam a lista de resultados ignorados; por isso uma solicitação dispensada não volta após atualizar a página ou navegar.
 - Próximo passo: clicar em `Ignorar`, atualizar a página e confirmar que o mesmo resultado não reaparece; um novo resultado continua sendo exibido normalmente.
+
+## 2026-09-27 — Correção editorial de alternativas e gabarito comprovado
+
+- O snapshot do worker agora inclui as alternativas, o ID de gabarito atual e sua fonte. O Codex pode corrigir somente separação, quebras, caracteres e formatação de extração nas alternativas, preservando IDs, rótulos, ordem e significado.
+- A proposta exige `correct_option_id` e `answer_key_evidence_page`. Uma mudança é aceita somente se o ID existir entre as alternativas e a página estiver nas evidências enviadas; o prompt proíbe inferência, cálculo ou conhecimento externo e requer gabarito oficial explicitamente visível.
+- A aprovação administrativa aplica a mudança comprovada, marca sua fonte como `OFFICIAL` e a prévia mostra a alternativa e página propostas. Propostas legadas sem esses campos preservam o gabarito original.
+- Compatibilidade: propostas anteriores que já atendem o contrato estrutural vigente continuam aprováveis, porém preservam obrigatoriamente o gabarito existente porque não carregam a evidência exigida para alterá-lo.
+- Próximo passo: enviar uma solicitação cuja evidência inclua o gabarito oficial e conferir a prévia antes de aprovar.
+
+## 2026-09-28 — Busca de trecho mais abrangente
+
+- O worker passou a reconhecer comandos de pesquisa com demonstrativos, como `localize esse trecho`, variações verbais e trechos delimitados por aspas.
+- A extração continua limitada a 160 caracteres, normaliza acentos e quebras de linha e mantém o log sem conteúdo do trecho, somente hash e páginas encontradas.
+- Próximo passo: reenviar a solicitação com o trecho entre aspas e confirmar o evento `evidence_search` no log.
