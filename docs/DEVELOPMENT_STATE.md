@@ -1,5 +1,11 @@
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-28 — Validação final da execução mobile
+
+- Build de produção aprovado no Compose (`vue-tsc --noEmit` e Vite); permanece somente o aviso não bloqueante de bundle acima de 500 kB.
+- O Playwright iniciou os projetos desktop e mobile. O cenário autenticado parou antes do caderno porque a fixture E2E permaneceu na tela de login; a falha não alcançou os controles alterados. O cenário público de login foi aprovado nos dois perfis.
+- Lint de todos os módulos PHP de Study e Performance alterados e `git diff --check` aprovados.
+
 ## 2026-09-28 — Continuidade, pausa e seleção inédita de caderno
 
 - Implementados `activeQuestionId` persistido, rota autenticada de atualização e restauração do índice no composable; a migration `031_notebook_active_question.sql` suporta a nova coluna.

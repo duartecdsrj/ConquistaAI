@@ -19,5 +19,5 @@
 
 ## 3. Validação integrada
 
-- [ ] 3.1 Cobrir continuidade, bloqueio de pausa e seleção por assunto com testes de serviço, repositório e Playwright.
-- [ ] 3.2 Executar build do frontend, registrar validações e atualizar o estado de desenvolvimento.
+- [x] 3.1 Cobrir continuidade, bloqueio de pausa e seleção por assunto com testes de serviço, repositório e Playwright.
+- [x] 3.2 Executar build do frontend, registrar validações e atualizar o estado de desenvolvimento.
