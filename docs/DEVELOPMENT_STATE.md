@@ -1,5 +1,12 @@
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-28 — Continuidade, pausa e seleção inédita de caderno
+
+- Implementados `activeQuestionId` persistido, rota autenticada de atualização e restauração do índice no composable; a migration `031_notebook_active_question.sql` suporta a nova coluna.
+- Tentativas e respostas exigem estado `IN_PROGRESS` no servidor e a interface desabilita seleção/confirmação enquanto pausada; respostas pausadas retornam `409 STATE_CONFLICT`.
+- A criação consulta uma porta Doctrine para excluir itens finalizados nos últimos 30 dias ou reservados por cadernos abertos do mesmo usuário. A seleção dirigida já preserva blocos de assunto na ordem congelada.
+- Próximo passo: concluir testes integrados e build da proposta.
+
 ## 2026-09-28 — Rodapé móvel em linha única
 
 - Todos os controles do rodapé móvel agora são ícones de 40 px, centralizados e sem quebra de linha; os grupos semânticos usam `display: contents` somente nesse breakpoint.

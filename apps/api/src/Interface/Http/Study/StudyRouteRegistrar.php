@@ -32,6 +32,7 @@ use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineDirectedStudyPlanRepository;
 use App\Application\Study\Service\CreateDirectedStudyPlanService;
 use App\Application\Study\Service\ListDirectedStudyPlansService;
+use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookQuestionExclusionReader;
 use App\Application\Study\Mapper\DirectedStudyPlanResponseMapper;
 use App\Interface\Http\Study\Controller\DirectedStudyPlanController;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookProgressReader;
@@ -56,7 +57,7 @@ final class StudyRouteRegistrar
         $questions = new DoctrinePublishedQuestionRepository($entityManager);
         $mapper = new NotebookResponseMapper();
         $controller = new StudyController(
-            $this->authentication,
+            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager), new DoctrineStudyContestSubjectRepository($entityManager), new DoctrineNotebookQuestionExclusionReader($entityManager)),
             new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager), new DoctrineStudyContestSubjectRepository($entityManager)),
             new GetNotebookService($notebooks, $mapper),
             new ListNotebooksService($notebooks, $mapper),

@@ -13,9 +13,9 @@
 
 - [x] 2.1 Cobrir abas, gesto, controles fixos e ícones com Playwright nos layouts mobile e desktop.
 - [x] 2.2 Documentar o contrato HTTP e a experiência frontend de questão ativa, pausa e seleção inédita.
-- [ ] 2.3 Persistir a questão ativa do caderno, expor o estado e restaurá-lo no composable/frontend.
-- [ ] 2.4 Bloquear tentativas e respostas de cadernos pausados no domínio, serviços e interface.
-- [ ] 2.5 Excluir questões recentes ou reservadas e congelar a seleção ordenada por assunto.
+- [x] 2.3 Persistir a questão ativa do caderno, expor o estado e restaurá-lo no composable/frontend.
+- [x] 2.4 Bloquear tentativas e respostas de cadernos pausados no domínio, serviços e interface.
+- [x] 2.5 Excluir questões recentes ou reservadas e congelar a seleção ordenada por assunto.
 
 ## 3. Validação integrada
 

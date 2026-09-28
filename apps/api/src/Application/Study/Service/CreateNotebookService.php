@@ -15,6 +15,7 @@ use App\Domain\Study\Repository\NotebookRepositoryInterface;
 use App\Domain\Catalog\Repository\PositionRepositoryInterface;
 use App\Domain\Catalog\Repository\PositionTaxonomyAssignmentRepositoryInterface;
 use App\Domain\Study\Repository\StudyContestSubjectRepositoryInterface;
+use App\Domain\Study\Repository\NotebookQuestionExclusionReaderInterface;
 use App\Domain\Study\ValueObject\FrozenQuestionSelection;
 
 final class CreateNotebookService
@@ -27,6 +28,7 @@ final class CreateNotebookService
         private readonly ?PositionRepositoryInterface $positions = null,
         private readonly ?PositionTaxonomyAssignmentRepositoryInterface $positionSubjects = null,
         private readonly ?StudyContestSubjectRepositoryInterface $studySubjects = null,
+        private readonly ?NotebookQuestionExclusionReaderInterface $exclusions = null,
         private readonly \DateTimeZone $utc = new \DateTimeZone('UTC'),
     ) {
     }
@@ -53,6 +55,8 @@ final class CreateNotebookService
                 $page = $this->questions->findPublished(new PublishedQuestionFilter(0, $request->quantity, $request->filters['subject_id'] ?? null, $request->filters['board'] ?? null, $request->filters['year'] ?? null, $request->filters['difficulty'] ?? null, null, $request->filters['syllabus_id'] ?? null, isset($request->filters['subject_ids']) && is_array($request->filters['subject_ids']) ? array_values($request->filters['subject_ids']) : [], $request->filters['exam_id'] ?? null));
                 $ids = array_map(static fn ($question): string => $question->id, $page->items);
             }
+            $excluded = $this->exclusions?->excludedQuestionIds($request->userId, new \DateTimeImmutable('-30 days', $this->utc)) ?? [];
+            $ids = array_values(array_filter($ids, static fn(string $id): bool => !in_array($id, $excluded, true)));
             $selection = FrozenQuestionSelection::fromQuestionIds($ids,$request->quantity);
             $notebook = Notebook::create($request->userId,$request->name,NotebookMode::from($request->mode),$selection,new \DateTimeImmutable('now', $this->utc),$request->filters);
             $this->notebooks->save($notebook);
