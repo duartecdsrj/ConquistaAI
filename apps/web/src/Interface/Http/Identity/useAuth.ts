@@ -12,8 +12,14 @@ export function useAuth() {
 
   async function restore(): Promise<void> {
     loading.value = true
-    user.value = await identityUseCases.restoreSession.execute()
-    loading.value = false
+    error.value = ''
+    try {
+      user.value = await identityUseCases.restoreSession.execute()
+    } catch {
+      user.value = null
+    } finally {
+      loading.value = false
+    }
   }
 
   async function login(email: string, password: string): Promise<void> {

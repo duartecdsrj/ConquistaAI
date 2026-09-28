@@ -1,5 +1,11 @@
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-28 — Recuperação segura da montagem global
+
+- A restauração da sessão no frontend agora sempre encerra o estado de carregamento, inclusive diante de falha inesperada de armazenamento ou comunicação antes do retorno normal do caso de uso.
+- Sem sessão recuperável, a tela de login é apresentada em vez de manter a aplicação em branco; a sessão válida permanece no fluxo existente.
+- Próximo passo: validar o bootstrap pelo proxy reverso e confirmar a renderização da tela inicial.
+
 ## 2026-09-28 — Validação final da execução mobile
 
 - Build de produção aprovado no Compose (`vue-tsc --noEmit` e Vite); permanece somente o aviso não bloqueante de bundle acima de 500 kB.
