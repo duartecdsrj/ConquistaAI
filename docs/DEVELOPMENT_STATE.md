@@ -2322,3 +2322,12 @@ docker compose exec -T frontend npm run build
 - Validações finais: boot API aprovado; Review unitário+integração 16 testes e 44 asserções aprovados; build SPA aprovado; `git diff --check` aprovado.
 - Pendências externas não bloqueantes: configurar o comando Codex real em produção e tratar separadamente as 3 falhas preexistentes da suíte Performance; aviso de bundle SPA acima de 500 kB permanece não bloqueante.
 - Todas as tarefas de `adaptive-flashcard-learning` foram marcadas como concluídas.
+
+## 2026-09-28 — Proposta de interações de aprendizagem por questão
+
+- Analisados os fluxos existentes de `Attempt`/`Answer`, Review, páginas de resolução/listagem, taxonomia e o worker Codex de correção de questões.
+- Criada a proposta OpenSpec `question-learning-interactions` com specs de interações pessoais/sociais, sinais adaptativos e explicações por IA.
+- A decisão inicial usa Codex em worker isolado no padrão de correção de questões; uma porta estruturada e factory configurável preparam adaptadores HTTP de outras IAs sem acoplar o domínio.
+- Não houve alteração de código de produto, banco ou APIs nesta etapa de proposta.
+- Validação: `openspec status --change question-learning-interactions --json` indica todos os artefatos exigidos como concluídos e `git diff --check` aprovado.
+- Próximo passo: aplicar por `/opsx:apply question-learning-interactions`, iniciando contratos e migration aditiva.
