@@ -26,8 +26,8 @@ final class StartAttemptService
             if ($notebook === null) {
                 throw new \DomainException('Caderno nao encontrado.');
             }
-            if ($notebook->status === \App\Domain\Study\Enum\NotebookStatus::FINISHED) {
-                throw new \DomainException('Caderno finalizado nao aceita novas tentativas.');
+            if ($notebook->status !== \App\Domain\Study\Enum\NotebookStatus::IN_PROGRESS) {
+                throw new \DomainException('Caderno pausado ou não iniciado não aceita novas tentativas.');
             }
 
             if (!in_array($request->questionId, $notebook->selection->questionIds, true)) {
