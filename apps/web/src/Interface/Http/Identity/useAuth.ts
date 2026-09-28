@@ -4,14 +4,13 @@ import { identityUseCases } from '../../../Infrastructure/Container'
 
 export function useAuth() {
   const user = ref<AuthenticatedUser | null>(null)
-  const loading = ref(true)
+  const loading = ref(false)
   const submitting = ref(false)
   const error = ref('')
 
   const authenticated = computed(() => user.value !== null)
 
   async function restore(): Promise<void> {
-    loading.value = true
     error.value = ''
     try {
       user.value = await identityUseCases.restoreSession.execute()

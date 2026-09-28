@@ -2,9 +2,9 @@
 
 ## 2026-09-28 — Recuperação segura da montagem global
 
-- A restauração da sessão no frontend agora sempre encerra o estado de carregamento, inclusive diante de falha inesperada de armazenamento ou comunicação antes do retorno normal do caso de uso.
-- Sem sessão recuperável, a tela de login é apresentada em vez de manter a aplicação em branco; a sessão válida permanece no fluxo existente.
-- Próximo passo: validar o bootstrap pelo proxy reverso e confirmar a renderização da tela inicial.
+- A aplicação não inicia mais bloqueada por um `q-inner-loading` de raiz: a tela de login é renderizada de imediato, enquanto a sessão é restaurada em segundo plano.
+- Uma sessão válida substitui a tela de login pela aplicação; sem sessão recuperável ou diante de falha inesperada, a interface permanece utilizável para novo acesso.
+- Validação: o Chromium isolado acessando `http://localhost:8081` montou a tela de login no DOM, incluindo os campos de e-mail, senha e o botão de acesso.
 
 ## 2026-09-28 — Validação final da execução mobile
 
