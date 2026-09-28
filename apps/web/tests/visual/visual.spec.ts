@@ -25,6 +25,54 @@ test('caderno mantém a composição autenticada', async ({ page }, testInfo) =>
 })
 
 
+
+test('caderno mantém controles e vistas responsivas', async ({ page }, testInfo) => {
+  test.skip(!process.env.E2E_EMAIL || !process.env.E2E_PASSWORD, 'Defina E2E_EMAIL e E2E_PASSWORD para a fixture E2E.')
+  await page.goto('/')
+  await page.getByLabel('E-mail').fill(process.env.E2E_EMAIL!)
+  await page.getByLabel('Senha').fill(process.env.E2E_PASSWORD!)
+  await page.getByRole('button', { name: 'Entrar na plataforma' }).click()
+  if (testInfo.project.name === 'mobile') await page.getByLabel('Abrir navegação').click()
+  await page.getByText('Cadernos e plano', { exact: true }).first().click()
+  const resumeButton = page.locator('.book').filter({ hasText: 'Caderno visual — Direito Tributário' }).getByRole('button', { name: 'Retomar' })
+  if (testInfo.project.name === 'mobile') await resumeButton.evaluate((element: HTMLButtonElement) => element.click())
+  else await resumeButton.click()
+
+  await expect(page.getByLabel('Finalizar caderno')).toBeVisible()
+  await expect(page.getByLabel(/Pausar contador|Retomar contador/)).toBeVisible()
+
+  if (testInfo.project.name === 'mobile') {
+    const questionTab = page.getByRole('tab', { name: 'Questão' })
+    const navigationTab = page.getByRole('tab', { name: 'Navegação' })
+    const progressTab = page.getByRole('tab', { name: 'Progresso' })
+    await expect(questionTab).toHaveClass(/q-tab--active/)
+    await navigationTab.click()
+    await expect(page.locator('.question-nav-panel')).toBeVisible()
+    await progressTab.click()
+    await expect(page.getByRole('button', { name: 'Finalizar caderno' }).last()).toBeVisible()
+    await questionTab.click()
+
+    const footer = page.locator('.execution-actions')
+    await expect(footer).toBeVisible()
+    const footerBeforeScroll = await footer.boundingBox()
+    await page.locator('.question-content-scroll').evaluate((element) => { element.scrollTop = element.scrollHeight })
+    expect((await footer.boundingBox())?.y).toBeCloseTo(footerBeforeScroll?.y ?? 0, 0)
+
+    const stage = page.locator('.mobile-stage')
+    await stage.dispatchEvent('pointerdown', { pointerType: 'touch', clientX: 320, clientY: 400 })
+    await stage.dispatchEvent('pointerup', { pointerType: 'touch', clientX: 240, clientY: 402 })
+    await expect(navigationTab).toHaveClass(/q-tab--active/)
+    await navigationTab.click()
+    await stage.dispatchEvent('pointerdown', { pointerType: 'touch', clientX: 240, clientY: 400 })
+    await stage.dispatchEvent('pointerup', { pointerType: 'touch', clientX: 244, clientY: 280 })
+    await expect(navigationTab).toHaveClass(/q-tab--active/)
+  } else {
+    await expect(page.locator('.mobile-execution-tabs')).toBeHidden()
+    await expect(page.locator('.question-nav-panel')).toBeVisible()
+    await expect(page.locator('.progress-panel')).toBeVisible()
+  }
+})
+
 test('catálogo apresenta escopo explícito sem acionar processamento', async ({ page }, testInfo) => {
   test.skip(!process.env.E2E_EMAIL || !process.env.E2E_PASSWORD, 'Defina a fixture E2E.')
   await page.goto('/')

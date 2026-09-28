@@ -221,6 +221,10 @@ A SPA abre um Socket.IO autenticado pelo access token em `/ws/socket.io`. O gate
 O diálogo global de correção apresenta a proposta real usando `QuestionCorrectionProposalPreview.vue`, incluindo todas as figuras em suas posições marcadas. Administradores podem aprovar a prévia ou reenviar uma nova solicitação com sugestões; o reenvio passa por `useQuestionCorrection -> RequestQuestionCorrectionUseCase -> QuestionRepository`, preservando o histórico de solicitações.
 
 
+## Continuidade da execução de caderno
+
+A troca da questão atual passa por `useNotebookExecution` e pelo caso de uso/repositório Study para persistir `activeQuestionId`; a reabertura restaura esse índice pela resposta da API. A página desabilita alternativas e confirmação quando o caderno não está `IN_PROGRESS`, mas a API permanece a autoridade para rejeitar tentativas ou respostas pausadas. A seleção já recebida vem congelada e agrupada por assunto; os botões de assunto usam essa ordem, sem reordenar localmente.
+
 ## Atualização editorial em Caderno aberto
 
 Ao aprovar uma correção pelo diálogo global, `App.vue` incrementa a versão editorial enviada a `NotebookExecutionPage`. O composable `useNotebookExecution` consulta novamente as questões pelo caso de uso de Study e preserva a questão aberta pelo ID, o índice e as respostas. A aprovação feita no diálogo local do Caderno executa a mesma atualização imediatamente.

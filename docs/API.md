@@ -87,6 +87,7 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 | `GET /notebooks/{id}` | detalhes e progresso, com isolamento por dono |
 | `POST /notebooks/{id}/start` | inicia ou retoma a execução e grava `startedAt` |
 | `POST /notebooks/{id}/pause` | pausa o contador e preserva a duração acumulada |
+| `PATCH /notebooks/{id}/active-question` | persiste a questão ativa da seleção congelada |
 | `GET /notebooks/{id}/statistics` | resumo do progresso e desempenho do caderno |
 | `POST /notebooks/{id}/questions/{questionId}/attempts` | inicia tentativa |
 | `POST /attempts/{id}/answers` | registra marcacao imutavel |
@@ -94,8 +95,12 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 | `POST /notebooks/{id}/finish` | finaliza caderno/simulado e revela resultado quando cabivel |
 
 `POST /notebooks/{id}/start` é idempotente enquanto o caderno está em andamento e retorna o caderno com `status`, `startedAt`, `finishedAt` e `durationSeconds`. `POST /notebooks/{id}/pause` acumula a duração já decorrida e muda o estado para `PAUSED`; `start` retoma a contagem sem perder o acumulado. `GET /notebooks/{id}/statistics` retorna `total`, `answered`, `correct`, `incorrect`, `percentage`, `averageElapsedSeconds`, `elapsedSeconds` e `answeredQuestionIds`, sempre restritos ao proprietário. `POST /notebooks/{id}/finish` encerra o caderno, calcula a duração acumulada e impede novas tentativas. Um caderno finalizado não pode ser iniciado nem finalizado novamente.
+`PATCH /notebooks/{id}/active-question` recebe `{ "question_id": "uuid" }`, exige que a questão pertença à seleção congelada e atualiza somente o caderno do proprietário. `GET /notebooks/{id}` devolve `activeQuestionId`; a interface o usa para restaurar a questão aberta após pausa, fechamento ou reabertura.
+
 
 `POST /notebooks` recebe `name`, `mode` (`STUDY` ou `EXAM`), `quantity` e o objeto opcional `filters`. Para estudo direcionado, `filters` deve informar conjuntamente `exam_id`, `position_id` e uma lista não vazia `subject_ids`; o cargo precisa pertencer ao concurso e todo assunto deve estar associado ao cargo. Os filtros aceitos no MVP sao `subject_id`, `board`, `year` e `difficulty` (`EASY`, `MEDIUM` ou `HARD`). O cliente nao envia IDs de questoes: o service consulta somente questoes publicadas, persiste a lista retornada em `notebook_questions` e a composicao nunca muda. A API responde `422 VALIDATION_FAILED` quando os filtros nao encontram a quantidade solicitada, em vez de completar o caderno com questoes fora dos filtros.
+A criação exclui questões com resposta final do mesmo usuário nos últimos 30 dias e questões já congeladas em cadernos `DRAFT`, `IN_PROGRESS` ou `PAUSED` do mesmo usuário. Se as exclusões não deixarem a quantidade solicitada, responde `422 VALIDATION_FAILED`; não reutiliza questões silenciosamente. A seleção é ordenada de forma determinística por assunto canônico antes de ser persistida. `POST /notebooks/{id}/questions/{questionId}/attempts` e `POST /attempts/{id}/answers` aceitam somente cadernos `IN_PROGRESS`; para `PAUSED`, retornam `409 STATE_CONFLICT`.
+
 
 ## Desempenho e revisoes
 

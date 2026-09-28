@@ -1,5 +1,79 @@
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-28 — Rodapé móvel em linha única
+
+- Todos os controles do rodapé móvel agora são ícones de 40 px, centralizados e sem quebra de linha; os grupos semânticos usam `display: contents` somente nesse breakpoint.
+- Os rótulos continuam disponíveis no desktop e a acessibilidade permanece via `aria-label`.
+- Validação proporcional: `git diff --check`. Próximo passo: concluir os casos de uso pendentes da proposta antes do commit.
+
+## 2026-09-28 — Ícones consistentes no rodapé móvel
+
+- O rodapé móvel oculta apenas os rótulos e apresenta ícones distintos para assunto anterior, próximo assunto, questão anterior, confirmação e próxima questão.
+- Os mesmos ícones permanecem acompanhados dos rótulos no desktop; todos os controles mantêm `aria-label` descritivo.
+- Validação proporcional: `git diff --check`. Próximo passo: continuidade e seleção de caderno da proposta.
+
+## 2026-09-28 — Área ampliada de resolução mobile
+
+- A seção contextual `book-heading` fica oculta em telas de até 599 px; os dados essenciais de questão, cronômetro, pausa e finalização continuam disponíveis na própria execução.
+- A altura da área de trabalho foi recalculada para usar o espaço recuperado, sem afetar o layout desktop.
+- Validação proporcional: `git diff --check`. Próximo passo: continuidade e seleção de caderno da proposta.
+
+## 2026-09-28 — Grade uniforme de controles no rodapé móvel
+
+- O rodapé da questão agora separa os atalhos de assunto das ações de resposta e usa grades proporcionais: dois controles de assunto, três ações durante a resposta e duas após o registro.
+- Os botões ocupam colunas equivalentes, com altura de toque de 44 px, sem o espaço flexível que causava larguras irregulares.
+- Validação proporcional: `git diff --check`. Próximo passo: manter a implementação de continuidade e seleção da proposta.
+
+## 2026-09-28 — Contrato de continuidade de caderno
+
+- O contrato HTTP inclui `PATCH /notebooks/{id}/active-question`, `activeQuestionId` na leitura e erros `409 STATE_CONFLICT` para tentativa ou resposta fora de `IN_PROGRESS`; a documentação frontend registra o fluxo pelas camadas Study.
+- A tarefa documental 2.2 da proposta foi concluída. Próximo passo: persistir a posição ativa e restaurá-la na abertura do caderno.
+
+## 2026-09-28 — Escopo ampliado: continuidade e seleção de caderno
+
+- A proposta `mobile-notebook-execution` passou a incluir persistência da questão ativa, bloqueio transacional de respostas em pausa, ordenação por assunto e exclusão de questões respondidas nos últimos 30 dias ou reservadas em cadernos abertos do mesmo usuário.
+- O contrato e a documentação frontend foram atualizados antes da implementação. A escolha inicial para “recentemente” é 30 dias; elegibilidade insuficiente deve retornar 422, sem repetir questões.
+- Próximo passo: implementar o contrato, a persistência e os guardas de domínio antes da validação final da proposta.
+
+## 2026-09-28 — Cobertura Playwright da execução responsiva
+
+- Adicionado cenário Playwright para os projetos desktop e mobile: ícones acessíveis do cabeçalho, abas móveis, painel de navegação, progresso/finalização, rodapé persistente, arrasto horizontal e rolagem vertical sem troca de vista.
+- Em desktop, o mesmo cenário confirma que as abas móveis ficam ocultas e que os painéis de navegação e progresso continuam simultaneamente visíveis.
+- Próximo passo: executar o build do frontend e a suíte Playwright, então registrar o resultado final da proposta.
+
+## 2026-09-28 — Controles preservados no cabeçalho móvel
+
+- Os botões compactos de pausar/retomar e finalizar agora mantêm ícones Material visíveis, áreas de toque de 40 px e nomes acessíveis já expostos por `aria-label`.
+- A redução visual continua ocultando apenas o texto dos controles no mobile, sem comprometer as ações essenciais.
+- Próximo passo: cobrir as abas, o gesto e os controles nos projetos Playwright desktop e mobile.
+
+## 2026-09-28 — Rodapé persistente na questão móvel
+
+- A área de leitura da questão agora é um painel rolável independente e o rodapé com Anterior, confirmação de resposta e Próxima questão permanece fora dela.
+- Em telas móveis, a área útil usa flexbox, `min-height: 0` e altura baseada na viewport dinâmica, evitando que o rodapé seja perdido em enunciados longos.
+- Próximo passo: ajustar o cabeçalho compacto para preservar os ícones de pausa e finalização.
+
+## 2026-09-28 — Arrasto horizontal no caderno mobile
+
+- O contêiner das vistas móveis reconhece somente arrastos por toque com deslocamento horizontal predominante de ao menos 48 px; os limites da sequência são respeitados.
+- A área declara `touch-action: pan-y`, mantendo a rolagem vertical do enunciado livre e sem alterar a aba ativa.
+- Próximo passo: separar a área rolável da questão do rodapé de ações, para manter os controles disponíveis durante a leitura.
+
+## 2026-09-28 — Abas móveis na execução de caderno
+
+- A execução de caderno passou a organizar, em telas de até 599 px, as vistas de Questão, Navegação e Progresso em abas de apresentação locais, preservando a mesma fonte de estado de Study.
+- A alternância por aba revela o painel correspondente sem alterar a questão atual ou as estatísticas reais já carregadas.
+- Próximo passo: adicionar a troca por arrasto horizontal, sem interferir na rolagem vertical do enunciado.
+
+## 2026-09-28 — Proposta de autenticação Google e gestão de usuários
+
+- Criada a proposta OpenSpec `google-auth-user-management` para autenticação Google com validação OIDC no backend, vínculo explícito de e-mail Google e manutenção do login local.
+- O primeiro acesso Google sem vínculo cria conta `PENDING_APPROVAL`, sem access token ou refresh token; a interface deve informar que a liberação administrativa é necessária. Coincidência com e-mail local não vincula contas automaticamente.
+- A proposta prevê gestão administrativa paginada de usuários, cadastro, associação/remoção de e-mail Google, alteração auditável de papéis/status e proteção do último administrador ativo.
+- Artefatos de proposta, design, especificações e tarefas foram concluídos; nenhuma funcionalidade, migração ou configuração externa foi aplicada nesta etapa.
+- Próximo passo: aplicar a mudança por `/opsx:apply google-auth-user-management`, começando pela documentação de contrato e fundação do contexto Identity.
+- Escopo ampliado: a proposta agora importa uma cópia validada da foto `picture` do Google apenas na criação da conta e permite que cada usuário ativo substitua sua própria foto pelo perfil. A foto manual prevalece sobre qualquer imagem futura do Google; o binário permanece protegido por autorização.
+
 ## 2026-09-27 — Idempotência da auditoria publicada
 
 - A rotina de auditoria agora procura uma execução `COMPLETED` com o mesmo algoritmo e escopo antes de iniciar outra; quando existe, retorna seu identificador sem consultar questões, criar execução ou gravar achados.
