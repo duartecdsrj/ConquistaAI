@@ -30,6 +30,7 @@
 - [x] 3.2 Permitir próxima questão sem resposta e adicionar assunto anterior/próximo no Caderno.
 - [x] 3.3 Recarregar no Caderno o conteúdo editorial aprovado, preservando posição e respostas.
 - [x] 3.4 Converter a página visual aprovada em ativo autenticado e rejeitar referências Markdown internas.
+- [x] 3.5 Suportar múltiplas figuras ordenadas, com extração e prévia individuais no marcador correto do enunciado.
 
 ## 4. Verificação
 

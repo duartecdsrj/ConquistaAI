@@ -15,7 +15,7 @@ A API Slim e o worker são processos separados; a correção é persistida e ass
 - A SPA mantém `section` e `notebook` em `URLSearchParams`; ao restaurar, valida a seção permitida e usa o fallback atual.
 - O Caderno usa a lista congelada existente; próxima/anterior questão não depende de resposta. Assunto anterior/próximo procura o primeiro vínculo canônico diferente.
 - A seleção congelada preserva somente os IDs e a ordem. Após aprovação editorial, a SPA consulta novamente as questões do Caderno, mantém a questão atual pelo ID e conserva respostas já registradas.
-- A proposta pode declarar `asset_page` somente dentro da janela de evidência. Na aprovação, a infraestrutura renderiza essa página do PDF de origem em PNG, cria `QuestionAssetRecord` e a disponibiliza pela rota autenticada existente; não persiste caminhos Markdown internos.
+- A proposta declara `figures` ordenadas, com páginas somente na janela de evidência e marcadores sequenciais `[[FIGURA:n]]` no enunciado. A infraestrutura extrai uma imagem incorporada para cada ocorrência, promove as prévias aprovadas como `QuestionAssetRecord` ordenados e não persiste caminhos internos.
 
 ## Riscos / compensações
 

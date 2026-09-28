@@ -14,7 +14,7 @@ A correção conclui em worker assíncrono e hoje exige que o usuário permaneç
 - Diálogo de revisão mostra prévia completa de enunciado e alternativas e permite reenvio com sugestões, sem sobrescrever solicitações anteriores.
 - Solicitações com falha também podem ser reenviadas pelo administrador; a aprovação permanece limitada ao estado PROPOSED.
 - Após aprovação, o Caderno aberto recarrega o conteúdo editorial da questão sem alterar sua seleção, posição ou respostas.
-- Propostas podem indicar `asset_page`; ao aprovar, a página é renderizada do PDF original, gravada como ativo autenticado e exibida pelo Caderno. Referências Markdown `source-page-*.png` são removidas antes da persistência.
+- Propostas podem indicar uma lista ordenada `figures`. Cada item aponta uma página de evidência e aparece no enunciado pelo marcador `[[FIGURA:n]]`; ao aprovar, cada prévia extraída é promovida como ativo autenticado e exibida pelo Caderno no marcador correspondente.
 
 ## Capacidades
 

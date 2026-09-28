@@ -1438,3 +1438,11 @@ docker compose exec -T frontend npm run build
 - A recuperação de notificações agora considera APPROVED como resultado mais recente, impedindo que uma falha antiga reabra o banner após atualização.
 - A aprovação promove o mesmo PNG do preview, sem renderizar novamente a página PDF. Foram removidos os dois ativos idênticos de página inteira da questão 03fb72ad-1448-481c-bf58-80c791cd61b5.
 - Validações: php lint no repositório e build da SPA concluídos.
+
+## 2026-09-27 — Múltiplas figuras com posicionamento editorial
+
+- A proposta estruturada de correção substituiu `asset_page` por `figures`: uma lista ordenada de páginas dentro da janela de evidência. O Codex deve inserir `[[FIGURA:n]]` exatamente no ponto do enunciado em que cada imagem deve aparecer.
+- O worker valida os marcadores, extrai uma prévia individual por figura (inclusive ocorrências distintas da mesma página), e a aprovação promove cada prévia como ativo ordenado sem renderizar a página inteira.
+- Caderno, Banco de Questões e diálogo de aprovação usam o mesmo componente para posicionar os ativos nos marcadores; itens legados sem marcador continuam exibindo seus ativos acima do enunciado.
+- Validações: lint PHP do worker, repositório e rota; build de produção do frontend; `openspec validate realtime-question-corrections-navigation --strict` aprovados.
+- Próximo passo: enviar uma nova solicitação de correção para validar visualmente uma questão com duas ou mais figuras; solicitações históricas permanecem imutáveis.

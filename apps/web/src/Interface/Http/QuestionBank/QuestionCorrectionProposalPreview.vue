@@ -1,7 +1,7 @@
 <template>
   <section class="proposal-preview" aria-label="Prévia da questão proposta">
     <p class="preview-label">PRÉVIA PARA APROVAÇÃO</p>
-    <div class="preview-statement"><QuestionAssetImage v-if="proposal.asset_page" :url="`admin/question-correction-requests/${requestId}/asset-preview`" class="preview-asset" /><QuestionContent :value="proposal.statement" /></div>
+    <div class="preview-statement"><QuestionStatementWithAssets :statement="proposal.statement" :assets="previewAssets" /></div>
     <div class="preview-options" role="list" aria-label="Alternativas propostas">
       <div v-for="option in proposal.options" :key="option.id" class="preview-option" role="listitem">
         <q-icon name="radio_button_unchecked" size="18px" />
@@ -11,12 +11,13 @@
     </div>
   </section>
 </template>
-
 <script setup lang="ts">
-import type { QuestionCorrectionRequest } from '../../../Domain/QuestionBank/QuestionRepository'
-import QuestionContent from './QuestionContent.vue'
-import QuestionAssetImage from './QuestionAssetImage.vue'
-defineProps<{ readonly proposal: NonNullable<QuestionCorrectionRequest["proposal"]>; readonly requestId: string }>()
+import { computed } from "vue"
+import type { QuestionCorrectionRequest } from "../../../Domain/QuestionBank/QuestionRepository"
+import QuestionContent from "./QuestionContent.vue"
+import QuestionStatementWithAssets from "./QuestionStatementWithAssets.vue"
+const props = defineProps<{ readonly proposal: NonNullable<QuestionCorrectionRequest["proposal"]>; readonly requestId: string }>()
+const previewAssets = computed(() => { const figures = props.proposal.figures ?? []; return figures.length ? figures.map((_, index) => `admin/question-correction-requests/${props.requestId}/asset-preview/${index + 1}`) : props.proposal.asset_page ? [`admin/question-correction-requests/${props.requestId}/asset-preview`] : [] })
 </script>
 
 <style scoped>

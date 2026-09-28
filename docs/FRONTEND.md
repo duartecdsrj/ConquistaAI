@@ -160,7 +160,7 @@ A tela de revisão consome a paginação editorial na ordem da API: questões em
 
 ## Conteúdo rico de questões
 
-A revisão editorial e a execução de caderno reutilizam `QuestionContent.vue` para apresentar texto, tabelas Markdown e blocos de código, e `QuestionAssetImage.vue` para imagens extraídas do PDF. Este último obtém o binário com Axios autenticado e expõe somente uma URL Blob temporária ao componente de imagem; não há rota pública de arquivos.
+A revisão editorial, o Banco de Questões e a execução de caderno reutilizam `QuestionContent.vue` para texto, tabelas Markdown e código, `QuestionAssetImage.vue` para binários autenticados e `QuestionStatementWithAssets.vue` para inserir cada figura no marcador `[[FIGURA:n]]` do enunciado. Sem marcador, ativos legados permanecem acima do enunciado; não há rota pública de arquivos.
 
 
 ## Questões de correlação
@@ -218,7 +218,7 @@ A SPA abre um Socket.IO autenticado pelo access token em `/ws/socket.io`. O gate
 
 ## Prévia de correção de questão
 
-O diálogo global de correção apresenta a proposta real usando `QuestionCorrectionProposalPreview.vue`, que reutiliza `QuestionContent.vue` para enunciado e alternativas. Administradores podem aprovar a prévia ou reenviar uma nova solicitação com sugestões; o reenvio passa por `useQuestionCorrection -> RequestQuestionCorrectionUseCase -> QuestionRepository`, preservando o histórico de solicitações.
+O diálogo global de correção apresenta a proposta real usando `QuestionCorrectionProposalPreview.vue`, incluindo todas as figuras em suas posições marcadas. Administradores podem aprovar a prévia ou reenviar uma nova solicitação com sugestões; o reenvio passa por `useQuestionCorrection -> RequestQuestionCorrectionUseCase -> QuestionRepository`, preservando o histórico de solicitações.
 
 
 ## Atualização editorial em Caderno aberto
