@@ -10,6 +10,8 @@ use App\Application\Study\DTO\Request\ListNotebookQuestionsRequestDto;
 use App\Application\Study\Mapper\NotebookResponseMapper;
 use App\Application\Study\Service\CreateNotebookService;
 use App\Application\Study\Service\FinishNotebookService;
+use App\Application\Review\Service\ScheduleNotebookAnalysisService;
+use App\Infrastructure\Persistence\Doctrine\Review\DoctrineNotebookAnalysisExecutionRepository;
 use App\Application\Study\Service\GetNotebookStatisticsService;
 use App\Application\Study\Service\PauseNotebookService;
 use App\Application\Study\Service\GetNotebookService;
@@ -65,7 +67,7 @@ final class StudyRouteRegistrar
             new StartNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
             new PauseNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
             new SetActiveNotebookQuestionService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
-            new FinishNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
+            new FinishNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager), new ScheduleNotebookAnalysisService(new DoctrineNotebookAnalysisExecutionRepository($entityManager))),
             new GetNotebookStatisticsService($notebooks, new DoctrineNotebookProgressReader($entityManager)),
             $this->responses,
         );

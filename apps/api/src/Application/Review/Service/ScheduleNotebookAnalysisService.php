@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\Review\Service;
+use App\Domain\Review\Entity\NotebookAnalysisExecution;use App\Domain\Review\Enum\NotebookAnalysisStatus;use App\Domain\Review\Repository\NotebookAnalysisExecutionRepositoryInterface;
+final readonly class ScheduleNotebookAnalysisService { public function __construct(private NotebookAnalysisExecutionRepositoryInterface $executions){} public function execute(string $notebookId,string $algorithmVersion,\DateTimeImmutable $now):NotebookAnalysisExecution{$existing=$this->executions->findByNotebookAndVersion($notebookId,$algorithmVersion);if($existing!==null)return $existing;$execution=new NotebookAnalysisExecution($this->uuid(),$notebookId,$algorithmVersion,NotebookAnalysisStatus::PENDING,0,null,null,null,null,null,null,null,$now);$this->executions->save($execution);return $execution;} private function uuid():string{$b=random_bytes(16);$b[6]=chr((ord($b[6])&15)|64);$b[8]=chr((ord($b[8])&63)|128);return vsprintf('%s%s-%s-%s-%s-%s%s%s',str_split(bin2hex($b),4));} }

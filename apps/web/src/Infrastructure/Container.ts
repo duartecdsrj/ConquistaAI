@@ -79,4 +79,7 @@ export const editorialUseCases = { listDrafts: new ListDraftQuestionsUseCase(edi
 
 import { ArenaUseCases } from "../Application/Arena/ArenaUseCases"
 import { AxiosArenaRepository } from "./Arena/AxiosArenaRepository"
+import { ReviewUseCases } from '../Application/Review/ReviewUseCases'
+import { AxiosReviewRepository } from './Review/AxiosReviewRepository'
 export const arenaUseCases = new ArenaUseCases(new AxiosArenaRepository())
+export const reviewUseCases = new ReviewUseCases(new AxiosReviewRepository())

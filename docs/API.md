@@ -2,6 +2,32 @@
 
 Base: `/api/v1`. Respostas usam JSON, datas ISO 8601 UTC e erros no formato `{ "error": { "code", "message", "details" } }`. Listagens sao paginadas por `page` e `per_page` (maximo 100) e retornam `meta`. Rotas autenticadas usam `Authorization: Bearer <access-token>`.
 
+## Revisão adaptativa
+
+Todas as rotas deste grupo exigem usuário autenticado e sempre restringem dados ao próprio usuário. O contexto Review usa assuntos canônicos como conceitos; conteúdo de cards é compartilhado, mas progresso, domínio e histórico são individuais.
+
+| Método e rota | Regra |
+| --- | --- |
+| `GET /review/sessions/daily` | monta ou retoma a sessão diária priorizada; aceita `limit` de 1 a 100 (padrão 20) |
+| `GET /review/sessions/quick` | monta revisão rápida com os cards de maior prioridade; aceita `limit` de 1 a 100 (padrão 10) |
+| `POST /review/sessions/{sessionId}/cards/{cardId}/reviews` | registra uma classificação imutável (`AGAIN`, `HARD`, `GOOD` ou `EASY`) do card pertencente à sessão do usuário |
+| `GET /review/mastery-map` | retorna mapa paginado e hierárquico de domínio por assunto canônico; aceita `page` e `per_page` |
+| `GET /study/notebooks/{id}/analysis` | retorna somente o estado e resultado persistido da análise assíncrona do caderno do usuário |
+
+`GET /review/sessions/daily` e `GET /review/sessions/quick` retornam `data` com `id`, `kind` (`DAILY` ou `QUICK`), `status`, `totalCards`, `reviewedCards` e `cards`. Cada card expõe somente `id`, `front`, `back`, `concept` (`id`, `name`, `path`), `dueAt` e `priority`; a interface mantém `back` oculto até ação explícita do usuário. Não há criação de sessão aleatória nem exposição de progresso de terceiros.
+
+`POST /review/sessions/{sessionId}/cards/{cardId}/reviews` recebe:
+
+```json
+{ "rating": "GOOD" }
+```
+
+O retorno em `data` contém `cardId`, `rating`, `reviewedAt`, `nextReviewAt`, `intervalDays`, `masteryScore` e `session`. Reenvios idênticos não podem criar dois eventos para a mesma interação; uma classificação de card fora da sessão ou de outro usuário responde `404 RESOURCE_NOT_FOUND`.
+
+`GET /review/mastery-map` retorna uma lista paginada de nós com `concept` (`id`, `name`, `parentId`, `path`), `masteryScore` opcional de 0 a 100, `confidence` (`INSUFFICIENT`, `LOW`, `MEDIUM`, `HIGH`), `evidenceCount`, `lastEvidenceAt` e `children`. Sem amostra suficiente, `masteryScore` é `null` e a confiança é `INSUFFICIENT`; isso não representa domínio baixo.
+
+`GET /study/notebooks/{id}/analysis` retorna `data` com `notebookId`, `algorithmVersion`, `status` (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`), `requestedAt`, `completedAt` opcional, `summary` opcional (`correctAnswers`, `totalAnswers`, `identifiedPoints`) e `actions`. Cada ação persistida contém `type`, `concept`, `questionId` opcional, `reason`, `confidence` e `appliedAt`. Enquanto pendente ou processando, `summary` e `actions` refletem exclusivamente o resultado já persistido; a rota não inventa análise nem dispara processamento síncrono.
+
 ## Autenticacao
 
 | Metodo e rota | Regra |

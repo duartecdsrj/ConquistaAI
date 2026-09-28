@@ -8,6 +8,7 @@ use App\Application\Study\DTO\Response\NotebookResponseDto;
 use App\Application\Study\Mapper\NotebookResponseMapper;
 use App\Application\Study\Port\TransactionManagerInterface;
 use App\Domain\Study\Repository\NotebookRepositoryInterface;
+use App\Application\Review\Service\ScheduleNotebookAnalysisService;
 
 final class FinishNotebookService
 {
@@ -15,6 +16,7 @@ final class FinishNotebookService
         private readonly NotebookRepositoryInterface $notebooks,
         private readonly NotebookResponseMapper $mapper,
         private readonly TransactionManagerInterface $transactions,
+        private readonly ?ScheduleNotebookAnalysisService $analysisScheduler = null,
         private readonly \DateTimeZone $utc = new \DateTimeZone('UTC'),
     ) {
     }
@@ -29,6 +31,7 @@ final class FinishNotebookService
 
             $notebook->finish(new \DateTimeImmutable('now', $this->utc));
             $this->notebooks->save($notebook);
+            $this->analysisScheduler?->execute($notebook->id, 'notebook-analysis-v1', new \DateTimeImmutable('now', $this->utc));
 
             return $this->mapper->toResponse($notebook);
         });

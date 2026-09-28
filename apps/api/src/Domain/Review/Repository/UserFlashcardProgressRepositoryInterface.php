@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Domain\Review\Repository;
+use App\Domain\Review\Entity\UserFlashcardProgress;
+interface UserFlashcardProgressRepositoryInterface { public function find(string $userId,string $flashcardId):?UserFlashcardProgress; public function save(UserFlashcardProgress $progress):void; /** @return list<UserFlashcardProgress> */ public function dueForUser(string $userId,\DateTimeImmutable $now,int $limit):array; }

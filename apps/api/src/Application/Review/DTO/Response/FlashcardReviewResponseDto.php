@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Application\Review\DTO\Response; final readonly class FlashcardReviewResponseDto { public function __construct(public string $cardId,public string $rating,public string $reviewedAt,public string $nextReviewAt,public int $intervalDays){} }

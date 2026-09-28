@@ -86,6 +86,7 @@ final class AppFactory
         (new SubjectRouteRegistrar($responses, self::authService()))->register($app);
         $importRequests = new QuestionImportRequestFactory();
         (new StudyRouteRegistrar($responses, self::authService()))->register($app);
+        (new \App\Interface\Http\Review\ReviewRouteRegistrar($responses, self::authService()))->register($app);
         $imports = self::questionImportController($responses, self::authService());
         (new PerformanceRouteRegistrar($responses, self::authService()))->register($app);
         (new PublishedQuestionRouteRegistrar($responses, self::authService()))->register($app);

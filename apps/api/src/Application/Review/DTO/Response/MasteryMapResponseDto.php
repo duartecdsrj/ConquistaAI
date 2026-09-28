@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Application\Review\DTO\Response; final readonly class MasteryMapResponseDto { /** @param list<MasteryMapNodeResponseDto> $items */ public function __construct(public array $items,public int $page,public int $perPage,public int $total){} }

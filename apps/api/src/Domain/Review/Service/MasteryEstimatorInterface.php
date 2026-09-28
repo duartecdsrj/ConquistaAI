@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Domain\Review\Service; use App\Domain\Review\Entity\UserConceptMastery; interface MasteryEstimatorInterface { public function estimate(string $userId,string $taxonomySubjectId,int $evidenceCount,float $quality,float $questionPerformance,?\DateTimeImmutable $lastEvidenceAt,\DateTimeImmutable $now,array $signals=[]):UserConceptMastery; }

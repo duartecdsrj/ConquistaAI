@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Infrastructure\Persistence\Doctrine\Review;
+use App\Domain\Review\Entity\FlashcardReview;use App\Domain\Review\Repository\FlashcardReviewRepositoryInterface;use App\Infrastructure\Persistence\Doctrine\Review\Entity\FlashcardReviewRecord;use Doctrine\ORM\EntityManagerInterface;
+final class DoctrineFlashcardReviewRepository implements FlashcardReviewRepositoryInterface { public function __construct(private readonly EntityManagerInterface $em){} public function hasSessionReview(string $s,string $c):bool{return $this->em->getRepository(FlashcardReviewRecord::class)->count(['sessionId'=>$s,'flashcardId'=>$c])>0;} public function append(FlashcardReview $v):void{$r=new FlashcardReviewRecord();$r->id=$v->id;$r->userId=$v->userId;$r->flashcardId=$v->flashcardId;$r->sessionId=$v->sessionId;$r->rating=$v->rating->value;$r->previousState=$v->previousState->toArray();$r->nextState=$v->nextState->toArray();$r->reviewedAt=$v->reviewedAt;$this->em->persist($r);} }

@@ -99,6 +99,14 @@ A marca oficial do produto está em apps/web/public/images/concursos-study-mark.
 
 Cada módulo mantém Domain, Application, Infrastructure e Interface separados; páginas Quasar somente coordenam composables e eventos.
 
+## Review adaptativo
+
+O módulo `Review` segue `Domain/Review -> Application/Review -> Infrastructure/Http/AxiosReviewRepository -> Interface/Http/Review`. `useReview` é o único adaptador de apresentação: carrega sessões diárias ou rápidas, envia a classificação tipada e consulta o mapa de domínio; páginas e componentes não acessam Axios, armazenamento local ou envelopes HTTP.
+
+A página de sessão usa cartões Quasar com frente inicialmente apresentada e verso revelado somente por ação explícita. Após revelar, exibe `AGAIN`, `HARD`, `GOOD` e `EASY`, progresso real e assunto canônico. A saída é segura: o identificador da sessão retornado pela API permite retomada sem simular respostas ou recalcular a fila no cliente. Em mobile, um card ocupa a largura disponível e as quatro ações mantêm alvos de toque adequados.
+
+O resultado de análise de caderno é integrado à experiência Study e consulta exclusivamente o estado persistido. `PENDING` e `PROCESSING` mostram processamento sem conteúdo inventado; `FAILED` oferece mensagem segura e possibilidade de atualização; `COMPLETED` mostra apenas resumo e ações que a API persistiu. O mapa de domínio é navegável pela hierarquia canônica, trata carregamento, erro e vazio, e apresenta `INSUFFICIENT` como "dados insuficientes", nunca como domínio baixo.
+
 ## Marca
 
 O nome da aplicação é **ConquistaAI**. O lema oficial é: **“Estude. Evolua. Conquiste.”**. Use ambos nos pontos de marca da interface e preserve o ativo visual em apps/web/public/images/concursos-study-mark.png.

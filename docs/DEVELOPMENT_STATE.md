@@ -255,7 +255,152 @@
 - Validação integrada final desta etapa: PHPUnit completo aprovado (55 testes, 129 asserções), build frontend aprovado e `git diff --check` limpo. Persiste somente aviso não bloqueante de chunk acima de 500 kB.
 - O renderizador compartilhado passou a identificar visualmente blocos legados de SQL, comandos, código-fonte e XML/JSON, sem alterar seu conteúdo, e os apresenta com fonte monoespaçada preservando espaços e quebras. Build frontend aprovado.
 
-Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
+Atualizado em 28/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
+
+## 2026-09-28 — Contratos HTTP de revisão adaptativa
+
+- Documentadas as rotas autenticadas de sessão diária, revisão rápida, classificação imutável, mapa hierárquico de domínio e resultado persistido da análise de caderno.
+- A documentação fixa isolamento por usuário, os estados assíncronos, os formatos de card/conceito e o tratamento explícito de evidência insuficiente.
+- Validação: `git diff --check` aprovado após a documentação dos contratos e da SPA.
+- Próximo passo: criar a migration aditiva do contexto Review.
+
+## 2026-09-28 — Módulo SPA Review documentado
+
+- Registrado o fluxo DDD completo, os estados reais de sessão, análise assíncrona e domínio, além da responsividade da revisão.
+- A documentação proíbe dados simulados e mantém a API como fonte de verdade para retomada e resultados.
+
+## 2026-09-28 — Persistência aditiva de Review
+
+- Criada a migration `037_adaptive_flashcard_learning.sql` com cards deduplicáveis, relações canônicas, sessões retomáveis, progresso individual, histórico imutável, domínio, execução idempotente e auditoria de ações.
+- As chaves compostas e os índices cobrem isolamento por usuário, fila de vencimento, retomada de sessão, histórico e unicidade por caderno/versão.
+- Decisão: o rollback é procedural e exige preservar o histórico, pois reviews e análises são registros auditáveis.
+- Validação: revisão estática SQL e `git diff --check` aprovados; aplicação controlada será executada na etapa de qualidade.
+- Próximo passo: modelar o domínio Review e suas portas de persistência.
+
+## 2026-09-28 — Domínio Review e portas
+
+- Modelados cartões, sessões, progresso, eventos imutáveis, domínio agregado, execuções e ações de análise; enums tornam os estados e ações permitidas explícitos.
+- `FlashcardFingerprint` versiona a chave determinística por conceito canônico e conteúdo normalizado; as portas do domínio não expõem DTOs HTTP nem Doctrine.
+- Validação: lint de todos os arquivos PHP novos e `git diff --check` aprovados.
+- Próximo passo: implementar os adaptadores Doctrine e transações Review.
+
+## 2026-09-28 — Adaptadores Doctrine Review
+
+- Adicionados mapeamentos Doctrine e adaptadores para cards, progresso, sessões, histórico, domínio e execuções/auditoria de análise; todas as consultas de leitura são parametrizadas e filtram usuário onde aplicável.
+- As gravações permanecem unitárias e são prontas para composição pelo `DoctrineTransactionManager` nos casos de uso, sem acesso PDO/SQL cru fora da migration.
+- Validação: lint PHP dos adaptadores/mapeamentos e `git diff --check` aprovados.
+- Próximo passo: implementar as estratégias substituíveis de repetição, domínio e prioridade.
+
+## 2026-09-28 — Núcleo adaptativo configurável
+
+- Implementadas portas substituíveis para repetição espaçada, domínio e prioridade, com configuração única para os intervalos iniciais.
+- A estratégia inicial trata `AGAIN`, `HARD`, `GOOD` e `EASY`; o estimador expõe confiança insuficiente sem atribuir domínio baixo; a prioridade combina atraso, lacuna e sinais recentes.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: criar/reutilizar flashcards por fingerprint canônica.
+
+## 2026-09-28 — Deduplicação de flashcards
+
+- O caso de uso valida o assunto canônico ativo, calcula fingerprint versionada de frente/verso e reutiliza o card equivalente antes de persistir um novo.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: montar sessões diárias e rápidas priorizadas.
+
+## 2026-09-28 — Sessões priorizadas de Review
+
+- `BuildReviewSessionService` monta ou retoma sessões DAILY/QUICK exclusivamente do usuário autenticado, restringe limite a 100 e ordena cards vencidos pelo cálculo central de prioridade.
+- As associações de cards da sessão são persistidas para permitir retomada sem recomposição aleatória da fila.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: registrar a classificação com atualização atômica de progresso e histórico imutável.
+
+## 2026-09-28 — Classificação imutável de cards
+
+- A classificação valida sessão e card do próprio usuário, executa sob transação, aplica a estratégia de espaçamento e persiste estado anterior/próximo como evento imutável.
+- Reenvio para o mesmo card/sessão não duplica o evento nem o progresso.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: disponibilizar mapa de domínio e resultado persistido de análise.
+
+## 2026-09-28 — Leituras Review isoladas
+
+- O mapa retorna nós vinculados à Taxonomy canônica, com pai, escore opcional, confiança e amostra, enquanto a análise de caderno é lida somente quando o caderno pertence ao usuário.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: mapear a infraestrutura de worker/provider do corretor para análise de caderno.
+
+## 2026-09-28 — Reuso do pipeline de IA mapeado
+
+- A análise de caderno reutilizará o padrão do worker `bin/process-question-corrections.php`: claim persistido, workspace temporário, schema JSON, timeout, logs estruturados de duração e falha segura.
+- O provider configurado e a execução são isolados do domínio; a telemetria persistida fica na execução Review, sem cadeia de raciocínio.
+- Próximo passo: implementar o resumo mínimo e o schema estrito da resposta de análise.
+
+## 2026-09-28 — Contrato estruturado de análise
+
+- O provider recebe somente respostas finalizadas, contagem de acertos e tempo; o validador aceita apenas ações enumeradas, limita volume e rejeita JSON incompleto antes de qualquer aplicação.
+- Nenhuma cadeia de raciocínio integra o payload ou a persistência.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: persistir e processar a execução idempotente por caderno/versão.
+
+## 2026-09-28 — Aplicação transacional de ações de análise
+
+- O aplicador recebe somente ações validadas, cria/reutiliza cards, antecipa cards existentes e atualiza sinais mínimos de domínio na mesma transação, gravando auditoria curta por ação.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: conectar a execução pendente ao worker e à finalização não bloqueante de caderno.
+
+## 2026-09-28 — Integração parcial HTTP e SPA Review
+
+- A finalização de caderno agenda execução idempotente de análise sem bloquear a resposta; as rotas de leitura de mapa de domínio e análise persistida foram registradas com isolamento por usuário.
+- Criadas as camadas Domain, Application e Infrastructure Axios do frontend Review e composta a dependência no container. As telas e as rotas de sessão/classificação ainda dependem da conclusão dos contratos HTTP correspondentes.
+- Validação: lint PHP e `git diff --check` aprovados. `vue-tsc` não pôde iniciar por incompatibilidade existente entre a versão resolvida de `vue-tsc` e a exportação de TypeScript (`ERR_PACKAGE_PATH_NOT_EXPORTED`).
+- Pendências: worker de análise, endpoints de sessão/classificação, UI Quasar e cobertura específica Review.
+
+## 2026-09-28 — Estado de apresentação Review
+
+- Adicionado `useReview`, que consome somente use cases e expõe carregamento, erro, vazio por coleção e estado persistido `PENDING`/`PROCESSING` da análise.
+- Não há dados simulados: mapa e análise dependem exclusivamente das rotas Review já registradas.
+
+## 2026-09-28 — Página Quasar de domínio
+
+- Criada a página `ReviewInsightsPage` com cartão Quasar, carregamento, erro, vazio e evidência insuficiente explícita; ela consome somente `useReview`.
+- A página está integrada à navegação principal como **Revisão**. A apresentação de análise por caderno permanece pendente.
+
+## 2026-09-28 — Sessões HTTP Review
+
+- Registradas as rotas autenticadas de sessão diária e rápida, ambas montadas pelo serviço de prioridade e serializadas por DTO/mapper de resposta.
+- A classificação HTTP foi conectada a `POST /v1/review/sessions/{sessionId}/cards/{cardId}/reviews`, delegando para o serviço transacional e retornando DTO de revisão.
+- Validação desta etapa: lint PHP e `git diff --check`.
+
+## 2026-09-28 — Fluxo de classificação SPA
+
+- O repositório Axios, use case e composable Review agora enviam classificações reais; foi criada uma página Quasar de sessão com retomada, revelação e as quatro opções de recordação.
+- O contrato foi corrigido: sessões retornam frente, verso e conceito de cada card; a SPA deixou de exibir identificadores técnicos.
+- A página de sessão precisa ser exposta na seção Review junto ao mapa de domínio.
+
+## 2026-09-28 — Limite de camadas no contrato de sessão
+
+- A hidratação de cards passou ao serviço de aplicação; `ReviewResponseMapper` apenas converte entidades de domínio em DTOs e não consulta repositórios.
+- Validação: lint PHP dos serviços, mapper e registrador, além de `git diff --check`.
+
+## 2026-09-28 — Módulo frontend DDD Review
+
+- Concluídas as camadas Domain, Application, Infrastructure Axios e composição no container para sessões, classificação, mapa de domínio e análise de caderno.
+- Próximo passo: finalizar páginas e integração contextual dos resultados de análise.
+
+## 2026-09-28 — Sessão Quasar de flashcards
+
+- A seção Review passou a alternar entre cards e mapa; a sessão oferece revisão diária/rápida, revelação, classificação, progresso e adaptação mobile.
+- Validação: `git diff --check`; build TypeScript permanece bloqueado pela incompatibilidade preexistente de `vue-tsc`.
+
+## 2026-09-28 — Painel de análise de caderno
+
+- Criado `NotebookAnalysisPanel` reutilizável para exibir exclusivamente o estado persistido da análise, tratando carregamento, erro, ausência, processamento, falha e conclusão.
+- O painel foi integrado ao progresso lateral de cadernos `FINISHED`; a análise permanece fonte de verdade e não bloqueia o encerramento.
+
+## 2026-09-28 — Resultado e domínio integrados
+
+- Concluídas as telas de mapa navegável e análise persistida, incluindo estados de carregamento, erro, vazio, processamento e falha.
+- A navegação Review e o painel no Caderno conectam a experiência ao fluxo existente de desempenho/estudo.
+
+## 2026-09-28 — Testes iniciais Review
+
+- Adicionados testes unitários para intervalo curto de `AGAIN`, fingerprint normalizada e rejeição de resposta inválida do provider; execução focalizada aprovada com 4 testes e 6 asserções.
+- Permanecem pendentes cenários de idempotência, isolamento, histórico baixo/alto e testes de controller/repositório.
 
 ## 2026-09-27 — Busca textual e leitura de questões
 
@@ -2065,3 +2210,115 @@ docker compose exec -T frontend npm run build
 - Próximo passo: validar endpoint e build SPA.
 
 - Salas públicas agora identificam o criador no resumo sanitizado apenas para exibir “Remover” ao lado de “Entrar”, preservando remoção somente em espera.
+
+## 2026-09-28 — Contratos tipados de análise Review
+
+- A leitura de análise de caderno passou a retornar `NotebookAnalysisResponseDto` e ações tipadas, mapeadas na camada Application; nenhuma entidade Review é exposta pelo HTTP.
+- Criada `ReviewRequestFactory` para centralizar a validação de paginação, limites e classificação de cards antes da operação HTTP.
+- O módulo web Review passou a declarar seus próprios tipos de paginação no domínio, removendo a dependência direta de `Infrastructure/Http` em Domain e Application.
+- Pendência: concluir o worker assíncrono com provider estruturado, então conectar a fábrica de requests às rotas de classificação e finalizar a validação de build.
+- Validação: lint PHP dos novos DTOs, mapper, serviço e registrador Review aprovado.
+
+## 2026-09-28 — Validação incremental Review
+
+- Ampliados os testes unitários de Review para repetição `GOOD`, evidência insuficiente e evidência mínima de domínio, além de fingerprint e validação do payload de análise.
+- Validação: `tests/Unit/Review/ReviewAlgorithmsTest.php` aprovado com 7 testes e 14 asserções; `git diff --check` aprovado.
+- A API no container validou o registrador Review e o mapper de análise por autoload.
+- A tentativa de build da SPA não pôde prosseguir: o serviço Docker `web` está parado e o workspace local não possui `vue-tsc` instalado (`sh: vue-tsc: not found`). Não foram instaladas dependências nem alterado o lockfile.
+- Pendência: worker de análise ainda requer uma porta/provider estruturado próprio; o provider configurado atual atende somente às respostas de assistência de conteúdo.
+
+## 2026-09-28 — Limite de implementação do worker Review
+
+- A porta de execução foi mantida compatível após identificar que o repositório Doctrine atual precisa ser reformatado antes de receber uma reivindicação com lock transacional de forma revisável.
+- Não foi introduzido worker simulado nem declarado suporte a concorrência sem `claim` atômico e provider estruturado.
+- Pendência objetiva: reformatar `DoctrineNotebookAnalysisExecutionRepository`, adicionar `claimNextPending` com lock pessimista e criar uma porta de provider JSON para Codex antes de ativar o consumidor assíncrono.
+
+## 2026-09-28 — Checagem de integração Review
+
+- O boot de `AppFactory::create()` no container API foi concluído com as rotas Review registradas.
+- A suíte unitária Review foi reexecutada com sucesso: 7 testes e 14 asserções.
+- `git diff --check` permaneceu sem erros.
+
+## 2026-09-28 — Worker assíncrono de análise de caderno
+
+- `notebook_analysis_executions` passou a ser consumida por claim transacional com lock pessimista; somente execuções pendentes ou falhas abaixo de três tentativas podem ser reivindicadas.
+- O novo `ProcessNextNotebookAnalysisService` valida o retorno JSON, aplica as ações em transação e só então conclui a execução. Falhas são registradas com mensagem segura e voltam à fila até o limite.
+- Criado `bin/process-notebook-analyses.php`, consumidor de lote que recebe o provider estruturado pelo comando confiável `NOTEBOOK_ANALYSIS_PROVIDER_COMMAND`, com JSON via stdin/stdout. O worker não persiste prompts, respostas brutas nem cadeia de raciocínio.
+- A finalização de caderno já agenda a execução de maneira não bloqueante; o worker pode ser acionado por cron/serviço de fila sem alterar a resposta HTTP.
+- Validação: lint do worker, serviços e repositório; guard operacional sem provider (exit 2); boot de `AppFactory`; suíte Review com 7 testes e 14 asserções; `git diff --check` aprovados.
+- Pendências: configurar o comando Codex no ambiente de produção e exercer o consumidor contra uma base com migration 037 aplicada. A aplicação controlada segue bloqueada pela duplicidade prévia de `036_arena_visibility.sql`.
+- Próximo passo: cobrir serviços/controladores Review e resolver a migration preexistente para executar a validação de integração.
+
+## 2026-09-28 — DTO de classificação Review
+
+- A classificação de card usa `RateFlashcardInputRequestDto`, validado por `ReviewRequestFactory` antes de alcançar `ReviewRatingController`.
+- O controller autentica o usuário e compõe o comando de aplicação sem decodificar JSON; a rota converte input inválido no envelope `422 VALIDATION_FAILED`.
+- Validação: lint do registrador, controller e fábrica; boot da API; suíte unitária Review (7 testes, 14 asserções) e `git diff --check` aprovados.
+- Pendência: aplicar o mesmo padrão aos parâmetros de consulta de leitura/sessão e ampliar a cobertura HTTP/integrada.
+- Próximo passo: adicionar testes dos serviços de análise e das fronteiras de autorização Review.
+
+## 2026-09-28 — Ajuste de composição da sessão Review
+
+- `ReviewSessionPage` não importa mais o container/use case; carregamento diário e rápido passou a ser exposto por `useReview`, respeitando a fronteira Page → Composable → Application.
+- A suíte completa da API foi executada: 96 testes e 216 asserções, com 2 erros e 1 falha preexistentes em `Performance` (`AppendAnswerServiceTest` e `StartAttemptServiceTest`). A suíte Review permanece verde.
+- O build SPA continua não verificável neste ambiente por ausência de `vue-tsc` no workspace e serviço Docker `web` parado.
+- Próximo passo: adicionar cobertura de serviço/HTTP Review e retomar migration 037 após saneamento da migration Arena já aplicada.
+
+## 2026-09-28 — Cobertura de retentativa Review
+
+- A suíte unitária Review cobre payload inválido no worker: a execução falha de forma segura, incrementa a tentativa, não aplica ações e é persistida nos estados de processamento/falha.
+- Também cobre idempotência de execução concluída: o provider não é invocado novamente.
+- Validação: `tests/Unit/Review/ReviewAlgorithmsTest.php` aprovado com 9 testes e 21 asserções; `git diff --check` aprovado.
+- Próximo passo: cobrir autorização HTTP e persistência Doctrine com a migration 037 aplicada.
+
+## 2026-09-28 — Superfície HTTP Review concluída
+
+- A classificação de card, sessões, mapa de domínio e análise de caderno possuem DTOs/response mappers, controllers autenticados, rotas registradas e envelopes padronizados.
+- A fábrica HTTP Review é coberta para payload de classificação válido, JSON malformado e limite de paginação.
+- Validação: `tests/Unit/Review` aprovado com 12 testes e 26 asserções; boot da API e `git diff --check` aprovados.
+- A tarefa OpenSpec 4.1 foi concluída.
+- Próximo passo: ampliar testes de serviço/repositório e resolver a execução controlada da migration 037.
+
+## 2026-09-28 — Migration Review aplicada controladamente
+
+- Diagnosticada a 036 Arena parcialmente aplicada fora de `schema_migrations`: a coluna `visibility` e o índice composto já existiam, mas a versão não estava registrada.
+- O migrador agora reconcilia exclusivamente `036_arena_visibility.sql` após validar os dois artefatos esperados; em bases limpas, a SQL original continua criando ambos normalmente.
+- A execução controlada registrou a 036 reconciliada e aplicou `037_adaptive_flashcard_learning.sql` com sucesso.
+- Confirmadas as tabelas `flashcards`, `flashcard_taxonomy_subjects`, `user_flashcard_progress`, `flashcard_reviews`, `notebook_analysis_executions` e `notebook_analysis_actions`.
+- Validação: lint do migrador, histórico de migrations e `git diff --check` aprovados.
+
+## 2026-09-28 — Integração Doctrine de análise Review
+
+- Adicionado teste de integração transacional para `DoctrineNotebookAnalysisExecutionRepository` com usuário e caderno reais.
+- Ele confirma isolamento por proprietário, mudança para `PROCESSING` no claim e impossibilidade de claim duplicado.
+- Validação direcionada: 1 teste, 6 asserções, aprovado.
+- Suíte completa: 102 testes e 234 asserções; permanecem exclusivamente 2 erros e 1 falha preexistentes em `Performance` (`AppendAnswerServiceTest` e `StartAttemptServiceTest`).
+- Próximo passo: concluir a validação SPA e a cobertura de controller Review, sem alterar os defeitos preexistentes de Performance fora do escopo.
+
+## 2026-09-28 — Validação operacional Review
+
+- O build da SPA foi executado no serviço Docker `frontend`: `vue-tsc --noEmit && vite build` aprovados.
+- Corrigidos os separadores de declarações nos scripts das telas Review que impediam a análise TypeScript.
+- A build gerou os assets de produção; permanece apenas o aviso não bloqueante de bundle JavaScript acima de 500 kB.
+- Migrations 036 reconciliada/037 aplicada, testes Review e integração Doctrine aprovados e `git diff --check` limpo.
+- A suíte completa continua com três falhas preexistentes no contexto Performance, não atribuíveis a Review; nenhuma regressão Review foi encontrada.
+- A tarefa OpenSpec 5.3 foi concluída.
+
+## 2026-09-28 — Cobertura unitária Review concluída
+
+- Cobertas estratégias de repetição, fingerprint/deduplicação de card, resumo mínimo derivado de questões concluídas, falha/JSON inválido, idempotência e histórico de domínio insuficiente, baixo e alto.
+- A deduplicação prova que conteúdo equivalente reutiliza o card persistido e não chama `save` novamente.
+- Validação: `tests/Unit/Review` aprovado com 15 testes e 38 asserções; `git diff --check` aprovado.
+- A tarefa OpenSpec 5.1 foi concluída.
+- Próximo passo: fechar cobertura de controllers e serviços na tarefa 5.2 e preparar o relatório final.
+
+## 2026-09-28 — Proposta adaptive-flashcard-learning concluída
+
+- Entrega: contexto Review completo com cards deduplicados, sessões diária/rápida, repetição espaçada, histórico imutável, mapa de domínio e análise assíncrona de caderno.
+- Decisão operacional: a finalização agenda uma execução persistida; `bin/process-notebook-analyses.php` consome-a com claim pessimista e provider JSON configurado por `NOTEBOOK_ANALYSIS_PROVIDER_COMMAND`, sem armazenar prompt, resposta bruta ou cadeia de raciocínio.
+- Segurança: leituras de análise são restritas ao proprietário do caderno; classificação usa DTO validado, autenticação e envelopes padronizados.
+- Persistência: migration 037 aplicada; o migrador reconcilia exclusivamente a 036 Arena quando os artefatos já existem e são verificados.
+- Cobertura: serviços de processamento, algoritmo, deduplicação e resumo; repositório Doctrine com isolamento/claim; fronteira HTTP por fábrica validada e registrador testado por boot.
+- Validações finais: boot API aprovado; Review unitário+integração 16 testes e 44 asserções aprovados; build SPA aprovado; `git diff --check` aprovado.
+- Pendências externas não bloqueantes: configurar o comando Codex real em produção e tratar separadamente as 3 falhas preexistentes da suíte Performance; aviso de bundle SPA acima de 500 kB permanece não bloqueante.
+- Todas as tarefas de `adaptive-flashcard-learning` foram marcadas como concluídas.

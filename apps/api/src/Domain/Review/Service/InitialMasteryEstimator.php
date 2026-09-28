@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Domain\Review\Service;
+use App\Domain\Review\Entity\UserConceptMastery;use App\Domain\Review\Enum\MasteryConfidence;use App\Domain\Review\ValueObject\ReviewAlgorithmConfiguration;
+final readonly class InitialMasteryEstimator implements MasteryEstimatorInterface { public function __construct(private ReviewAlgorithmConfiguration $config){} public function estimate(string $u,string $s,int $n,float $quality,float $performance,?\DateTimeImmutable $last,\DateTimeImmutable $now,array $signals=[]):UserConceptMastery{$confidence=$n<$this->config->minimumEvidence?MasteryConfidence::INSUFFICIENT:($n<20?MasteryConfidence::LOW:($n<50?MasteryConfidence::MEDIUM:MasteryConfidence::HIGH));$recency=$last===null?0:max(0,1-min(1,($now->getTimestamp()-$last->getTimestamp())/(60*60*24*60)));$score=$confidence===MasteryConfidence::INSUFFICIENT?null:max(0,min(100,100*(.45*$quality+.45*$performance+.10*$recency)));return new UserConceptMastery($u,$s,$score,$confidence,$n,$last,$signals,$now);} }

@@ -8,6 +8,7 @@ use App\Application\Identity\Port\TransactionManagerInterface as IdentityTransac
 use App\Application\Performance\Port\TransactionManagerInterface as PerformanceTransactionManagerInterface;
 use App\Application\QuestionBank\Port\TransactionManagerInterface as QuestionBankTransactionManagerInterface;
 use App\Application\Study\Port\TransactionManagerInterface as StudyTransactionManagerInterface;
+use App\Application\Review\Port\TransactionManagerInterface as ReviewTransactionManagerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class DoctrineTransactionManager implements
@@ -15,7 +16,8 @@ final class DoctrineTransactionManager implements
     CatalogTransactionManagerInterface,
     StudyTransactionManagerInterface,
     PerformanceTransactionManagerInterface,
-    QuestionBankTransactionManagerInterface
+    QuestionBankTransactionManagerInterface,
+    ReviewTransactionManagerInterface
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {

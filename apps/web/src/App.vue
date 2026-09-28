@@ -6,6 +6,7 @@
     <ProfilePage v-if="section === 'profile'" :name="user.name" />
     <HomePage v-else-if="section === 'home'" :user="user" @navigate="section = $event" />
     <NotebooksPage v-else-if="section === 'notebooks'" @open="openNotebook" @performance="openPerformance" />
+    <ReviewInsightsPage v-else-if="section === 'review'" />
     <QuestionsPage v-else-if="section === 'questions'" />
     <CatalogPage v-else-if="section === 'catalog'" />
     <ImportPage v-else-if="section === 'import'" />
@@ -35,6 +36,7 @@ import NotebooksPage from './Interface/Http/Study/NotebooksPage.vue'
 import NotebookExecutionPage from './Interface/Http/Study/NotebookExecutionPage.vue'
 import QuestionsPage from './Interface/Http/QuestionBank/QuestionsPage.vue'
 import PerformancePage from './Interface/Http/Performance/PerformancePage.vue'
+import ReviewInsightsPage from './Interface/Http/Review/ReviewInsightsPage.vue'
 import AssistantPage from './Interface/Http/Assistant/AssistantPage.vue'
 import CatalogPage from './Interface/Http/Catalog/CatalogPage.vue'
 import ImportPage from './Interface/Http/Import/ImportPage.vue'

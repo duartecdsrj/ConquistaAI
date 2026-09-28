@@ -53,6 +53,7 @@
               <div class="progress-panel-head"><div><p class="eyebrow">SEU PROGRESSO</p><h2>{{ notebook.name }}</h2></div><q-btn flat round dense icon="close" aria-label="Voltar aos cadernos" @click="emit('exit')" /></div>
               <p class="progress-caption">{{ currentIndex + 1 }} de {{ totalQuestions }} questões</p><q-linear-progress rounded size="8px" color="primary" track-color="blue-1" :value="progress" />
               <q-list class="progress-list"><q-item><q-item-section avatar><q-icon name="check_circle" color="positive" /></q-item-section><q-item-section>Respondidas</q-item-section><q-item-section side>{{ statistics.answered }}</q-item-section></q-item><q-item><q-item-section avatar><q-icon name="radio_button_unchecked" color="grey-5" /></q-item-section><q-item-section>Não respondidas</q-item-section><q-item-section side>{{ totalQuestions - statistics.answered }}</q-item-section></q-item><q-item><q-item-section avatar><q-icon name="check_circle" color="positive" /></q-item-section><q-item-section>Acertos</q-item-section><q-item-section side>{{ statistics.correct }} ({{ statistics.percentage }}%)</q-item-section></q-item><q-item><q-item-section avatar><q-icon name="cancel" color="negative" /></q-item-section><q-item-section>Erros</q-item-section><q-item-section side>{{ statistics.incorrect }}</q-item-section></q-item></q-list>
+              <NotebookAnalysisPanel v-if="notebook.status === 'FINISHED'" :notebook-id="props.notebookId" class="q-mt-md" />
               <q-btn outline no-caps color="primary" icon="insights" label="Ver estatísticas detalhadas" class="full-width q-mt-md" />
               <q-btn outline no-caps color="negative" icon="flag" label="Finalizar caderno" class="full-width q-mt-sm" @click="confirmFinish = true" />
             </aside>
@@ -79,6 +80,7 @@ import QuestionStatementWithAssets from '../QuestionBank/QuestionStatementWithAs
 import { useNotebookExecution } from './useNotebookExecution'
 import { useQuestionPdfAssistance } from '../QuestionBank/useQuestionPdfAssistance'
 import { useQuestionCorrection } from '../QuestionBank/useQuestionCorrection'
+import NotebookAnalysisPanel from '../Review/NotebookAnalysisPanel.vue'
 
 const props = defineProps<{ readonly notebookId: string; readonly canManage: boolean; readonly questionContentVersion: number }>()
 const emit = defineEmits<{ exit: [] }>()
