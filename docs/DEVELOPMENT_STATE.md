@@ -1798,3 +1798,254 @@ docker compose exec -T frontend npm run build
 
 - Por confirmação explícita do usuário, a proposta `google-auth-user-management` é considerada concluída. A revisão externa do Google Cloud foi aceita como etapa operacional confirmada pelo responsável.
 - O repositório mantém documentadas as origens `http://localhost`, `http://localhost:8081`, `https://conquistaai.app.br` e `https://www.conquistaai.app.br`, além da necessidade de usar o mesmo Client ID Web nas variáveis backend e frontend.
+## 2026-09-28 — Seleção automática de referências para correção de questão
+
+- O worker passou a extrair do snapshot imutável o primeiro parágrafo não vazio do enunciado e a alternativa não vazia mais próxima do centro, sem incluir esses conteúdos em logs.
+- A seleção é determinística, tolera campos ausentes e preserva a ordem de alternativas do snapshot.
+- Próximo passo: localizar ambas as referências no PDF e combinar suas janelas de evidência com as buscas já existentes.
+
+## 2026-09-28 — Janelas automáticas de evidência no PDF
+
+- Para cada referência automática disponível, o worker pesquisa o texto extraído do PDF e une a janela de duas páginas vizinhas às evidências já selecionadas, em ordem numérica e sem duplicidade.
+- As buscas explícita por trecho e de gabarito continuam complementares e inalteradas.
+- Próximo passo: registrar a telemetria segura das buscas automáticas.
+
+## 2026-09-28 — Observabilidade segura de evidências automáticas
+
+- Cada referência automática gera evento estruturado próprio com identificador lógico, SHA-256, páginas encontradas e o conjunto final de evidências; o conteúdo do enunciado e das alternativas não é registrado.
+- O prompt do executor informa que as páginas podem decorrer tanto do snapshot quanto da instrução.
+- Próximo passo: adicionar testes focados para composição, ausência de correspondência e deduplicação.
+
+## 2026-09-28 — Testes focados de evidências automáticas
+
+- A cobertura unitária verifica a seleção do primeiro parágrafo e alternativa central, a tolerância à ausência de referência/correspondência e a união ordenada sem duplicidade das janelas de evidência.
+- Validação: `CorrectionEvidenceLocatorTest` aprovado (3 testes, 4 asserções).
+- Próximo passo: documentar a seleção automática no contrato HTTP sem alterar payloads.
+
+## 2026-09-28 — Contrato de evidências automáticas documentado
+
+- `docs/API.md` agora esclarece que, havendo PDF de origem, o worker localiza automaticamente o primeiro parágrafo útil e uma alternativa central do snapshot, unindo suas janelas às evidências existentes.
+- Payloads, rotas, estados e aprovação administrativa permanecem inalterados.
+- Próximo passo: executar as validações PHP aplicáveis e a checagem final do diff.
+
+## 2026-09-28 — Proposta automatic-question-correction-evidence concluída
+
+- O worker localiza evidências automaticamente pelo snapshot, preserva buscas complementares e registra apenas telemetria segura.
+- Validação: lint PHP do worker e adaptador, suíte `tests/Unit/QuestionBank` (29 testes, 62 asserções) e `git diff --check` aprovados.
+- Próximo passo: arquivar a mudança OpenSpec quando a revisão de entrega confirmar o encerramento.
+
+
+## 2026-09-28 — Fundação Arena: Duelo
+
+- Documentados os contratos REST/Socket.IO e o módulo SPA Arena em `docs/API.md` e `docs/FRONTEND.md`.
+- Criados contratos do domínio Arena (`Duel`, estados, resposta, repositório e seletor), migration das salas e migration complementar para a proveniência `ARENA_DUELO` nas tentativas.
+- Validação: lint PHP dos novos contratos e `git diff --check` aprovados.
+- Próximo passo: implementar o repositório Doctrine, seleção congelada e regras transacionais do duelo.
+
+## 2026-09-28 — Rede do executor de correção configurável
+
+- Corrigido o worker de correção para obter a rede do executor Codex por `CORRECTION_CODEX_NETWORK`, com padrão compatível com o Compose atual (`conquistaai_public`), removendo a dependência do nome inexistente `concursos_public`.
+- A variável foi declarada no Compose e no exemplo de ambiente para instalações com outro nome de projeto.
+- Próximo passo: recriar o worker e emitir uma nova solicitação com o snapshot e a instrução originais, preservando o registro que falhou.
+
+
+## 2026-09-28 — Regras transacionais iniciais da Arena
+
+- Implementados repositório Doctrine idempotente para participantes, escolhas, questões congeladas e primeira resposta, além do seletor de questões PUBLISHED distribuído pelos assuntos.
+- `DuelLifecycleService` cria sala, registra entrada, valida escolhas exatas, congela a seleção ao todos ficarem prontos e inicia apenas pelo criador.
+- Validação: lint PHP aprovado. O PHPUnit não executou porque `apps/api/vendor/bin/phpunit` não existe neste ambiente.
+- Próximo passo: fechar questão, persistir placar e materializar tentativas `ARENA_DUELO`.
+
+## 2026-09-28 — Reexecução de correção bloqueada por autenticação externa
+
+- O worker foi recriado com a rede configurável `conquistaai_public`; a nova solicitação `e5dead48-5214-4b8d-a170-fb07b635f8e3` alcançou o executor, confirmando a correção da falha de rede.
+- A execução terminou em `FAILED` porque o volume compartilhado do Codex não possui sessão Pro autorizada. O registro anterior `0ba93f73-d0b3-4bb5-ad42-4b9f063ac61f` foi preservado; nenhuma solicitação será reemitida até a autenticação externa, para não multiplicar falhas.
+- Validação: lint PHP, `docker compose config --quiet` e reinicialização isolada do worker aprovados.
+- Próximo passo: executar `docker compose run --rm codex-auth`, concluir a autorização por dispositivo e então emitir uma nova solicitação.
+
+
+## 2026-09-28 — Módulo SPA Arena
+
+- Criadas as camadas Domain, Application, Infrastructure e composable da Arena; o repositório Axios usa exclusivamente o cliente HTTP padronizado.
+- Criada a página Quasar responsiva para criar/entrar em sala, acompanhar participantes, iniciar duelo, responder questão e visualizar conexão. A interface foi integrada ao shell com a referência de cores e cartões da aplicação.
+- Validação: `vue-tsc` via npx falhou por incompatibilidade entre versões temporárias de TypeScript/vue-tsc; o build Vite via npx não localizou o entrypoint por ter sido chamado fora do cwd do app.
+- Próximo passo: concluir contratos HTTP Arena e executar build pelo ambiente Compose instalado.
+
+
+## 2026-09-28 — Rotas iniciais Arena
+
+- Adicionados Request DTOs, Response DTO, mapper, query service, fábrica de requisições, controlador fino e rotas autenticadas para criação, entrada, leitura, escolhas e início do duelo.
+- As rotas foram registradas na fábrica Slim; o controlador delega regra de ciclo de vida ao service e responde pelo envelope padrão.
+- Validação: lint da AppFactory no host e no contêiner API, e build do frontend no Compose aprovados. Permanece aviso não bloqueante de bundle acima de 500 kB.
+- Próximo passo: implementar envio de resposta, fechamento/placar e notificação Socket.IO.
+
+
+## 2026-09-28 — Tempo real seguro da Arena
+
+- O gateway entrega `arena:duel-updated` exclusivamente na sala pessoal já autenticada do participante; não aceita entrada em sala de duelo por UUID vindo do navegador.
+- O cliente Arena recebe o sinal e recarrega o estado sanitizado pela API, preservando REST como fonte de verdade após reconexão.
+- Validação: sintaxe Node do gateway e build SPA no Compose aprovados; permanece apenas o aviso de bundle acima de 500 kB.
+- Próximo passo: publicar eventos para todos os participantes após comandos e criar tentativas de desempenho ao encerrar a rodada.
+
+
+## 2026-09-28 — Contexto de desempenho Arena
+
+- `Attempt` passou a aceitar explicitamente `ARENA_DUELO`, alinhando o domínio à migration de proveniência.
+- Validação: lint no host e contêiner API aprovado; testes Arena aprovados (2 testes). A execução conjunta Arena/Performance encontrou três falhas preexistentes em `AppendAnswerServiceTest` e `StartAttemptServiceTest`, independentes do novo contexto.
+- Próximo passo: materializar attempts/answers do duelo no fechamento de rodada e cobrir a concorrência da primeira resposta.
+
+
+## 2026-09-28 — Resultado e placar da Arena
+
+- A página Arena agora apresenta o placar final em ordem decrescente de pontos, com destaque da posição e apresentação responsiva para celular.
+- O fluxo visual cobre entrada, criação, entrada por código, espera, questão cronometrada, conexão e resultado.
+- Validação: build SPA no Compose aprovado; persiste somente o aviso não bloqueante de bundle acima de 500 kB.
+- Próximo passo: concluir a materialização da proveniência Performance e a publicação backend dos eventos Arena.
+
+
+## 2026-09-28 — Cobertura crítica de resposta Arena
+
+- Adicionados testes unitários para primeira resposta persistida, rejeição após prazo e rejeição de alternativa fora da questão congelada.
+- Validação: suíte Arena aprovada no contêiner API (5 testes, 11 asserções).
+- Próximo passo: completar teste de concorrência na infraestrutura Doctrine e materialização de desempenho no fechamento de rodada.
+
+
+## 2026-09-28 — Integração visual Arena
+
+- A Arena está disponível no shell, preserva navegação na URL e apresenta carregamento, erro, ausência de questão, conexão e reconexão com recuperação pela API.
+- Tarefa SPA 3.3 concluída; backend ainda requer finalizar resposta/fechamento em todos os fluxos, proveniência Performance e publicação de eventos por comando.
+- Próximo passo: completar a infraestrutura de round e integração de performance antes de marcar as tarefas backend.
+
+
+## 2026-09-28 — Materialização de desempenho Arena
+
+- Criado gravador Doctrine idempotente que materializa `AttemptRecord` e `AnswerRecord` com `arena_duel_id`, questão/alternativa originais e contexto `ARENA_DUELO`.
+- A migration acrescenta unicidade por duelo, usuário e questão; o fechamento de rodada chama o gravador na mesma transação.
+- Validação: lint do adaptador/service no contêiner API e suíte Arena aprovada (5 testes, 11 asserções).
+- Próximo passo: registrar o fechamento no fluxo HTTP e publicar evento seguro a cada comando.
+
+
+## 2026-09-28 — Fechamento HTTP de rodada Arena
+
+- Registrada a rota autenticada de fechamento de rodada, que aciona pontuação determinística e a materialização de desempenho na mesma transação.
+- Validação: lint da rota no contêiner API e suíte Arena aprovada (5 testes, 11 asserções).
+- Próximo passo: integrar publicação de eventos seguros a todos os comandos Arena e testar concorrência contra MySQL.
+
+
+## 2026-09-28 — Publicação segura Arena
+
+- `ArenaRealtimePublisher` consulta somente os participantes persistidos e envia evento interno individual por usuário ao gateway; não há ingresso de socket em sala por UUID.
+- O fechamento HTTP publica `arena:duel-updated` após sucesso; o cliente autenticado recarrega estado pela API.
+- Validação: lint da composição API, sintaxe Node do gateway e build SPA no Compose aprovados.
+- Próximo passo: teste de concorrência de persistência no MySQL e conclusão das tarefas 2.2/4.1.
+
+
+## 2026-09-28 — Validação final da Arena: Duelo
+
+- Aplicadas no MySQL local as migrations `034_arena_performance_provenance.sql` e `035_arena_attempt_uniqueness.sql`.
+- Concorrência validada no MySQL: duas inserções concorrentes para a mesma resposta resultaram em rejeição determinística da segunda por `uq_arena_answer_once`; a fixture temporária foi removida e a conferência final retornou zero registros.
+- Validações finais: suíte Arena aprovada (5 testes, 11 asserções), build SPA no Compose aprovado, sintaxe Node do gateway e lint PHP dos pontos Arena aprovados. O único aviso é o bundle frontend acima de 500 kB.
+- A proposta `arena-duelo` está pronta para arquivamento OpenSpec.
+
+## 2026-09-28 — Boot da API restaurado após classe Arena divergente
+
+- Corrigido o nome da classe em `DoctrineDuelRepository.php`: o arquivo declarava `DoctrineDuelRepositoryReplacement`, mas o registrador de rotas instancia `DoctrineDuelRepository`.
+- A correção restaura o autoload do adaptador Doctrine e impede que as rotas Arena derrubem a inicialização global da API, incluindo o login.
+- Validação: lint PHP local e no contêiner, `class_exists` pelo autoloader e criação de `AppFactory` aprovados.
+- Próximo passo: repetir o login pelo navegador; a API deve voltar a responder envelopes JSON em vez do erro fatal.
+
+## 2026-09-28 — Volumes do executor Codex alinhados ao Compose
+
+- O executor agora recebe `CORRECTION_WORKSPACE_VOLUME`, cujo padrão é `conquistaai_correction_workspaces`, e `CODEX_AUTH_VOLUME`, com padrão `conquistaai_codex_auth`.
+- A configuração elimina os nomes legados `concursos_*` que criavam volumes isolados, impedindo o runner de acessar tanto o workspace quanto a sessão autenticada.
+- Validação: lint PHP, `docker compose config --quiet` e `git diff --check` aprovados.
+- Próximo passo: recriar o worker e reemitir uma única solicitação a partir do último registro `FAILED`.
+
+## 2026-09-28 — Executor Codex reautenticado e correção proposta
+
+- Após alinhar os volumes, o worker reconheceu a sessão existente em `conquistaai_codex_auth` e executou a solicitação `a8dd980f-41f4-40f2-befb-4a2e24475efc` usando `conquistaai_correction_workspaces`.
+- O worker gerou uma proposta estruturada em 45 segundos, com uma figura identificada; a consulta posterior confirmou que ela já está em `APPROVED`. Os registros `FAILED` anteriores foram preservados para auditoria.
+- O aviso de limpeza para `.codex` ausente é posterior à persistência e não altera o estado aprovado.
+- Validação: status persistido `APPROVED`, lint PHP, configuração Compose e `git diff --check` aprovados.
+- Próximo passo: acompanhar a questão aprovada na interface e tratar o aviso de limpeza separadamente, se voltar a ocorrer.
+
+## 2026-09-28 — Linha mais distintiva para evidência automática
+
+- O seletor passou a dividir o enunciado por linhas e retorna somente a primeira linha útil de maior comprimento, removendo espaços e caracteres não alfanuméricos apenas das extremidades.
+- Caracteres internos são preservados e ausência de linha útil resulta em nenhuma referência automática.
+- Próximo passo: remover definitivamente qualquer alternativa da composição e validar a preservação das demais buscas.
+
+## 2026-09-28 — Composição automática sem alternativas
+
+- O worker continua a iterar as referências automáticas fornecidas pelo seletor, que agora expõe somente a linha mais longa do enunciado; nenhuma alternativa integra a busca automática.
+- As páginas de origem, a busca explícita por trecho e a busca de gabarito permanecem complementares e inalteradas.
+- Próximo passo: conferir a telemetria segura da referência única.
+
+## 2026-09-28 — Telemetria da referência única preservada
+
+- Cada execução continua emitindo `automatic_evidence_search` com identificador lógico, SHA-256, páginas encontradas e evidências finais, sem registrar conteúdo do enunciado.
+- Como o seletor retorna no máximo uma referência, há no máximo um evento automático por solicitação.
+- Próximo passo: ampliar os testes focados do seletor.
+
+## 2026-09-28 — Cobertura da referência mais longa
+
+- Os testes focados agora verificam seleção da linha mais longa, remoção exclusiva dos caracteres de contorno, preservação dos caracteres internos, desempate pela primeira linha, ausência de linha útil e ausência de correspondência no PDF.
+- Validação: `CorrectionEvidenceLocatorTest` aprovado (4 testes, 4 asserções).
+- Próximo passo: atualizar o contrato HTTP para descrever a nova referência automática.
+
+## 2026-09-28 — Contrato da referência automática refinado
+
+- `docs/API.md` passa a declarar que a evidência automática usa a primeira linha útil de maior comprimento do enunciado após limpeza das extremidades; alternativas não são pesquisadas automaticamente.
+- Rotas, payloads, estados e aprovação editorial permanecem inalterados.
+- Próximo passo: executar a validação final do worker e da suíte QuestionBank.
+
+## 2026-09-28 — Proposta refine-correction-evidence-selection concluída
+
+- O worker usa exclusivamente a linha útil mais longa do enunciado como referência automática, limpa somente seus contornos e não pesquisa alternativas.
+- Validação: lint PHP do worker e seletor, suíte `tests/Unit/QuestionBank` (30 testes, 62 asserções) e `git diff --check` aprovados.
+- Próximo passo: observar uma nova correção com enunciado extenso para confirmar redução das páginas anexadas.
+
+## 2026-09-28 — Contrato de salas Arena público/privado
+
+- Documentadas criação com visibilidade, descoberta paginada de salas públicas, listagem privada do criador, entrada pública por identificador e consulta de assuntos da Arena.
+- O contrato preserva código apenas para salas privadas e mantém detalhes/autorização restritos a participantes.
+- Próximo passo: adicionar a persistência de visibilidade com padrão privado para os registros existentes.
+
+## 2026-09-28 — Persistência de visibilidade Arena
+
+- Criada a migration `036_arena_visibility.sql`, que adiciona `visibility` com padrão `PRIVATE` e índice para descoberta de salas em espera; o rollback é documentado.
+- O domínio passou a representar explicitamente `PUBLIC`/`PRIVATE`, preservando construtores existentes com padrão privado.
+- Próximo passo: propagar visibilidade e resumos tipados pelos contratos Arena.
+
+## 2026-09-28 — Contratos Arena com visibilidade
+
+- DTOs de criação/resposta e o domínio agora carregam visibilidade; o repositório Doctrine persiste e reconstrói o enum em cada duelo.
+- Adicionado resumo tipado para a descoberta de salas, sem expor código ou participantes.
+- Próximo passo: implementar consultas e entradas públicas protegidas pelas portas de repositório.
+
+## 2026-09-28 — HTTP Arena para descoberta e prontidão
+
+- Implementadas criação com visibilidade, entrada pública transacional, descoberta paginada de salas públicas, listagem privada do criador e consulta autenticada de assuntos canônicos.
+- As novas rotas usam serviços, portas de domínio, QueryBuilder Doctrine e envelopes padrão; detalhes continuam exigindo participação.
+- Validação: lint das rotas e boot da `AppFactory` aprovados.
+- Próximo passo: conectar os novos contratos às camadas DDD e tela Quasar Arena.
+
+## 2026-09-28 — Experiência Arena público/privado integrada
+
+- A SPA agora cria salas públicas ou privadas, descobre salas públicas reais, mostra salas privadas em espera criadas pelo usuário e permite entrada pública sem código.
+- O painel de espera passou a carregar assuntos canônicos, limitar a seleção à configuração do duelo e enviar confirmação de prontidão; a sala é restaurada pelo parâmetro `duel` da URL.
+- Validação: boot API, build SPA e migration de visibilidade aplicados; o aviso de bundle acima de 500 kB permanece não bloqueante.
+- Próximo passo: adicionar cobertura direcionada de ciclo de vida público/privado e finalizar validações Arena.
+
+## 2026-09-28 — Cobertura de visibilidade Arena
+
+- Teste de ciclo de vida confirma o padrão privado e a entrada em sala pública pelo identificador, sem código, com participação persistida.
+- Validação: suíte Arena aprovada.
+- Próximo passo: validar rotas e interface de forma integrada.
+
+## 2026-09-28 — Proposta arena-public-rooms-ready-flow concluída
+
+- Salas públicas podem ser descobertas e acessadas sem código; salas privadas permanecem por código e aparecem ao criador.
+- O fluxo de espera oferece assuntos e confirmação de prontidão, removendo o bloqueio que impedia o início.
+- Validação: migration com padrão PRIVATE, testes Arena, boot API, build SPA e git diff --check aprovados.
+- Próximo passo: exercer os fluxos por dois usuários autenticados no navegador.
