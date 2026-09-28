@@ -7,7 +7,8 @@ use Doctrine\ORM\Mapping as ORM;
 class AttemptRecord {
  #[ORM\Id] #[ORM\Column(type: 'string', length: 36)] public string $id;
  #[ORM\Column(name: 'user_id', type: 'string', length: 36)] public string $userId;
- #[ORM\Column(name: 'notebook_id', type: 'string', length: 36)] public string $notebookId;
+ #[ORM\Column(name: 'notebook_id', type: 'string', length: 36)] public ?string $notebookId = null;
+ #[ORM\Column(name: 'arena_duel_id', type: 'string', length: 36, nullable: true)] public ?string $arenaDuelId = null;
  #[ORM\Column(name: 'question_id', type: 'string', length: 36)] public string $questionId;
  #[ORM\Column(type: 'integer')] public int $number;
  #[ORM\Column(name: 'started_at', type: 'datetime_immutable')] public DateTimeImmutable $startedAt;

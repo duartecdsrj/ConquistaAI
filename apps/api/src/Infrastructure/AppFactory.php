@@ -58,6 +58,9 @@ use App\Interface\Http\QuestionBank\QuestionPdfImportRouteRegistrar;
 use App\Interface\Http\QuestionBank\QuestionCorrectionRouteRegistrar;
 use App\Interface\Http\Performance\PerformanceRouteRegistrar;
 use App\Interface\Http\Taxonomy\TaxonomyRouteRegistrar;
+use App\Interface\Http\Arena\ArenaRouteRegistrar;
+use App\Interface\Http\Arena\ArenaAnswerRouteRegistrar;
+use App\Interface\Http\Arena\ArenaRoundRouteRegistrar;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -91,6 +94,9 @@ final class AppFactory
         (new QuestionPdfImportRouteRegistrar($responses, self::authService()))->register($app);
         (new QuestionCorrectionRouteRegistrar($responses, self::authService()))->register($app);
         (new TaxonomyRouteRegistrar($responses, self::authService()))->register($app);
+        (new ArenaRouteRegistrar($responses, self::authService()))->register($app);
+        (new ArenaAnswerRouteRegistrar($responses, self::authService()))->register($app);
+        (new ArenaRoundRouteRegistrar($responses, self::authService()))->register($app);
 
         $app->get('/health', static function (ServerRequestInterface $request, ResponseInterface $response) use ($responses): ResponseInterface {
             return $responses->success($response, ['status' => 'ok'], (string) $request->getAttribute('request_id'));

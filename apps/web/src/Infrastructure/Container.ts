@@ -76,3 +76,7 @@ export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())
 export const importUseCases = new ImportUseCases(new AxiosImportRepository())
 const editorialRepository = new AxiosEditorialRepository()
 export const editorialUseCases = { listDrafts: new ListDraftQuestionsUseCase(editorialRepository), publish: new PublishEditorialQuestionUseCase(editorialRepository), assignTaxonomy: new AssignEditorialQuestionTaxonomyUseCase(editorialRepository), markForApproval: new MarkEditorialQuestionsForApprovalUseCase(editorialRepository), publishMany: new PublishEditorialQuestionsUseCase(editorialRepository) }
+
+import { ArenaUseCases } from "../Application/Arena/ArenaUseCases"
+import { AxiosArenaRepository } from "./Arena/AxiosArenaRepository"
+export const arenaUseCases = new ArenaUseCases(new AxiosArenaRepository())

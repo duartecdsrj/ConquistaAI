@@ -244,3 +244,12 @@ Ao aprovar uma correção pelo diálogo global, `App.vue` incrementa a versão e
 O diálogo global permite que administradores reenviem uma solicitação em estado FAILED com novas sugestões. Somente uma solicitação PROPOSED mostra o botão de aprovação.
 ## Localização automática de figura em correção
 Em solicitações FAILED, administradores podem acionar Reenviar análise sem preencher sugestões. O worker recebe a solicitação original e escolhe automaticamente a página da figura dentro da janela de evidência; sugestões são apenas contexto adicional.
+
+
+## Arena: Duelo
+
+O módulo Arena segue `ArenaPage/components -> useArena -> ArenaUseCases -> ArenaRepository -> AxiosArenaRepository -> API`. Eventos Socket.IO apenas sinalizam atualização; o composable sempre recupera o estado sanitizado pela API e reentra na sala após reconexão. A experiência Quasar é mobile-first, reaproveita a paleta azul clara e cobre entrada, criação/entrada por código, sala de espera, questão cronometrada e placar final com estados reais de carregamento, erro, vazio e conexão.
+
+## Arena: salas públicas e prontidão
+
+A Arena permite criar salas `PUBLIC` ou `PRIVATE`. O composable `useArena` consulta salas públicas, salas privadas criadas pelo usuário e assuntos canônicos pela camada Application/Axios; `ArenaPage` nunca acessa HTTP diretamente. Participantes entram em salas públicas pelo resumo real e confirmam exatamente a quantidade exigida de assuntos antes que o criador possa iniciar. Ao abrir a página, o parâmetro `duel` da URL é restaurado pela API; erros, salas vazias, lotadas e privadas não acessíveis permanecem estados explícitos da interface.

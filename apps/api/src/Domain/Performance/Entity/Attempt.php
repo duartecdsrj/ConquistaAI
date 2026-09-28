@@ -15,7 +15,7 @@ final readonly class Attempt
         public \DateTimeImmutable $startedAt,
         public ?\DateTimeImmutable $completedAt = null,
     ) {
-        if ($number < 1 || !in_array($context, ['STUDY', 'EXAM', 'REVIEW'], true)) {
+        if ($number < 1 || !in_array($context, ['STUDY', 'EXAM', 'REVIEW', 'ARENA_DUELO'], true)) {
             throw new \DomainException('Tentativa invalida.');
         }
     }

@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Application\Arena\DTO\Request; final readonly class SubjectsDuelRequestDto { /** @param list<string> $taxonomySubjectIds */ public function __construct(public array $taxonomySubjectIds){} }

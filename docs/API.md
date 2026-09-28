@@ -251,3 +251,23 @@ POST /api/v1/admin/questions/publish-batch requer ADMIN e recebe { question_ids:
 ### Configuração Google
 
 Defina `GOOGLE_OIDC_CLIENT_ID` na API e o mesmo identificador público em `VITE_GOOGLE_CLIENT_ID` na SPA. O cliente OAuth deve ser do tipo Web e autorizar exclusivamente as origens HTTPS/publicadas e os endereços de desenvolvimento confirmados para este produto. Não use nem exponha um client secret: o fluxo usa a credencial OIDC do Google Identity Services, verificada pela API.
+
+
+### Arena: Duelo privado
+
+Todas as rotas Arena exigem autenticação. `POST /api/v1/arena/duels` cria uma sala com `{ "max_players": 2..8, "subjects_per_player": 1..5, "question_count": 5|10|15|20, "question_seconds": 15|30|60 }`; a resposta devolve estado sanitizado e código curto. `POST /api/v1/arena/duels/join` recebe `{ "code": "ABC123" }`; `GET /api/v1/arena/duels/{id}` recupera estado somente para participante.
+
+`PUT /api/v1/arena/duels/{id}/subjects` recebe exatamente `subjects_per_player` IDs canônicos distintos e marca o participante pronto. O servidor congela questões `PUBLISHED` equilibradas entre assuntos quando todos estiverem prontos. `POST /api/v1/arena/duels/{id}/start` inicia somente pelo criador.
+
+`POST /api/v1/arena/duels/{id}/answers` recebe `{ "option_id": "uuid" }` e aceita somente a primeira resposta, antes do prazo do servidor. Duplicidade, atraso ou alternativa inválida retornam `409 STATE_CONFLICT`. Por `received_at, id`, acertos recebem 100, 75, 50 e 25; erros, -25. O estado aberto oculta gabarito, escolhas adversárias e questões futuras.
+
+Socket.IO usa a sala autenticada `arena:duel:{id}`. `arena:duel-updated` contém `{ duelId }`; após evento ou reconexão, o cliente recupera `GET /arena/duels/{id}` como fonte autoritativa.
+
+
+`POST /api/v1/arena/duels/{id}/round/close` requer participante autenticado. Fecha a rodada somente quando todos responderem ou quando o prazo do servidor tiver expirado; a operação é idempotente, calcula pontuação e materializa as tentativas de desempenho `ARENA_DUELO`.
+
+### Arena: salas públicas e privadas
+
+`POST /arena/duels` recebe `max_players`, `subjects_per_player`, `question_count`, `question_seconds` e `visibility` (`PUBLIC` ou `PRIVATE`, padrão `PRIVATE`). `POST /arena/duels/join` mantém a entrada por `{ "code": "..." }` exclusivamente para salas privadas. `POST /arena/duels/{id}/join` permite ao usuário autenticado entrar em sala pública `WAITING` sem código.
+
+`GET /arena/duels/public?page=1&per_page=25` lista somente salas públicas `WAITING`; `GET /arena/duels/mine/private?page=1&per_page=25` lista somente salas privadas `WAITING` criadas pelo usuário autenticado. Ambos devolvem paginação padrão e resumos sem código ou participantes. `GET /arena/subjects?page=1&per_page=25` devolve assuntos canônicos ativos para a escolha individual de prontidão. Detalhes e comandos de um duelo continuam restritos a seus participantes; tentativa de acessar sala privada de terceiro retorna `404`.
