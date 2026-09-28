@@ -28,11 +28,15 @@ client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 })
 client.interceptors.response.use((response: AxiosResponse) => response, async (error: AxiosError<ApiFailure> & { config?: InternalAxiosRequestConfig & { _retried?: boolean } }) => { const config = error.config; const url = config?.url ?? ''; if (error.response?.status === 401 && config && !config._retried && !url.includes('/auth/refresh') && !url.includes('/auth/login') && refreshHandler) { config._retried = true; refreshInFlight ??= refreshHandler().finally(() => { refreshInFlight = null }); const token = await refreshInFlight; if (token) { config.headers.Authorization = 'Bearer ' + token; return client.request(config) } } return Promise.reject(toApiRequestError(error)) }) 
 
-export async function getData<T>(url: string, config?: AxiosRequestConfig): Promise<T> { return (await client.get<ApiEnvelope<T>>(url, config)).data.data }
-export async function postData<TResponse, TRequest>(url: string, body?: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.post<ApiEnvelope<TResponse>>(url, body, config)).data.data }
-export async function postFormData<TResponse>(url: string, body: FormData, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.post<ApiEnvelope<TResponse>>(url, body, { ...config, headers: { ...config?.headers, 'Content-Type': undefined } })).data.data }
-export async function patchData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.patch<ApiEnvelope<TResponse>>(url, body, config)).data.data }
-export async function putData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return (await client.put<ApiEnvelope<TResponse>>(url, body, config)).data.data }
+function responseData<T>(payload: ApiEnvelope<T> | T): T {
+  return typeof payload === 'object' && payload !== null && 'data' in payload ? (payload as ApiEnvelope<T>).data : payload as T
+}
+
+export async function getData<T>(url: string, config?: AxiosRequestConfig): Promise<T> { return responseData((await client.get<ApiEnvelope<T> | T>(url, config)).data) }
+export async function postData<TResponse, TRequest>(url: string, body?: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.post<ApiEnvelope<TResponse> | TResponse>(url, body, config)).data) }
+export async function postFormData<TResponse>(url: string, body: FormData, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.post<ApiEnvelope<TResponse> | TResponse>(url, body, { ...config, headers: { ...config?.headers, 'Content-Type': undefined } })).data) }
+export async function patchData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.patch<ApiEnvelope<TResponse> | TResponse>(url, body, config)).data) }
+export async function putData<TResponse, TRequest>(url: string, body: TRequest, config?: AxiosRequestConfig): Promise<TResponse> { return responseData((await client.put<ApiEnvelope<TResponse> | TResponse>(url, body, config)).data) }
 
 export async function getPage<T>(url: string, query: PageQuery = {}, filters: QueryParameters = {}): Promise<PageResult<T>> {
   const response = await client.get<ApiEnvelope<readonly T[]>>(url, { params: { ...paginationParams(query), ...withoutUndefined(filters) } })

@@ -1,5 +1,11 @@
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-28 — Compatibilidade de resposta na autenticação
+
+- O adaptador Axios passa a extrair dados tanto do envelope canônico `data/meta` quanto do payload direto legado devolvido pelo login, eliminando a falha de leitura de `access_token` quando o proxy/API retorna a forma direta.
+- Os endpoints que seguem o contrato canônico permanecem inalterados; a compatibilidade fica isolada na infraestrutura HTTP.
+- Próximo passo: validar o login pela interface após disponibilizar o novo módulo.
+
 ## 2026-09-28 — Recuperação segura da montagem global
 
 - A aplicação não inicia mais bloqueada por um `q-inner-loading` de raiz: a tela de login é renderizada de imediato, enquanto a sessão é restaurada em segundo plano.
