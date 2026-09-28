@@ -41,7 +41,7 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 
 `GET /questions/{id}/correction-requests/latest` retorna a última solicitação visível ao solicitante. Administradores recebem também a proposta estruturada quando o worker terminar; outros usuários recebem apenas o estado. Estados possíveis: `PENDING`, `PROCESSING`, `PROPOSED`, `APPROVED`, `REJECTED` e `FAILED`.
 
-`POST /admin/question-correction-requests/{id}/approve` exige `ADMIN` e aplica exclusivamente a proposta já validada para a mesma questão. A aprovação preserva `correct_option_id`, quantidade, identificadores e ordem das alternativas. A solicitação mantém os instantâneos anterior e proposto para auditoria. O worker não publica alterações automaticamente.
+`POST /admin/question-correction-requests/{id}/approve` exige `ADMIN` e aplica exclusivamente a proposta já validada para a mesma questão. Quando a proposta informa `asset_page`, a aprovação renderiza exclusivamente essa página, dentro da janela de evidência do PDF original, e a vincula como ativo autenticado. Caminhos internos como `source-page-84.png` nunca são persistidos no enunciado. A aprovação preserva `correct_option_id`, quantidade, identificadores e ordem das alternativas. A solicitação mantém os instantâneos anterior e proposto para auditoria. O worker não publica alterações automaticamente.
 
 
 ### Logos automáticos de concursos
@@ -221,3 +221,7 @@ POST /api/v1/admin/questions/publish-batch requer ADMIN e recebe { question_ids:
 `GET /api/v1/admin/question-audits/latest` requer `ADMIN` e devolve no envelope padrão a última execução persistida, com `id`, `algorithmVersion`, `scope`, `status`, `summary`, datas e eventual `errorMessage`. O endpoint é estritamente somente leitura: não corrige, publica, reimporta ou modifica questões. Quando ainda não há execução, retorna `404 RESOURCE_NOT_FOUND`.
 
 `GET /api/v1/admin/question-audits/latest/findings?page=1&per_page=25` requer `ADMIN`, aceita no máximo 100 itens por página e devolve os achados da última auditoria na paginação padrão. Cada item contém `questionId`, `sourcePdfJobId`, `sourcePage`, `code`, `confidence`, `status`, `message`, `createdAt` e, quando houver proposta estrutural não mutante, `structureAfter` (por exemplo, `rendering: CODE_BLOCK` ou `MATCHING_COLUMNS`). É uma rota estritamente somente leitura; ausência de auditoria retorna `404 RESOURCE_NOT_FOUND`.
+
+### Notificações de correção em tempo real
+
+`GET /question-correction-requests/latest` retorna, para o usuário autenticado, o último resultado concluído (`PROPOSED` ou `FAILED`) de correção solicitado por ele. A proposta detalhada só é incluída para administradores. O endpoint serve como recuperação após reconexão do WebSocket.

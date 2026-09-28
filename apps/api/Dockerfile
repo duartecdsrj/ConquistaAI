@@ -4,7 +4,7 @@ COPY composer.json composer.lock* ./
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 FROM php:8.3-cli-alpine
-RUN apk add --no-cache poppler-utils nodejs npm \
+RUN apk add --no-cache poppler-utils nodejs npm docker-cli \
     && npm install -g @openai/codex \
     && docker-php-ext-install pdo_mysql
 WORKDIR /app

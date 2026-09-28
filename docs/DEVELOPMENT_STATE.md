@@ -1283,3 +1283,158 @@ docker compose exec -T frontend npm run build
 - Criado `openspec/README.md` com escopo, idioma obrigatório e fluxo mínimo; a referência aponta para as regras já existentes, evitando reproduzir arquitetura e contratos em cada proposta.
 - As quatro skills locais (`propose`, `apply`, `archive` e `explore`) foram reescritas em pt-BR, com instruções curtas e leitura restrita aos artefatos retornados pelo CLI.
 - Validações: `openspec list --json` retornou fila vazia e `git diff --check` aprovado.
+
+## 2026-09-27 — Proposta OpenSpec: resiliência do worker de correção
+
+- A mudança `realtime-question-corrections-navigation` passou a incluir a capacidade `execucao-resiliente-do-worker-de-correcao`.
+- Requisitos definidos: logs estruturados sem segredos/conteúdo, timeout configurável com encerramento e limpeza, transição segura para `FAILED` e execução não interativa limitada ao sandbox temporário da questão.
+- A proposta foi validada com `openspec validate realtime-question-corrections-navigation --strict`.
+
+## 2026-09-27 — Worker de correção resiliente
+
+- O worker passou a emitir logs JSON por fase, sem segredo ou conteúdo integral da questão.
+- `CORRECTION_CODEX_TIMEOUT` (180 s por padrão) encerra Codex travado, marca a solicitação como falha e limpa o diretório temporário.
+- A chamada Codex é não interativa com `--approve-for-me`, mas permanece em sandbox somente leitura e no diretório temporário da questão.
+- Validações: lint PHP e `docker compose config --quiet` aprovados.
+
+## 2026-09-27 — Correções em tempo real e navegação persistente
+
+- O worker de correções publica o término `PROPOSED` ou `FAILED` ao gateway Socket.IO interno autenticado; logs, timeout e limpeza da execução isolada continuam ativos.
+- A SPA recebe um aviso global em qualquer tela, recupera o último resultado persistido após recarga e permite que administradores abram e aprovem a proposta imediatamente.
+- A correção assistida ficou disponível também no Banco de Questões. O caderno passou a persistir seção/caderno na URL, permite avançar sem responder e oferece assunto anterior/próximo.
+- Próximo passo: concluir validações de Compose, build e testes de isolamento de eventos antes do commit.
+
+## 2026-09-27 — Validação final da mudança OpenSpec de tempo real
+
+- `docker compose config --quiet`, `git diff --check`, o build de produção da SPA e os lints PHP dos arquivos alterados foram aprovados. O build mantém apenas o aviso não bloqueante sobre chunk acima de 500 kB.
+- O healthcheck do gateway respondeu e o endpoint interno autenticado aceitou o evento de teste com `202`, sem expor o segredo. A suíte API completa foi aprovada: 64 testes e 150 asserções.
+- Todas as tarefas de `realtime-question-corrections-navigation` foram concluídas. A persistência de recuperação usa o próprio registro imutável da solicitação de correção, sem tabela duplicada de notificações.
+
+## 2026-09-27 — Correção operacional do proxy WebSocket
+
+- O primeiro container Nginx ainda executava a imagem anterior e não possuía a localização `/ws/socket.io/`; ele encaminhava o upgrade para o frontend na porta 9000, causando `504` e `NS_ERROR_WEBSOCKET_CONNECTION_REFUSED` no navegador.
+- O Nginx foi recriado com a rota do gateway e o handshake HTTP WebSocket validado por `101 Switching Protocols`. Nginx e gateway estão saudáveis.
+
+## 2026-09-27 — Correção da inicialização isolada do Codex
+
+- A falha da solicitação `49c00a15-da57-4f4c-a327-9d231a111666` ocorreu antes da análise: `--approve-for-me` tentou preparar aliases de PATH, incompatível com o sandbox somente leitura.
+- O worker agora mantém execução não interativa por `codex exec` com sandbox somente leitura, mas sem essa opção de aprovação, e fornece `CODEX_HOME` efêmero isolado que é removido ao término.
+- Próximo passo autorizado: reenfileirar exclusivamente a solicitação que falhou e monitorar a proposta/notificação.
+
+## 2026-09-27 — Encerramento confiável do processo Codex
+
+- A execução que excedeu o limite revelou que `proc_open` recebia uma string e criava um shell intermediário; ao terminar o shell, o processo Codex filho podia permanecer zumbi e reter o worker.
+- O worker passou a chamar `proc_open` com o vetor de argumentos, sem shell intermediário. Assim, o sinal de timeout atinge diretamente o processo Codex e a requisição sempre transiciona para resultado seguro.
+- A solicitação interrompida será reenfileirada somente depois de recriar o worker, evitando que a instância antiga a reivindique.
+
+## 2026-09-27 — Diagnóstico de conectividade do worker de correção
+
+- A credencial `CODEX_API_KEY` está presente no worker, mas o container não conseguia resolver `api.openai.com` nem `chatgpt.com`; a causa era sua associação exclusiva à rede Docker marcada como interna.
+- O worker passou a integrar também a rede pública do Compose, mantendo MySQL e gateway na rede interna. Essa alteração fornece somente saída necessária para o Codex, sem expor os serviços internos por portas publicadas.
+- Próximo passo: recriar o worker, confirmar resolução de DNS e reenfileirar a solicitação que falhou por timeout.
+
+## 2026-09-27 — Sandbox isolado com escrita efêmera para Codex
+
+- Após a correção de DNS, o diagnóstico mostrou que a execução em `read-only` recusava criar os aliases auxiliares exigidos pelo Codex, falhando antes da análise.
+- O Codex agora usa `workspace-write` com aprovação automática **apenas** no diretório temporário isolado da solicitação, que contém exclusivamente JSON da questão e a(s) página(s) renderizada(s). O projeto, banco e PDFs originais continuam fora do escopo de escrita do agente.
+- A conectividade do worker foi validada por resolução de `api.openai.com`; a solicitação será executada novamente sob esse sandbox restrito.
+
+## 2026-09-27 — Preservação do código de saída do Codex
+
+- A execução posterior à correção de rede terminou rapidamente sem stderr. O worker usava `proc_get_status` e depois `proc_close`; nessa sequência, PHP pode devolver `-1` no `proc_close` embora o status final já tenha o código real.
+- O worker agora usa o `exitcode` do último estado quando `proc_close` retorna `-1`, evitando classificar uma resposta concluída como falha por comportamento do processo PHP.
+- Próximo passo: recriar o worker, reenfileirar a solicitação e verificar se a proposta é persistida e notificada.
+
+## 2026-09-27 — Diagnóstico seguro de saída do Codex
+
+- A tentativa encerrava rapidamente sem stderr; o worker passou a capturar também stdout e o inclui somente no resumo truncado do erro operacional. Isso permite identificar recusas iniciais do CLI sem registrar credenciais ou conteúdo integral.
+- A solicitação permanece `FAILED` de forma segura até a mensagem precisa ser obtida; nenhuma nova alteração editorial foi aplicada.
+
+## 2026-09-27 — Autenticação correta do Codex no worker
+
+- O `.env` contém `OPENAI_API_KEY`, mas o Compose não a injetava no worker. Consequentemente, `codex exec` recebia somente `CODEX_API_KEY`, destinada ao executor remoto.
+- O worker agora recebe `OPENAI_API_KEY` e a fornece ao `codex exec` como credencial da sessão. A chave de executor permanece separada para o protocolo `exec-server`.
+- Próximo passo: recriar o worker, reenfileirar exclusivamente a solicitação que falhou e validar a proposta/notificação.
+
+## 2026-09-27 — Executor Codex temporário por questão
+
+- Implementada a imagem `concursos-codex-runner`, descartável por solicitação. O worker prepara artefatos exclusivamente em `correction_workspaces` e inicia essa imagem com rede pública e sem montagem do repositório, banco ou PDFs de origem.
+- O worker autorizado controla Docker via socket somente para lançar a imagem fixa, com volume nomeado de trabalho e `--rm`; a imagem foi construída e sua CLI validada.
+- Próximo passo: acompanhar a primeira solicitação reenfileirada no executor isolado e verificar proposta/notificação.
+## 2026-09-27 — Evidência ampliada para correção de questão
+
+- O worker agora renderiza, para cada página de origem da questão, a própria página e até duas páginas anteriores e posteriores. O conjunto é desduplicado, ordenado e limitado a páginas positivas; somente essas imagens e o snapshot da questão seguem para o executor isolado.
+- O log `pdf_rendered` registra os números das páginas de evidência, possibilitando confirmar a apuração sem registrar o conteúdo do PDF.
+- Próximo passo: reenfileirar a solicitação `49c00a15-da57-4f4c-a327-9d231a111666` e confirmar a proposta/notificação.
+## 2026-09-27 — Autenticação do executor isolado
+
+- O diagnóstico reproduzido no executor confirmou que as páginas 81–85 chegam ao Codex, mas a CLI encerrava com `401 Unauthorized` porque a variável de ambiente, embora presente, não inicializava sua sessão.
+- A imagem descartável agora executa `codex login --with-api-key` antes de iniciar a análise e remove a variável do ambiente em seguida. A credencial de sessão permanece somente na camada efêmera do executor, fora do volume com a questão e as imagens.
+- Próximo passo: reconstruir a imagem, validar a autenticação e reenfileirar exclusivamente a solicitação de correção.
+## 2026-09-27 — Diagnóstico final da busca de imagem pelo Codex
+
+- A execução isolada confirmou que o Codex recebe as cinco evidências da questão: páginas 81, 82, 83, 84 e 85. A página 84, indicada como fonte da figura, portanto já está no contexto visual.
+- Após a inicialização de sessão, a chamada chegou ao provedor e retornou `Quota exceeded`; a análise não pode prosseguir até que a chave de API tenha cota/faturamento disponível.
+- A proposta atual só suporta `statement` e `options`. Uma evolução posterior para recuperar imagem deve acrescentar uma proposta de ativo com página de origem e recorte, persistida como rascunho e anexada à questão exclusivamente após aprovação administrativa.
+- Próximo passo: regularizar a cota da chave da API e então reenfileirar a solicitação; antes de aprovar uma imagem, implementar o contrato de proposta de ativo se a página inteira não for suficiente.
+## 2026-09-27 — Erro de cota comunicável
+
+- O worker passou a persistir uma mensagem segura e específica quando o Codex informa ausência de cota, distinguindo essa indisponibilidade externa de uma falha de evidência ou estrutura da questão.
+- A solicitação atual foi diagnosticada como bloqueada por cota; ela não deve ser reenfileirada até que o faturamento/limite do projeto da API seja regularizado.
+## 2026-09-27 — Executor autenticado pelo Codex Pro
+
+- O executor de correção passou a suportar a sessão do Codex autenticada via plano Pro, armazenada somente no volume `codex_auth` montado em `/root/.codex`, fora do workspace com a questão e as imagens.
+- O serviço de perfil `codex-auth` executa o login interativo por dispositivo uma única vez. As execuções do worker não recebem `OPENAI_API_KEY`; se a sessão estiver ausente, a solicitação falha com orientação segura.
+- Próximo passo: construir a imagem, executar `docker compose run --rm codex-auth`, concluir a autenticação na conta Pro e reenfileirar a solicitação.
+## 2026-09-27 — Diagnóstico de proposta estrutural
+
+- A execução pelo Codex Pro chegou ao modelo e retornou uma proposta, mas ela foi rejeitada pela validação estrutural.
+- O worker agora registra somente tipos e contagens da resposta antes de validá-la, sem conteúdo de enunciado, alternativas ou prompt. Isso permitirá ajustar a instrução/esquema com evidência objetiva na próxima execução isolada.
+## 2026-09-27 — Normalização segura de alternativas inalteradas
+
+- O Codex Pro retornou `options: []`, sinalizando que não propunha mudança nas alternativas. O contrato de aprovação exige a lista inteira para preservar IDs e ordem.
+- O worker agora substitui exclusivamente uma lista vazia pelas alternativas do snapshot original antes da validação. Não há reescrita, inferência ou alteração de conteúdo; listas parciais ou inválidas continuam rejeitadas.
+## 2026-09-27 — Contexto explícito no prompt do executor
+
+- A proposta anterior não é confiável e não deve ser aprovada: o Codex informou que o sandbox bloqueou a leitura de `question.json`.
+- O worker passa agora o snapshot imutável e a instrução diretamente no prompt, dispensando qualquer leitura de arquivo pelo agente. As páginas 81–85 continuam anexadas como evidência visual.
+- Próximo passo: reenfileirar a solicitação e confirmar que a proposta não contém alerta de acesso bloqueado.
+## 2026-09-27 — Proposta reprocessada com contexto explícito
+
+- A solicitação `49c00a15-da57-4f4c-a327-9d231a111666` foi reprocessada pelo Codex Pro com sucesso após enviar o snapshot no prompt e as páginas 81–85 como anexos.
+- A proposta separa o enunciado da alternativa A, remove rodapé de extração e identifica a página 84 como evidência visual, sem alerta de acesso bloqueado.
+- Limitação preservada: o contrato atual referencia a imagem, mas não cria/anexa automaticamente um ativo visual; essa etapa requer evolução específica de proposta e aprovação de ativo.
+## 2026-09-27 — Prévia e reenvio de proposta de correção
+
+- O diálogo global agora mostra a prévia completa da questão proposta, incluindo enunciado e alternativas, com a mesma renderização de conteúdo rico usada pelo caderno.
+- Administradores podem inserir sugestões e reenviar a correção; a operação cria uma nova solicitação imutável para a mesma questão, combinando a instrução anterior e as sugestões, sem sobrescrever a proposta já registrada.
+- Próximo passo: validar o build da SPA e conferir visualmente o diálogo de proposta.
+
+## 2026-09-27 — Atualização do Caderno após aprovação editorial
+
+- Confirmado que a solicitação `49c00a15-da57-4f4c-a327-9d231a111666` está `APPROVED` e que o enunciado da questão foi alterado no banco; a falha era somente a lista mantida em memória pela SPA.
+- O Caderno agora consulta novamente o conteúdo editorial após a aprovação global ou local, preserva a questão atual pelo ID, a posição, a seleção congelada e as respostas já registradas.
+- Validação: `docker compose exec -T frontend npm run build` concluído com sucesso; permanece apenas o aviso não bloqueante de chunk acima de 500 kB.
+- Próximo passo: atualizar o navegador e abrir o mesmo Caderno para confirmar visualmente o conteúdo aprovado.
+
+## 2026-09-27 — Ativo visual na aprovação de correção
+
+- Corrigido o fluxo que permitia ao worker devolver referência Markdown de página sem criar um arquivo acessível: a proposta agora usa o campo opcional `asset_page`, limitado à janela de evidência do PDF.
+- Na aprovação, o repositório renderiza a página autorizada do PDF original em PNG, cria `QuestionAssetRecord` e a tela passa a recebê-la pela rota autenticada de ativos. O worker converte a referência Markdown legada em `asset_page` e a remove do enunciado.
+- Validações: `php -l` no worker e no repositório, inclusive dentro de `question-correction-worker`; `pdftoppm` disponível; `git diff --check` sem erros.
+- O worker de correção está em execução. A solicitação já aprovada não é reexecutada automaticamente para preservar o histórico; uma nova solicitação deve ser enviada e aprovada para anexar a página 84 como ativo real.
+## 2026-09-27 — Schema estruturado de ativo visual e reenvio de falha
+- Identificada a falha da solicitação `fda75ae9-279c-4024-9812-e6b81bcd730d`: o provedor rejeitou o schema porque `asset_page` não constava nos campos obrigatórios.
+- O schema agora exige `asset_page`, aceitando inteiro ou `null`; o worker só anexa a página quando recebe inteiro dentro da janela de evidência. O teste direto no Codex Pro retornou JSON válido com `asset_page: null`.
+- O diálogo global permite reenviar solicitações FAILED com sugestões, mas mantém a aprovação exclusiva para PROPOSED. Validações: build do frontend e `php -l` no worker concluídos.
+## 2026-09-27 — Localização autônoma de imagem pelo Codex
+- O reenvio de uma solicitação FAILED não exige mais página ou sugestão manual. A instrução original é reutilizada e o Codex decide `asset_page` ou `null` a partir das páginas de evidência.
+- O prompt foi explicitado para impedir dependência de página informada pelo usuário. Validação: `php -l` do worker e build do frontend concluídos; permanece apenas o aviso não bloqueante de bundle acima de 500 kB.
+## 2026-09-27 — Preview seguro de figura proposta
+- O worker extrai uma imagem incorporada na página escolhida pelo Codex e grava um preview temporário no volume de ativos; não renderiza a página completa.
+- A rota administrativa de preview entrega esse PNG somente para propostas em PROPOSED; o diálogo global o obtém por Axios autenticado antes da aprovação.
+- Validações: build da SPA e php lint na API e no worker concluídos.
+## 2026-09-27 — Correção de duplicação e notificação editorial
+- A recuperação de notificações agora considera APPROVED como resultado mais recente, impedindo que uma falha antiga reabra o banner após atualização.
+- A aprovação promove o mesmo PNG do preview, sem renderizar novamente a página PDF. Foram removidos os dois ativos idênticos de página inteira da questão 03fb72ad-1448-481c-bf58-80c791cd61b5.
+- Validações: php lint no repositório e build da SPA concluídos.

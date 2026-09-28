@@ -211,3 +211,20 @@ A resolução do caderno oferece “Tirar dúvida com a fonte”. O composable `
 A seção administrativa **Auditoria** consulta somente `GET /admin/question-audits/latest` pelo repositório Axios e apresenta a execução mais recente e seus totais por estado. Ela não disponibiliza ações de correção, importação ou publicação; achados ambíguos permanecem para revisão editorial.
 
 A seção Auditoria também pagina os achados da última execução por meio de `QuestionAuditRepository`, do caso de uso e do composable próprios. Cada linha é somente informativa e mostra código, confiança, estado e PDF/página de origem; a interface não oferece correção automática.
+
+## Notificações de correção em tempo real
+
+A SPA abre um Socket.IO autenticado pelo access token em `/ws/socket.io`. O gateway entrega eventos exclusivamente na sala do usuário solicitante. Ao recarregar, a SPA consulta `GET /question-correction-requests/latest`; administradores podem abrir e aprovar a proposta diretamente pelo aviso global.
+
+## Prévia de correção de questão
+
+O diálogo global de correção apresenta a proposta real usando `QuestionCorrectionProposalPreview.vue`, que reutiliza `QuestionContent.vue` para enunciado e alternativas. Administradores podem aprovar a prévia ou reenviar uma nova solicitação com sugestões; o reenvio passa por `useQuestionCorrection -> RequestQuestionCorrectionUseCase -> QuestionRepository`, preservando o histórico de solicitações.
+
+
+## Atualização editorial em Caderno aberto
+
+Ao aprovar uma correção pelo diálogo global, `App.vue` incrementa a versão editorial enviada a `NotebookExecutionPage`. O composable `useNotebookExecution` consulta novamente as questões pelo caso de uso de Study e preserva a questão aberta pelo ID, o índice e as respostas. A aprovação feita no diálogo local do Caderno executa a mesma atualização imediatamente.
+## Reenvio de correção com falha
+O diálogo global permite que administradores reenviem uma solicitação em estado FAILED com novas sugestões. Somente uma solicitação PROPOSED mostra o botão de aprovação.
+## Localização automática de figura em correção
+Em solicitações FAILED, administradores podem acionar Reenviar análise sem preencher sugestões. O worker recebe a solicitação original e escolhe automaticamente a página da figura dentro da janela de evidência; sugestões são apenas contexto adicional.
