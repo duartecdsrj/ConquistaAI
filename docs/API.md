@@ -271,3 +271,6 @@ Socket.IO usa a sala autenticada `arena:duel:{id}`. `arena:duel-updated` contém
 `POST /arena/duels` recebe `max_players`, `subjects_per_player`, `question_count`, `question_seconds` e `visibility` (`PUBLIC` ou `PRIVATE`, padrão `PRIVATE`). `POST /arena/duels/join` mantém a entrada por `{ "code": "..." }` exclusivamente para salas privadas. `POST /arena/duels/{id}/join` permite ao usuário autenticado entrar em sala pública `WAITING` sem código.
 
 `GET /arena/duels/public?page=1&per_page=25` lista somente salas públicas `WAITING`; `GET /arena/duels/mine/private?page=1&per_page=25` lista somente salas privadas `WAITING` criadas pelo usuário autenticado. Ambos devolvem paginação padrão e resumos sem código ou participantes. `GET /arena/subjects?page=1&per_page=25` devolve assuntos canônicos ativos para a escolha individual de prontidão. Detalhes e comandos de um duelo continuam restritos a seus participantes; tentativa de acessar sala privada de terceiro retorna `404`.
+
+- `DELETE /arena/duels/{id}` remove uma sala `WAITING` apenas quando solicitado pelo criador; salas iniciadas, finalizadas ou de terceiros retornam `409 STATE_CONFLICT`.
+- A listagem pública inclui `creatorUserId` apenas para permitir ao cliente autenticado exibir a ação de remoção da própria sala aguardando; `DELETE /arena/duels/{id}` mantém a regra de propriedade e estado `WAITING`.

@@ -25,6 +25,9 @@ final class Duel
         public ?\DateTimeImmutable $finishedAt = null,
         public array $questionIds = [],
         public DuelVisibility $visibility = DuelVisibility::PRIVATE,
+        public array $players = [],
+        public ?array $question = null,
+        public bool $answered = false,
     ) {
         if ($maxPlayers < 2 || $maxPlayers > 8 || $subjectsPerPlayer < 1 || $subjectsPerPlayer > 5
             || !in_array($questionCount, [5, 10, 15, 20], true) || !in_array($questionSeconds, [15, 30, 60], true)) {

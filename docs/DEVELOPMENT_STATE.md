@@ -2049,3 +2049,19 @@ docker compose exec -T frontend npm run build
 - O fluxo de espera oferece assuntos e confirmação de prontidão, removendo o bloqueio que impedia o início.
 - Validação: migration com padrão PRIVATE, testes Arena, boot API, build SPA e git diff --check aprovados.
 - Próximo passo: exercer os fluxos por dois usuários autenticados no navegador.
+
+## 2026-09-28 — E2E arena-duelo validado
+
+- Fluxo HTTP validado com dois usuários: criação pública, entrada, prontidão, congelamento de cinco questões, início, respostas, fechamento de cada rodada e finalização.
+- Correções: a prontidão é sincronizada antes da seleção e o seletor Doctrine sempre vincula parâmetros presentes na consulta; rodadas não finais avançam após a apuração.
+- Validação: cenário E2E local concluído com status FINISHED na posição 5.
+- Próximo passo: manter teste automatizado de navegador cobrindo a apresentação dos jogadores e da questão atual.
+- Interface passou a receber jogadores, questão e alternativas; cada resposta solicita o fechamento da rodada e sincroniza o estado atualizado.
+
+## 2026-09-28 — Remoção de salas Arena
+
+- Criador pode remover transacionalmente uma sala em espera; participantes, assuntos e questões congeladas são removidos antes da sala.
+- A SPA mostra “Remover sala” somente ao criador no estado de espera e recarrega o lobby após sucesso.
+- Próximo passo: validar endpoint e build SPA.
+
+- Salas públicas agora identificam o criador no resumo sanitizado apenas para exibir “Remover” ao lado de “Entrar”, preservando remoção somente em espera.

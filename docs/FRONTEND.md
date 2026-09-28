@@ -253,3 +253,6 @@ O módulo Arena segue `ArenaPage/components -> useArena -> ArenaUseCases -> Aren
 ## Arena: salas públicas e prontidão
 
 A Arena permite criar salas `PUBLIC` ou `PRIVATE`. O composable `useArena` consulta salas públicas, salas privadas criadas pelo usuário e assuntos canônicos pela camada Application/Axios; `ArenaPage` nunca acessa HTTP diretamente. Participantes entram em salas públicas pelo resumo real e confirmam exatamente a quantidade exigida de assuntos antes que o criador possa iniciar. Ao abrir a página, o parâmetro `duel` da URL é restaurado pela API; erros, salas vazias, lotadas e privadas não acessíveis permanecem estados explícitos da interface.
+
+- A Arena oferece ao criador o botão “Remover sala” enquanto o duelo estiver aguardando; após sucesso, retorna ao lobby atualizado.
+- Em “Salas públicas”, o criador vê “Remover” ao lado de “Entrar”; a ação reaproveita a remoção segura de sala aguardando.

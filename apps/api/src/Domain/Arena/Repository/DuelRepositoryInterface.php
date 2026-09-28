@@ -10,6 +10,7 @@ use App\Domain\Arena\ReadModel\ArenaRoomSummary;
 interface DuelRepositoryInterface
 {
     public function save(Duel $duel): void;
+    public function removeWaitingOwnedBy(string $duelId, string $userId): bool;
     public function findForParticipant(string $duelId, string $userId): ?Duel;
     public function findByCode(string $code): ?Duel;
     public function findPublicWaiting(string $duelId): ?Duel;
