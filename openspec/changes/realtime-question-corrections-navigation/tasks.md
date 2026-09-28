@@ -2,6 +2,7 @@
 
 - [x] 1.1 Criar persistência, DTOs, serviços e rotas internas de notificação de correção.
 - [x] 1.2 Criar gateway Socket.IO autenticado por JWT e adicioná-lo ao Compose/Nginx.
+- [x] 1.3.1 Permitir ignorar persistente por navegador de um resultado específico de correção.
 - [x] 1.3 Publicar eventos do worker e recuperar notificações pendentes pela SPA.
 
 ## 1. Worker resiliente
@@ -15,6 +16,8 @@
 - [x] 1.10 Registrar metadados não sensíveis da proposta antes da validação estrutural.
 - [x] 1.11 Completar alternativas vazias com o snapshot original, preservando IDs, ordem e conteúdo.
 - [x] 1.12 Entregar snapshot no prompt para evitar leitura de arquivo bloqueada pelo sandbox.
+- [x] 1.13 Pesquisar trecho solicitado no PDF de origem e anexar páginas encontradas à evidência antes do Codex.
+- [x] 1.14 Extrair metadados visíveis, remover cabeçalhos redundantes e atualizar a evidência visual na aprovação.
 - [x] 2.4 Exibir prévia da questão proposta e permitir reenvio com sugestões no diálogo global.
 - [x] 2.5 Permitir reenvio de solicitação que falhou, mantendo a aprovação restrita a proposta válida.
 
@@ -30,6 +33,7 @@
 - [x] 3.2 Permitir próxima questão sem resposta e adicionar assunto anterior/próximo no Caderno.
 - [x] 3.3 Recarregar no Caderno o conteúdo editorial aprovado, preservando posição e respostas.
 - [x] 3.4 Converter a página visual aprovada em ativo autenticado e rejeitar referências Markdown internas.
+- [x] 3.6 Repetir de forma limitada a busca autenticada de ativos recém-promovidos para evitar falha transitória de exibição.
 - [x] 3.5 Suportar múltiplas figuras ordenadas, com extração e prévia individuais no marcador correto do enunciado.
 
 ## 4. Verificação

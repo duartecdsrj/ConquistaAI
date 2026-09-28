@@ -6,6 +6,7 @@ A correção conclui em worker assíncrono e hoje exige que o usuário permaneç
 
 - Notificação WebSocket autenticada quando uma correção muda de estado, especialmente em `PROPOSED` e `FAILED`.
 - Notificação global com atalho para revisar/aprovar a proposta, independentemente da tela atual.
+- O usuário pode ignorar permanentemente, neste navegador, um resultado específico; a dispensa não altera a solicitação nem o histórico editorial.
 - Persistência da seção atual em URL, inclusive ao recarregar.
 - Correção disponível no Banco de Questões e no Caderno.
 - Caderno permite próxima questão sem responder, próximo assunto e assunto anterior.

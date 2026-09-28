@@ -18,7 +18,7 @@
   <q-banner v-if="activeNotification" class="global-correction-notification" rounded inline-actions>
     <template #avatar><q-icon :name="activeNotification.status === 'PROPOSED' ? 'task_alt' : 'error_outline'" :color="activeNotification.status === 'PROPOSED' ? 'positive' : 'negative'" /></template>
     {{ activeNotification.status === 'PROPOSED' ? 'A proposta de correção está pronta para revisão.' : 'Não foi possível criar uma proposta segura para a correção solicitada.' }}
-    <template #action><q-btn flat no-caps label="Ver resultado" @click="openNotification" /><q-btn flat round icon="close" aria-label="Fechar" @click="dismissNotification" /></template>
+    <template #action><q-btn flat no-caps label="Ver resultado" @click="openNotification" /><q-btn flat no-caps label="Ignorar" @click="ignoreNotification" /><q-btn flat round icon="close" aria-label="Fechar" @click="dismissNotification" /></template>
   </q-banner>
   <q-dialog v-model="correctionDialog"><q-card class="notification-dialog preview-dialog"><q-card-section><p class="eyebrow">CORREÇÃO DE QUESTÃO</p><h2>{{ correctionRequest?.status === "PROPOSED" ? "Proposta pronta" : "Resultado da solicitação" }}</h2><q-banner v-if="correctionRequest?.proposal" rounded class="success-banner">{{ correctionRequest.proposal.summary }}</q-banner><QuestionCorrectionProposalPreview v-if="correctionRequest?.proposal" :proposal="correctionRequest.proposal" :request-id="correctionRequest.id"/><q-input v-if="canResendCorrection" v-model="correctionSuggestions" outlined autogrow label="Sugestões adicionais (opcional)" hint="O Codex localizará automaticamente a figura nas páginas de evidência; use este campo apenas para contexto adicional." class="q-mt-md"/><q-banner v-if="!correctionRequest?.proposal" rounded class="error-banner">{{ correctionRequest?.errorMessage || "A proposta não pôde ser gerada com segurança." }}</q-banner><q-banner v-if="correctionError" rounded class="error-banner q-mt-sm">{{ correctionError }}</q-banner></q-card-section><q-card-actions align="right"><q-btn flat no-caps label="Fechar" @click="correctionDialog=false"/><q-btn v-if="canResendCorrection" outline no-caps color="primary"  :label="correctionRequest?.status === 'FAILED' ? 'Reenviar análise' : 'Reenviar com sugestões'" :loading="correctionLoading" :disable="correctionLoading" @click="resendProposal"/><q-btn v-if="canApproveProposal" unelevated no-caps color="positive" label="Aprovar proposta" :loading="correctionLoading" @click="approveProposal"/></q-card-actions></q-card></q-dialog>
 </template>
@@ -53,13 +53,14 @@ const correctionSuggestions = ref("")
 const questionContentVersion = ref(0)
 const { authenticated, error, loading, login, logout, restore, submitting, user } = useAuth()
 const { approve, error: correctionError, loading: correctionLoading, refresh, request: correctionRequest, submit } = useQuestionCorrection()
-const { connect, dismiss, event: notification } = useQuestionCorrectionNotifications()
+const { connect, dismiss, ignore, isIgnored, event: notification } = useQuestionCorrectionNotifications()
 const pendingNotification = ref<import("./Infrastructure/Realtime/QuestionCorrectionRealtimeClient").QuestionCorrectionRealtimeEvent | null>(null)
 const activeNotification = computed(() => notification.value ?? pendingNotification.value)
 const canApproveProposal = computed(() => user.value?.roles.includes("ADMIN") === true && correctionRequest.value?.status === "PROPOSED")
 const canResendCorrection = computed(() => user.value?.roles.includes("ADMIN") === true && (correctionRequest.value?.status === "PROPOSED" || correctionRequest.value?.status === "FAILED"))
-async function recoverNotification(): Promise<void> { try { const completed = await questionUseCases.latestCompletedCorrection.execute(); if (completed.status === "PROPOSED" || completed.status === "FAILED") pendingNotification.value = { userId: "", requestId: completed.id, questionId: completed.questionId, status: completed.status } } catch { } }
+async function recoverNotification(): Promise<void> { try { const completed = await questionUseCases.latestCompletedCorrection.execute(); if ((completed.status === "PROPOSED" || completed.status === "FAILED") && !isIgnored(completed.id)) pendingNotification.value = { userId: "", requestId: completed.id, questionId: completed.questionId, status: completed.status } } catch { } }
 function dismissNotification(): void { pendingNotification.value = null; dismiss() }
+function ignoreNotification(): void { const active = activeNotification.value; if (!active) return; ignore(active.requestId); pendingNotification.value = null; dismiss() }
 const validSections: readonly ApplicationSection[] = ['home', 'notebooks', 'questions', 'catalog', 'import', 'editorial', 'taxonomy', 'audit', 'assistant', 'discovery', 'performance']
 
 function openNotebook(id: string): void { activeNotebookId.value = id }

@@ -1446,3 +1446,41 @@ docker compose exec -T frontend npm run build
 - Caderno, Banco de Questões e diálogo de aprovação usam o mesmo componente para posicionar os ativos nos marcadores; itens legados sem marcador continuam exibindo seus ativos acima do enunciado.
 - Validações: lint PHP do worker, repositório e rota; build de produção do frontend; `openspec validate realtime-question-corrections-navigation --strict` aprovados.
 - Próximo passo: enviar uma nova solicitação de correção para validar visualmente uma questão com duas ou mais figuras; solicitações históricas permanecem imutáveis.
+
+## 2026-09-27 — Pesquisa explícita de trecho no PDF de evidências
+
+- O worker reconhece instruções como `procure por trecho ...`, `pesquise pela expressão ...`, `busque`, `localize`, `encontre` e `ache`, desde que indiquem trecho, texto, expressão ou frase.
+- Antes de renderizar anexos ou iniciar o Codex, ele extrai o texto do PDF de origem, localiza as páginas com correspondência normalizada (acentos, quebras e espaços não impedem o encontro) e adiciona cada página e a janela de duas páginas vizinhas às evidências.
+- O log estruturado `evidence_search` registra hash do trecho, páginas encontradas e evidências efetivamente enviadas, sem gravar o conteúdo pesquisado.
+- Validações: sintaxe PHP e busca real por `Lista de Questões` em PDF de backup, com páginas 3, 51 e 56 encontradas. Próximo passo: enviar uma nova solicitação com comando de busca e conferir o evento no log do worker.
+
+## 2026-09-27 — Aprovação alinhada às evidências pesquisadas
+
+- Corrigida a divergência entre worker e aprovação: o worker persiste em cada proposta as páginas de evidência que efetivamente enviou ao Codex, incluindo as localizadas por comando de busca. A aprovação valida as figuras contra essa lista, e não apenas contra os metadados iniciais da questão.
+- Para propostas já concluídas antes desse campo existir, a aprovação aceita a prévia individual existente como evidência de extração controlada; isso permite aprovar a solicitação atual sem reenviá-la.
+- Validações: a proposta `c01a3582-912a-414d-b87a-d369d42bd454` possui uma figura e sua prévia individual existe; lint do worker no próprio container, OpenSpec estrito e `git diff --check` aprovados.
+
+## 2026-09-27 — Reparação de erro interno na aprovação
+
+- Identificada a causa do erro interno: uma alteração de linha compactada no repositório removeu o prefixo global de `DateTimeImmutable`, `DateTimeZone` e exceções; dentro do namespace Doctrine isso tentava resolver classes inexistentes. As referências globais foram restauradas.
+- A solicitação `c01a3582-912a-414d-b87a-d369d42bd454` já constava como `APPROVED`, apesar do erro retornado pela interface. Confirmados enunciado com marcador e asset na página 1294; o arquivo visual ausente foi restaurado exclusivamente a partir da prévia aprovada (29.992 bytes), sem nova IA ou alteração de conteúdo.
+- Validações: lint do repositório e worker dentro dos contêineres, OpenSpec estrito e `git diff --check` aprovados.
+
+## 2026-09-27 — Metadados e proveniência editorial da correção
+
+- O worker exige na proposta os metadados visíveis `board`, `exam`, `position` e `year`; campos não impressos na evidência devem ser `null`. O prompt determina remover somente o cabeçalho inicial que replica esses dados, preservando o conteúdo intelectual.
+- Na aprovação, banca e ano atualizam os campos próprios; concurso e cargo atualizam a origem textual; e as páginas das figuras promovidas refinam `source_pdf_pages` para a evidência efetivamente aprovada. A fonte PDF continua imutável.
+- A questão `1ae2eb99-16c2-4f6c-bacc-798915ca979d` foi ajustada por evidência direta: `FCC`, `PGE MT`, `2016` e página `1294`; o cargo não consta na página, portanto não foi inventado. O asset aprovado permanece acessível pela rota autenticada.
+- Próximo passo: enviar nova solicitação e conferir no preview e na questão publicada a imagem e os metadados propostos antes de aprovar.
+
+## 2026-09-27 — Recuperação de imagem autenticada na tela
+
+- Confirmado o ativo da questão `1ae2eb99-16c2-4f6c-bacc-798915ca979d`: página 1294, arquivo existente e acessível pelo endpoint autenticado.
+- O carregador de ativos do frontend agora tenta novamente até três vezes quando a promoção do arquivo e a primeira consulta concorrem; cada tentativa usa a mesma rota autenticada e não expõe o caminho físico do arquivo.
+- Próximo passo: atualizar o navegador e confirmar visualmente a figura no Caderno e no Banco de Questões.
+
+## 2026-09-27 — Dispensa persistente de resultado de correção
+
+- O banner global passou a apresentar a ação `Ignorar`. Ela armazena localmente e de forma limitada o ID da solicitação, sem alterar fila, proposta ou histórico no servidor.
+- A recuperação REST e os novos eventos WebSocket consultam a lista de resultados ignorados; por isso uma solicitação dispensada não volta após atualizar a página ou navegar.
+- Próximo passo: clicar em `Ignorar`, atualizar a página e confirmar que o mesmo resultado não reaparece; um novo resultado continua sendo exibido normalmente.
