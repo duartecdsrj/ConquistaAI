@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Application\Arena\DTO\Request; final readonly class CreateDuelRequestDto { public function __construct(public int $maxPlayers,public int $subjectsPerPlayer,public int $questionCount,public int $questionSeconds,public string $visibility="PRIVATE"){} }

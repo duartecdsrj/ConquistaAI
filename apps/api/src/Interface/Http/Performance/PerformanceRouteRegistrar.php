@@ -41,7 +41,7 @@ final class PerformanceRouteRegistrar
         $attemptController = new AttemptController(
             $this->authentication,
             new StartAttemptService(new DoctrineNotebookRepository($entityManager), $attempts, $transactions),
-            new AppendAnswerService($attempts, $transactions),
+            new AppendAnswerService($attempts, new DoctrineNotebookRepository($entityManager), $transactions),
             new CompleteAttemptService($attempts, $transactions),
             $this->responses,
         );

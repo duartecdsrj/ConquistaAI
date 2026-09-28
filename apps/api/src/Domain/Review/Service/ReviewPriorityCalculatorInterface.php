@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Domain\Review\Service; use App\Domain\Review\Entity\UserFlashcardProgress; interface ReviewPriorityCalculatorInterface { public function calculate(UserFlashcardProgress $progress,?float $masteryScore,float $recentQuestionSignal,float $relevance,\DateTimeImmutable $now):float; }

@@ -1,4 +1,186 @@
+## 2026-09-28 — Fundação OpenSpec da Arena Duelo
+
+- Criada a mudança OpenSpec `arena-duelo`, com proposta, decisões, requisitos e tarefas para sala privada, sincronização e proveniência de desempenho.
+- A análise encontrou Socket.IO autenticado por JWT já implantado, MySQL/Doctrine como fonte de verdade e SPA Quasar com shell reutilizável; a decisão é usar REST para comandos e Socket.IO apenas para entrega/reconciliação.
+- Criada a migration aditiva `033_arena_duel.sql` para salas, participantes, assuntos, questões congeladas e respostas imutáveis, além do contexto `ARENA_DUELO` em tentativas.
+- Adicionada a regra pura `DuelScoring`, que atribui 100/75/50/25 às corretas por ordem determinística e -25 às erradas; lint PHP e teste focalizado no contêiner API aprovados (1 teste, 5 asserções).
+- Pendências: repositórios Doctrine, serviços/rotas, integração de desempenho, gateway de sala, módulo SPA, testes de integração e validação no Compose.
+- As dependências PHP não existem no checkout local; validações futuras devem continuar sendo executadas no contêiner API.
 # Estado de desenvolvimento — ConquistaAI
+
+## 2026-09-28 — Proposta de evidência automática na correção de questões
+
+- Criada a proposta OpenSpec `automatic-question-correction-evidence` para que o worker de correção localize páginas do PDF usando o primeiro parágrafo do enunciado e uma alternativa central não vazia, mesmo sem comando de busca na instrução.
+- A proposta preserva as janelas de páginas de origem, a busca explícita por trecho, a busca de gabarito e a aprovação administrativa; não há alteração de rota ou payload.
+- Artefatos de proposta, decisão técnica, especificação e tarefas foram concluídos; nenhuma alteração no worker foi aplicada nesta etapa.
+- Próximo passo: aplicar a mudança por `/opsx:apply automatic-question-correction-evidence`.
+
+## 2026-09-28 — Inicialização da API Study restaurada
+
+- Corrigida a composição de `StudyController`: o registrador injetava `CreateNotebookService` no parâmetro de autenticação e deslocava todas as dependências, produzindo erro fatal HTML para qualquer endpoint da API, inclusive login.
+- O controlador volta a receber `AuthService` seguido de um único caso de uso de criação com a exclusão de questões configurada.
+- Próximo passo: validar o endpoint de sessão com token inválido, garantindo resposta JSON `401` em vez de HTML fatal.
+
+## 2026-09-28 — Compatibilidade de resposta na autenticação
+
+- O adaptador Axios passa a extrair dados tanto do envelope canônico `data/meta` quanto do payload direto legado devolvido pelo login, eliminando a falha de leitura de `access_token` quando o proxy/API retorna a forma direta.
+- Os endpoints que seguem o contrato canônico permanecem inalterados; a compatibilidade fica isolada na infraestrutura HTTP.
+- Próximo passo: validar o login pela interface após disponibilizar o novo módulo.
+
+## 2026-09-28 — Recuperação segura da montagem global
+
+- A aplicação não inicia mais bloqueada por um `q-inner-loading` de raiz: a tela de login é renderizada de imediato, enquanto a sessão é restaurada em segundo plano.
+- Uma sessão válida substitui a tela de login pela aplicação; sem sessão recuperável ou diante de falha inesperada, a interface permanece utilizável para novo acesso.
+- Validação: o Chromium isolado acessando `http://localhost:8081` montou a tela de login no DOM, incluindo os campos de e-mail, senha e o botão de acesso.
+
+## 2026-09-28 — Validação final da execução mobile
+
+- Build de produção aprovado no Compose (`vue-tsc --noEmit` e Vite); permanece somente o aviso não bloqueante de bundle acima de 500 kB.
+- O Playwright iniciou os projetos desktop e mobile. O cenário autenticado parou antes do caderno porque a fixture E2E permaneceu na tela de login; a falha não alcançou os controles alterados. O cenário público de login foi aprovado nos dois perfis.
+- Lint de todos os módulos PHP de Study e Performance alterados e `git diff --check` aprovados.
+
+## 2026-09-28 — Continuidade, pausa e seleção inédita de caderno
+
+- Implementados `activeQuestionId` persistido, rota autenticada de atualização e restauração do índice no composable; a migration `031_notebook_active_question.sql` suporta a nova coluna.
+- Tentativas e respostas exigem estado `IN_PROGRESS` no servidor e a interface desabilita seleção/confirmação enquanto pausada; respostas pausadas retornam `409 STATE_CONFLICT`.
+- A criação consulta uma porta Doctrine para excluir itens finalizados nos últimos 30 dias ou reservados por cadernos abertos do mesmo usuário. A seleção dirigida já preserva blocos de assunto na ordem congelada.
+- Próximo passo: concluir testes integrados e build da proposta.
+
+## 2026-09-28 — Rodapé móvel em linha única
+
+- Todos os controles do rodapé móvel agora são ícones de 40 px, centralizados e sem quebra de linha; os grupos semânticos usam `display: contents` somente nesse breakpoint.
+- Os rótulos continuam disponíveis no desktop e a acessibilidade permanece via `aria-label`.
+- Validação proporcional: `git diff --check`. Próximo passo: concluir os casos de uso pendentes da proposta antes do commit.
+
+## 2026-09-28 — Ícones consistentes no rodapé móvel
+
+- O rodapé móvel oculta apenas os rótulos e apresenta ícones distintos para assunto anterior, próximo assunto, questão anterior, confirmação e próxima questão.
+- Os mesmos ícones permanecem acompanhados dos rótulos no desktop; todos os controles mantêm `aria-label` descritivo.
+- Validação proporcional: `git diff --check`. Próximo passo: continuidade e seleção de caderno da proposta.
+
+## 2026-09-28 — Área ampliada de resolução mobile
+
+- A seção contextual `book-heading` fica oculta em telas de até 599 px; os dados essenciais de questão, cronômetro, pausa e finalização continuam disponíveis na própria execução.
+- A altura da área de trabalho foi recalculada para usar o espaço recuperado, sem afetar o layout desktop.
+- Validação proporcional: `git diff --check`. Próximo passo: continuidade e seleção de caderno da proposta.
+
+## 2026-09-28 — Grade uniforme de controles no rodapé móvel
+
+- O rodapé da questão agora separa os atalhos de assunto das ações de resposta e usa grades proporcionais: dois controles de assunto, três ações durante a resposta e duas após o registro.
+- Os botões ocupam colunas equivalentes, com altura de toque de 44 px, sem o espaço flexível que causava larguras irregulares.
+- Validação proporcional: `git diff --check`. Próximo passo: manter a implementação de continuidade e seleção da proposta.
+
+## 2026-09-28 — Contrato de continuidade de caderno
+
+- O contrato HTTP inclui `PATCH /notebooks/{id}/active-question`, `activeQuestionId` na leitura e erros `409 STATE_CONFLICT` para tentativa ou resposta fora de `IN_PROGRESS`; a documentação frontend registra o fluxo pelas camadas Study.
+- A tarefa documental 2.2 da proposta foi concluída. Próximo passo: persistir a posição ativa e restaurá-la na abertura do caderno.
+
+## 2026-09-28 — Escopo ampliado: continuidade e seleção de caderno
+
+- A proposta `mobile-notebook-execution` passou a incluir persistência da questão ativa, bloqueio transacional de respostas em pausa, ordenação por assunto e exclusão de questões respondidas nos últimos 30 dias ou reservadas em cadernos abertos do mesmo usuário.
+- O contrato e a documentação frontend foram atualizados antes da implementação. A escolha inicial para “recentemente” é 30 dias; elegibilidade insuficiente deve retornar 422, sem repetir questões.
+- Próximo passo: implementar o contrato, a persistência e os guardas de domínio antes da validação final da proposta.
+
+## 2026-09-28 — Cobertura Playwright da execução responsiva
+
+- Adicionado cenário Playwright para os projetos desktop e mobile: ícones acessíveis do cabeçalho, abas móveis, painel de navegação, progresso/finalização, rodapé persistente, arrasto horizontal e rolagem vertical sem troca de vista.
+- Em desktop, o mesmo cenário confirma que as abas móveis ficam ocultas e que os painéis de navegação e progresso continuam simultaneamente visíveis.
+- Próximo passo: executar o build do frontend e a suíte Playwright, então registrar o resultado final da proposta.
+
+## 2026-09-28 — Controles preservados no cabeçalho móvel
+
+- Os botões compactos de pausar/retomar e finalizar agora mantêm ícones Material visíveis, áreas de toque de 40 px e nomes acessíveis já expostos por `aria-label`.
+- A redução visual continua ocultando apenas o texto dos controles no mobile, sem comprometer as ações essenciais.
+- Próximo passo: cobrir as abas, o gesto e os controles nos projetos Playwright desktop e mobile.
+
+## 2026-09-28 — Rodapé persistente na questão móvel
+
+- A área de leitura da questão agora é um painel rolável independente e o rodapé com Anterior, confirmação de resposta e Próxima questão permanece fora dela.
+- Em telas móveis, a área útil usa flexbox, `min-height: 0` e altura baseada na viewport dinâmica, evitando que o rodapé seja perdido em enunciados longos.
+- Próximo passo: ajustar o cabeçalho compacto para preservar os ícones de pausa e finalização.
+
+## 2026-09-28 — Arrasto horizontal no caderno mobile
+
+- O contêiner das vistas móveis reconhece somente arrastos por toque com deslocamento horizontal predominante de ao menos 48 px; os limites da sequência são respeitados.
+- A área declara `touch-action: pan-y`, mantendo a rolagem vertical do enunciado livre e sem alterar a aba ativa.
+- Próximo passo: separar a área rolável da questão do rodapé de ações, para manter os controles disponíveis durante a leitura.
+
+## 2026-09-28 — Abas móveis na execução de caderno
+
+- A execução de caderno passou a organizar, em telas de até 599 px, as vistas de Questão, Navegação e Progresso em abas de apresentação locais, preservando a mesma fonte de estado de Study.
+- A alternância por aba revela o painel correspondente sem alterar a questão atual ou as estatísticas reais já carregadas.
+- Próximo passo: adicionar a troca por arrasto horizontal, sem interferir na rolagem vertical do enunciado.
+
+## 2026-09-28 — Proposta de autenticação Google e gestão de usuários
+
+- Criada a proposta OpenSpec `google-auth-user-management` para autenticação Google com validação OIDC no backend, vínculo explícito de e-mail Google e manutenção do login local.
+- O primeiro acesso Google sem vínculo cria conta `PENDING_APPROVAL`, sem access token ou refresh token; a interface deve informar que a liberação administrativa é necessária. Coincidência com e-mail local não vincula contas automaticamente.
+- A proposta prevê gestão administrativa paginada de usuários, cadastro, associação/remoção de e-mail Google, alteração auditável de papéis/status e proteção do último administrador ativo.
+- Artefatos de proposta, design, especificações e tarefas foram concluídos; nenhuma funcionalidade, migração ou configuração externa foi aplicada nesta etapa.
+- Próximo passo: aplicar a mudança por `/opsx:apply google-auth-user-management`, começando pela documentação de contrato e fundação do contexto Identity.
+- Escopo ampliado: a proposta agora importa uma cópia validada da foto `picture` do Google apenas na criação da conta e permite que cada usuário ativo substitua sua própria foto pelo perfil. A foto manual prevalece sobre qualquer imagem futura do Google; o binário permanece protegido por autorização.
+
+## 2026-09-28 — Contrato de autenticação Google e usuários
+
+- O contrato de `POST /auth/google` foi documentado: validação OIDC exclusivamente no backend, sessão apenas para conta `ACTIVE`, criação idempotente em `PENDING_APPROVAL` e retorno seguro sem tokens durante a aprovação.
+- A documentação também fixa as rotas administrativas `/admin/users`, a paginação, os comandos separados para vínculo Google, papéis e status, além da proteção do último administrador ativo.
+- Próximo passo: documentar o módulo SPA de Identity/Administração de usuários e iniciar a migration reversível da fundação Identity.
+
+## 2026-09-28 — Fluxo SPA de Google e gestão de usuários
+
+- `docs/FRONTEND.md` registra o fluxo `Google Identity Services -> useAuth -> caso de uso -> repositório Axios -> API`, o retorno sem sessão para aprovação pendente e as mensagens seguras.
+- O módulo administrativo foi especificado nas quatro camadas DDD, com listagem paginada e formulários Quasar que preservam estado confirmado diante de erros.
+- Próximo passo: criar a migration reversível da fundação Identity.
+
+## 2026-09-28 — Migration da fundação Identity
+
+- Criada a migration `032_google_auth_user_management.sql`: senha local passa a ser opcional, o estado `PENDING_APPROVAL` é adicionado sem alterar registros existentes e os metadados privados de avatar são incluídos.
+- O vínculo Google exclusivo por usuário/e-mail e os eventos de auditoria de identidade foram definidos com chaves estrangeiras e índices. O rollback está documentado no arquivo e exige resolver previamente contas pendentes e usuários sem senha local.
+- Próximo passo: modelar os contratos de domínio Identity para esses dados.
+
+## 2026-09-28 — Modelo de domínio Identity
+
+- Adicionados `UserStatus`, `AvatarSource`, `GoogleEmail`, as entidades `GoogleIdentity`, `UserAvatar` e `IdentityAuditEvent`, além das portas de vínculo Google e auditoria.
+- `User` agora aceita ausência de senha local e informa explicitamente se ela está configurada, preservando a regra de acesso ativo existente.
+- Próximo passo: implementar a persistência Doctrine, transações e armazenamento privado para esses contratos.
+
+## 2026-09-28 — Persistência Identity e avatar privado
+
+- Implementados repositórios Doctrine para identidade Google e eventos de auditoria, com entidades mapeadas para as novas tabelas e sem campos de credenciais externas.
+- O registro Doctrine de usuário aceita senha e metadados de avatar anuláveis; `PrivateAvatarStorage` usa chaves relativas, permissões privadas e rejeita travessia de caminho.
+- Validação: lint PHP dos contratos e adaptadores Identity, além de `git diff --check`, aprovados.
+- Próximo passo: implementar a validação OIDC do Google.
+
+## 2026-09-28 — Validação OIDC Google
+
+- Implementado `GoogleOidcValidator`: busca e mantém JWKS em cache, verifica JWT RS256, emissor, público configurado, expiração e e-mail confirmado antes de expor uma identidade tipada ao caso de uso.
+- A credencial bruta não atravessa o adaptador; erros retornam mensagens seguras e não causam persistência.
+- Validação: lint PHP do adaptador e `git diff --check` aprovados.
+- Próximo passo: usar a identidade validada no caso de uso de autenticação Google.
+
+## 2026-09-28 — Caso de uso de autenticação Google
+
+- `GoogleAuthenticationService` resolve exclusivamente o vínculo Google normalizado; sem vínculo cria uma única conta `PENDING_APPROVAL` com papel `USER` e sem senha local.
+- Coincidência com e-mail local sem vínculo gera conflito, e somente vínculo de usuário `ACTIVE` recebe sessão JWT/refresh. A credencial não é persistida nem registrada.
+- Próximo passo: aplicar estados de acesso também a login local, refresh e sessão atual.
+
+## 2026-09-28 — Estados de acesso nas sessões
+
+- Login local agora rejeita usuário sem senha, devolve condição segura de aprovação pendente após validar credenciais e continua bloqueando contas não ativas.
+- Refresh e `GET /auth/me` já revogavam/rejeitavam usuários não ativos; a resposta de sessão passa a incluir o status, preservando o bloqueio sem tokens.
+- Próximo passo: expor o comando e a resposta Google pela rota HTTP.
+
+## 2026-09-28 — Rota HTTP de autenticação Google
+
+- `POST /v1/auth/google` recebe DTO validado de credencial e nome opcional de dispositivo, delega ao caso de uso e responde no envelope padrão.
+- Contas pendentes retornam dados sem token/cookie; colisão de vínculo retorna `409 STATE_CONFLICT`; credencial inválida retorna `401 UNAUTHENTICATED`.
+- Próximo passo: adicionar testes de unidade e integração para OIDC, pendência, colisão e sessão bloqueada.
+
+## 2026-09-28 — Cobertura parcial de autenticação Google
+
+- Os testes unitários Identity agora cobrem JWT OIDC RS256 assinado por JWKS controlada, e-mail não confirmado, criação pendente idempotente, colisão com conta local e emissão de sessão para vínculo ativo: 7 testes e 13 asserções aprovados no contêiner API.
+- A verificação HTTP integrada está pendente: o contêiner em execução usa a imagem anterior e não monta o fonte atualizado; a reconstrução controlada será feita junto da execução da migration na tarefa 6.2.
+- Próximo passo: importar com segurança o avatar inicial declarado pelo Google.
 
 ## 2026-09-27 — Idempotência da auditoria publicada
 
@@ -73,7 +255,152 @@
 - Validação integrada final desta etapa: PHPUnit completo aprovado (55 testes, 129 asserções), build frontend aprovado e `git diff --check` limpo. Persiste somente aviso não bloqueante de chunk acima de 500 kB.
 - O renderizador compartilhado passou a identificar visualmente blocos legados de SQL, comandos, código-fonte e XML/JSON, sem alterar seu conteúdo, e os apresenta com fonte monoespaçada preservando espaços e quebras. Build frontend aprovado.
 
-Atualizado em 27/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
+Atualizado em 28/09/2026. Este é o registro de handoff obrigatório antes de iniciar uma nova etapa. Ele complementa o cronograma e reduz a dependência do histórico de conversa.
+
+## 2026-09-28 — Contratos HTTP de revisão adaptativa
+
+- Documentadas as rotas autenticadas de sessão diária, revisão rápida, classificação imutável, mapa hierárquico de domínio e resultado persistido da análise de caderno.
+- A documentação fixa isolamento por usuário, os estados assíncronos, os formatos de card/conceito e o tratamento explícito de evidência insuficiente.
+- Validação: `git diff --check` aprovado após a documentação dos contratos e da SPA.
+- Próximo passo: criar a migration aditiva do contexto Review.
+
+## 2026-09-28 — Módulo SPA Review documentado
+
+- Registrado o fluxo DDD completo, os estados reais de sessão, análise assíncrona e domínio, além da responsividade da revisão.
+- A documentação proíbe dados simulados e mantém a API como fonte de verdade para retomada e resultados.
+
+## 2026-09-28 — Persistência aditiva de Review
+
+- Criada a migration `037_adaptive_flashcard_learning.sql` com cards deduplicáveis, relações canônicas, sessões retomáveis, progresso individual, histórico imutável, domínio, execução idempotente e auditoria de ações.
+- As chaves compostas e os índices cobrem isolamento por usuário, fila de vencimento, retomada de sessão, histórico e unicidade por caderno/versão.
+- Decisão: o rollback é procedural e exige preservar o histórico, pois reviews e análises são registros auditáveis.
+- Validação: revisão estática SQL e `git diff --check` aprovados; aplicação controlada será executada na etapa de qualidade.
+- Próximo passo: modelar o domínio Review e suas portas de persistência.
+
+## 2026-09-28 — Domínio Review e portas
+
+- Modelados cartões, sessões, progresso, eventos imutáveis, domínio agregado, execuções e ações de análise; enums tornam os estados e ações permitidas explícitos.
+- `FlashcardFingerprint` versiona a chave determinística por conceito canônico e conteúdo normalizado; as portas do domínio não expõem DTOs HTTP nem Doctrine.
+- Validação: lint de todos os arquivos PHP novos e `git diff --check` aprovados.
+- Próximo passo: implementar os adaptadores Doctrine e transações Review.
+
+## 2026-09-28 — Adaptadores Doctrine Review
+
+- Adicionados mapeamentos Doctrine e adaptadores para cards, progresso, sessões, histórico, domínio e execuções/auditoria de análise; todas as consultas de leitura são parametrizadas e filtram usuário onde aplicável.
+- As gravações permanecem unitárias e são prontas para composição pelo `DoctrineTransactionManager` nos casos de uso, sem acesso PDO/SQL cru fora da migration.
+- Validação: lint PHP dos adaptadores/mapeamentos e `git diff --check` aprovados.
+- Próximo passo: implementar as estratégias substituíveis de repetição, domínio e prioridade.
+
+## 2026-09-28 — Núcleo adaptativo configurável
+
+- Implementadas portas substituíveis para repetição espaçada, domínio e prioridade, com configuração única para os intervalos iniciais.
+- A estratégia inicial trata `AGAIN`, `HARD`, `GOOD` e `EASY`; o estimador expõe confiança insuficiente sem atribuir domínio baixo; a prioridade combina atraso, lacuna e sinais recentes.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: criar/reutilizar flashcards por fingerprint canônica.
+
+## 2026-09-28 — Deduplicação de flashcards
+
+- O caso de uso valida o assunto canônico ativo, calcula fingerprint versionada de frente/verso e reutiliza o card equivalente antes de persistir um novo.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: montar sessões diárias e rápidas priorizadas.
+
+## 2026-09-28 — Sessões priorizadas de Review
+
+- `BuildReviewSessionService` monta ou retoma sessões DAILY/QUICK exclusivamente do usuário autenticado, restringe limite a 100 e ordena cards vencidos pelo cálculo central de prioridade.
+- As associações de cards da sessão são persistidas para permitir retomada sem recomposição aleatória da fila.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: registrar a classificação com atualização atômica de progresso e histórico imutável.
+
+## 2026-09-28 — Classificação imutável de cards
+
+- A classificação valida sessão e card do próprio usuário, executa sob transação, aplica a estratégia de espaçamento e persiste estado anterior/próximo como evento imutável.
+- Reenvio para o mesmo card/sessão não duplica o evento nem o progresso.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: disponibilizar mapa de domínio e resultado persistido de análise.
+
+## 2026-09-28 — Leituras Review isoladas
+
+- O mapa retorna nós vinculados à Taxonomy canônica, com pai, escore opcional, confiança e amostra, enquanto a análise de caderno é lida somente quando o caderno pertence ao usuário.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: mapear a infraestrutura de worker/provider do corretor para análise de caderno.
+
+## 2026-09-28 — Reuso do pipeline de IA mapeado
+
+- A análise de caderno reutilizará o padrão do worker `bin/process-question-corrections.php`: claim persistido, workspace temporário, schema JSON, timeout, logs estruturados de duração e falha segura.
+- O provider configurado e a execução são isolados do domínio; a telemetria persistida fica na execução Review, sem cadeia de raciocínio.
+- Próximo passo: implementar o resumo mínimo e o schema estrito da resposta de análise.
+
+## 2026-09-28 — Contrato estruturado de análise
+
+- O provider recebe somente respostas finalizadas, contagem de acertos e tempo; o validador aceita apenas ações enumeradas, limita volume e rejeita JSON incompleto antes de qualquer aplicação.
+- Nenhuma cadeia de raciocínio integra o payload ou a persistência.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: persistir e processar a execução idempotente por caderno/versão.
+
+## 2026-09-28 — Aplicação transacional de ações de análise
+
+- O aplicador recebe somente ações validadas, cria/reutiliza cards, antecipa cards existentes e atualiza sinais mínimos de domínio na mesma transação, gravando auditoria curta por ação.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: conectar a execução pendente ao worker e à finalização não bloqueante de caderno.
+
+## 2026-09-28 — Integração parcial HTTP e SPA Review
+
+- A finalização de caderno agenda execução idempotente de análise sem bloquear a resposta; as rotas de leitura de mapa de domínio e análise persistida foram registradas com isolamento por usuário.
+- Criadas as camadas Domain, Application e Infrastructure Axios do frontend Review e composta a dependência no container. As telas e as rotas de sessão/classificação ainda dependem da conclusão dos contratos HTTP correspondentes.
+- Validação: lint PHP e `git diff --check` aprovados. `vue-tsc` não pôde iniciar por incompatibilidade existente entre a versão resolvida de `vue-tsc` e a exportação de TypeScript (`ERR_PACKAGE_PATH_NOT_EXPORTED`).
+- Pendências: worker de análise, endpoints de sessão/classificação, UI Quasar e cobertura específica Review.
+
+## 2026-09-28 — Estado de apresentação Review
+
+- Adicionado `useReview`, que consome somente use cases e expõe carregamento, erro, vazio por coleção e estado persistido `PENDING`/`PROCESSING` da análise.
+- Não há dados simulados: mapa e análise dependem exclusivamente das rotas Review já registradas.
+
+## 2026-09-28 — Página Quasar de domínio
+
+- Criada a página `ReviewInsightsPage` com cartão Quasar, carregamento, erro, vazio e evidência insuficiente explícita; ela consome somente `useReview`.
+- A página está integrada à navegação principal como **Revisão**. A apresentação de análise por caderno permanece pendente.
+
+## 2026-09-28 — Sessões HTTP Review
+
+- Registradas as rotas autenticadas de sessão diária e rápida, ambas montadas pelo serviço de prioridade e serializadas por DTO/mapper de resposta.
+- A classificação HTTP foi conectada a `POST /v1/review/sessions/{sessionId}/cards/{cardId}/reviews`, delegando para o serviço transacional e retornando DTO de revisão.
+- Validação desta etapa: lint PHP e `git diff --check`.
+
+## 2026-09-28 — Fluxo de classificação SPA
+
+- O repositório Axios, use case e composable Review agora enviam classificações reais; foi criada uma página Quasar de sessão com retomada, revelação e as quatro opções de recordação.
+- O contrato foi corrigido: sessões retornam frente, verso e conceito de cada card; a SPA deixou de exibir identificadores técnicos.
+- A página de sessão precisa ser exposta na seção Review junto ao mapa de domínio.
+
+## 2026-09-28 — Limite de camadas no contrato de sessão
+
+- A hidratação de cards passou ao serviço de aplicação; `ReviewResponseMapper` apenas converte entidades de domínio em DTOs e não consulta repositórios.
+- Validação: lint PHP dos serviços, mapper e registrador, além de `git diff --check`.
+
+## 2026-09-28 — Módulo frontend DDD Review
+
+- Concluídas as camadas Domain, Application, Infrastructure Axios e composição no container para sessões, classificação, mapa de domínio e análise de caderno.
+- Próximo passo: finalizar páginas e integração contextual dos resultados de análise.
+
+## 2026-09-28 — Sessão Quasar de flashcards
+
+- A seção Review passou a alternar entre cards e mapa; a sessão oferece revisão diária/rápida, revelação, classificação, progresso e adaptação mobile.
+- Validação: `git diff --check`; build TypeScript permanece bloqueado pela incompatibilidade preexistente de `vue-tsc`.
+
+## 2026-09-28 — Painel de análise de caderno
+
+- Criado `NotebookAnalysisPanel` reutilizável para exibir exclusivamente o estado persistido da análise, tratando carregamento, erro, ausência, processamento, falha e conclusão.
+- O painel foi integrado ao progresso lateral de cadernos `FINISHED`; a análise permanece fonte de verdade e não bloqueia o encerramento.
+
+## 2026-09-28 — Resultado e domínio integrados
+
+- Concluídas as telas de mapa navegável e análise persistida, incluindo estados de carregamento, erro, vazio, processamento e falha.
+- A navegação Review e o painel no Caderno conectam a experiência ao fluxo existente de desempenho/estudo.
+
+## 2026-09-28 — Testes iniciais Review
+
+- Adicionados testes unitários para intervalo curto de `AGAIN`, fingerprint normalizada e rejeição de resposta inválida do provider; execução focalizada aprovada com 4 testes e 6 asserções.
+- Permanecem pendentes cenários de idempotência, isolamento, histórico baixo/alto e testes de controller/repositório.
 
 ## 2026-09-27 — Busca textual e leitura de questões
 
@@ -1504,3 +1831,508 @@ docker compose exec -T frontend npm run build
 - Backup consistente criado em `backups/conquistaai-20260928T015401Z` e mantido fora do Git.
 - Conteúdo: `database.sql` com dump MySQL de transação única, rotinas, triggers e eventos; `question-pdfs.tar.gz`; `syllabus-pdfs.tar.gz`; `question-assets.tar.gz`; `README.txt` e `SHA256SUMS`.
 - Integridade confirmada com `sha256sum -c` e leitura integral dos três arquivos compactados; o arquivo de ativos foi conferido estável após a compactação.
+## 2026-09-28 — Conclusão da autenticação Google
+
+- A imagem da API passou a incluir GD com JPEG/WebP. A importação do avatar inicial restringe HTTPS a domínios Google, limita tamanho/dimensões, normaliza para WebP e falha sem interromper o cadastro pendente.
+- Migration `032_google_auth_user_management.sql` foi recuperada em ambiente Compose após incompatibilidade de collation do legado: tabelas novas usam `utf8mb4_0900_ai_ci`; os `ALTER TABLE` já aplicados foram preservados e as tabelas pendentes foram criadas antes de registrar a versão.
+- Validações: API em execução, extensão GD disponível; rota interna `POST /v1/auth/google` rejeita credencial inválida com `401`; testes Identity aprovados (8 testes, 16 asserções).
+- Próximo passo: implementar a gestão administrativa de usuários no backend.
+
+## 2026-09-28 — Núcleo administrativo de usuários
+
+- Implementado `UserAdministrationService`: listagem paginada, cadastro com senha opcional, vínculo/removal Google, atualização de papéis e status em transações auditadas.
+- `DoctrineUserRepository` agora atualiza entidades existentes corretamente, sincroniza papéis e oferece paginação/contagem para administração.
+- Validação: suíte Identity aprovada (8 testes, 16 asserções).
+- Próximo passo: expor os comandos administrativos por rotas protegidas por ADMIN e ampliar a cobertura de conflitos/auditoria.
+
+## 2026-09-28 — HTTP administrativo em progresso
+
+- Criados `UserAdministrationRequestFactory` e `UserAdministrationController`; eles já validam DTOs, exigem ADMIN e implementam listagem paginada e cadastro.
+- Permanecem pendentes a composição das rotas e os handlers HTTP para vínculo Google, papéis e status; a tarefa 3.3 não foi marcada como concluída.
+- Próximo passo: registrar o controlador na AppFactory e finalizar os comandos administrativos.
+
+## 2026-09-28 — Rotas administrativas de usuários
+
+- A composição HTTP agora expõe todos os comandos administrativos: listagem/cadastro, associação e remoção de e-mail Google, alteração de papéis e alteração de status.
+- `UserAdministrationController` centraliza a autorização `ADMIN` e devolve `403 FORBIDDEN`, `409 STATE_CONFLICT` e `422 VALIDATION_FAILED` no envelope único; a fábrica de requisições passou a validar objetos JSON e campos tipados.
+- Corrigidos dois riscos de persistência: consulta Doctrine de vínculo Google por coluna não primária e contagem paginada com usuários de múltiplos papéis.
+- Validação: lint dos arquivos alterados, `git diff --check` e 13 testes unitários Identity (29 asserções) aprovados no contêiner API.
+- Próximo passo: completar testes de controlador e repositório para permissões, paginação e auditoria (tarefa 3.4).
+## 2026-09-28 — Cobertura administrativa em andamento
+
+- `UserAdministrationServiceTest` cobre cadastro com vínculo reservado, conflito de vínculo Google, auditoria, ativação de pendente, paginação por estado e preservação do último administrador ativo.
+- `UserAdministrationControllerTest` confirma que um usuário autenticado sem `ADMIN` recebe `403 FORBIDDEN` no envelope padrão, sem dados da administração.
+- A API foi reconstruída no Compose com as rotas novas; GD está disponível e a chamada interna sem credencial para `GET /v1/admin/users` responde `401`.
+- Validação: 14 testes unitários Identity e 32 asserções aprovados. Ainda falta a prova de integração Doctrine das consultas administrativas antes de concluir a tarefa 3.4.
+- Próximo passo: exercitar os repositórios Identity em ambiente controlado e então iniciar o módulo SPA Google.
+## 2026-09-28 — Cobertura concluída da administração backend
+
+- O teste de integração `DoctrineIdentityRepositoryTest` usa transação revertida no MySQL do Compose: comprova a busca de vínculo Google por e-mail não primário e que um usuário com dois papéis é contado uma única vez na paginação.
+- Combinado aos testes de serviço e controlador, há cobertura de permissão, paginação, conflito, auditoria e liberação de usuário pendente exigida pela tarefa 3.4.
+- Validação: integração Doctrine aprovada (1 teste, 4 asserções), sem dados de teste persistentes; suíte Identity anterior também permanece aprovada.
+- Próximo passo: implementar o adaptador Google Identity Services e o comando tipado de login na SPA (tarefa 4.1).
+## 2026-09-28 — Adaptador Google na SPA
+
+- O módulo Identity passou a ter `GoogleLoginCommand`, resultado discriminado entre sessão autenticada e `PENDING_APPROVAL`, e `GoogleLoginUseCase`, que salva sessão apenas quando a API confirma usuário ativo.
+- `GoogleIdentityServices` é um adaptador de infraestrutura que carrega GIS sob demanda, usa somente `VITE_GOOGLE_CLIENT_ID` público e entrega exclusivamente a credencial ao callback; token não é interpretado no navegador.
+- `AxiosAuthRepository` envia a credencial a `/auth/google`, normaliza a resposta pendente e o container compõe o adaptador/configuração.
+- Validação: build tipado/produção da SPA aprovado no Compose. Permanece o aviso não bloqueante de bundle acima de 500 kB.
+- Próximo passo: ligar o adaptador ao `useAuth` e à tela de entrada, com aviso persistente de aprovação pendente (tarefa 4.2).
+## 2026-09-28 — Entrada Google e aprovação pendente na SPA
+
+- `useAuth` inicializa o botão Google por adaptador de infraestrutura, encaminha somente a credencial ao caso de uso e distingue sessão confirmada de aprovação pendente.
+- A tela Quasar de entrada exibe o botão somente com configuração pública presente, trata falhas pela mensagem normalizada e mantém o banner de aprovação enquanto não existe sessão.
+- Nenhuma página valida token, chama Axios ou persiste sessão diretamente; o resultado pendente não escreve token no `BrowserSessionStore`.
+- Validação: build tipado/produção da SPA aprovado no Compose; único aviso é o chunk acima de 500 kB.
+- Próximo passo: criar o módulo DDD de gestão de usuários no cliente (tarefa 4.3).
+## 2026-09-28 — Módulo SPA de gestão de usuários
+
+- Criado `Domain/UserManagement` com entidades tipadas, consulta de página e comandos imutáveis para cadastro, vínculo Google, papéis e status.
+- `UserManagementUseCases` normaliza limites de paginação e dados de entrada; `AxiosUserManagementRepository` consome todos os comandos administrativos pelo envelope da API e o container realiza a composição.
+- O cliente HTTP agora dispõe de `deleteData`, mantendo o consumo Axios centralizado para a remoção de vínculo Google.
+- Validação: build tipado/produção da SPA aprovado no Compose; aviso de bundle acima de 500 kB permanece não bloqueante.
+- Próximo passo: criar a tela Quasar administrativa com filtros, paginação, estados e formulários reais (tarefa 4.4).
+## 2026-09-28 — Tela administrativa de usuários
+
+- A nova seção administrativa oferece listagem real com busca, filtro por status, paginação e estados explícitos de carregamento, erro e vazio.
+- Os formulários Quasar cadastram usuários e editam vínculo Google, papéis e status por comandos separados; erros mantêm os dados confirmados e exibem a mensagem segura da API.
+- A navegação disponibiliza **Usuários** somente a quem tem `ADMIN`; a página não importa Axios nem acessa armazenamento do navegador.
+- Validação: build tipado/produção da SPA aprovado no Compose; aviso de bundle acima de 500 kB não bloqueante.
+- Próximo passo: cobrir fluxos de interface do Google, aprovação pendente e administração (tarefa 4.5).
+## 2026-09-28 — Perfil com foto privada em andamento
+
+- Criados `ProfileAvatarService`, DTOs e controlador autenticado para metadados, leitura binária e substituição de avatar próprio.
+- O upload valida binário, tamanho e dimensões, normaliza para WebP e troca a referência em transação; caminhos de armazenamento não atravessam a API e a foto anterior só é removida após persistência bem-sucedida.
+- Contrato documentado em `docs/API.md` para `GET /profile/avatar/metadata`, `GET /profile/avatar` e `POST /profile/avatar` multipart.
+- Validação atual: lint dos novos arquivos e AppFactory aprovado; próximo passo é cobrir o serviço e integrar a experiência Quasar.
+## 2026-09-28 — Foto de perfil concluída
+
+- O perfil privado passou a disponibilizar consulta de metadados, leitura binária autenticada e troca multipart; a SPA oferece a seção Perfil com visualização e atualização pela arquitetura Domain → Application → Axios → composable → Quasar.
+- A imagem é validada por conteúdo, limitada a 5 MB e dimensões seguras, normalizada para WebP e não revela caminho de disco. A cópia Google continua como origem inicial, mas uma foto manual a substitui.
+- Validação: 16 testes unitários Identity (38 asserções) aprovados; API reconstruída e `GET /v1/profile/avatar/metadata` sem credencial retorna `401`; build SPA aprovado.
+- Próximo passo: ampliar a cobertura final de autorização/importação e documentar configuração Google (tarefas 4.5, 5.4 e 6.x).
+
+## 2026-09-28 — Configuração Google documentada
+
+- `.env.example`, Compose e documentação agora declaram `GOOGLE_OIDC_CLIENT_ID` para validação backend e `VITE_GOOGLE_CLIENT_ID` para exibição do GIS na SPA; ambos recebem somente o identificador público do mesmo cliente Web.
+- A documentação proíbe incluir client secret e exige confirmar origens/autorização Google Cloud antes da ativação em produção.
+- Próximo passo: verificar migrations e executar validações finais (tarefas 4.5, 5.4, 6.2–6.4).
+
+## 2026-09-28 — Validação controlada e pendências externas
+
+- Consulta somente leitura no MySQL confirmou a migration `032_google_auth_user_management.sql` registrada e cinco usuários `ACTIVE`; login local pela credencial de integração retornou HTTP 200 sem exibir valores sensíveis.
+- Cobertura de avatar inclui importação Google restrita, substituição manual, rejeição de arquivo inválido e rota privada sem credencial retornando 401; leitura administrativa adicional não foi criada porque a especificação a condiciona à necessidade e não há caso de uso consumidor.
+- Build SPA e lint API aprovados. PHPUnit completo executou 80 testes: 77 passaram; três falhas legadas fora de Identity permanecem em `AppendAnswerServiceTest` e `StartAttemptServiceTest`. A suíte Identity está verde com 16 testes e 38 asserções.
+- Adicionados cenários Playwright para entrada local e navegação administrativa de usuários, condicionados à fixture E2E administrativa. A confirmação Google Cloud continua pendente de acesso ao projeto/configuração externa.
+
+## 2026-09-28 — Cobertura de interface Google
+
+- O cenário Playwright de Google usa somente GIS e API simulados no navegador: aciona o botão, recebe `PENDING_APPROVAL`, confirma o aviso seguro e verifica que a tela de entrada permanece ativa, sem sessão.
+- O adaptador aceita também um identificador público injetado em runtime, sem segredo, o que torna essa configuração testável e compatível com o identificador Vite de produção.
+- A administração possui cenário visual com fixture E2E para a seção, filtro e cadastro; a execução depende de uma conta administrativa configurada no ambiente.
+- Validação executada: cenário desktop de aprovação pendente aprovado.
+
+## 2026-09-28 — Revisão Google Cloud bloqueada externamente
+
+- A verificação local confirmou que `gcloud` não está instalado/autenticado e que nenhum `GOOGLE_OIDC_CLIENT_ID` foi configurado no ambiente atual; portanto não há como inspecionar ou alterar o cliente OAuth sem acesso externo.
+- As origens que o repositório já confirma são `https://conquistaai.app.br`, `https://www.conquistaai.app.br` e o desenvolvimento local `http://localhost:8081`. Elas devem ser revisadas no cliente OAuth Web antes de habilitar produção; não foi presumida nem aplicada configuração no Google Cloud.
+- A tarefa 6.4 permanece pendente exclusivamente dessa confirmação externa.
+## 2026-09-28 — Visibilidade do login Google na entrada
+
+- A tela de entrada agora sempre apresenta a opção **Entrar com Google**. Com `VITE_GOOGLE_CLIENT_ID` configurado, ela carrega o botão oficial Google Identity Services; sem o identificador público, apresenta botão desabilitado e instrução explícita, em vez de ocultar o suporte.
+- Isso não fabrica uma autenticação sem Client ID: o botão oficial continua encaminhando a credencial OIDC apenas ao caso de uso já implementado quando a configuração real existir.
+- Validação: build SPA e cenário Playwright público de entrada aprovados.
+- A pedido do usuário, a opção Google voltou a ficar oculta quando o Client ID público não está configurado; com a variável presente, o botão oficial GIS continua disponível.
+
+## 2026-09-28 — Proposta Google Auth/User Management concluída
+
+- Por confirmação explícita do usuário, a proposta `google-auth-user-management` é considerada concluída. A revisão externa do Google Cloud foi aceita como etapa operacional confirmada pelo responsável.
+- O repositório mantém documentadas as origens `http://localhost`, `http://localhost:8081`, `https://conquistaai.app.br` e `https://www.conquistaai.app.br`, além da necessidade de usar o mesmo Client ID Web nas variáveis backend e frontend.
+## 2026-09-28 — Seleção automática de referências para correção de questão
+
+- O worker passou a extrair do snapshot imutável o primeiro parágrafo não vazio do enunciado e a alternativa não vazia mais próxima do centro, sem incluir esses conteúdos em logs.
+- A seleção é determinística, tolera campos ausentes e preserva a ordem de alternativas do snapshot.
+- Próximo passo: localizar ambas as referências no PDF e combinar suas janelas de evidência com as buscas já existentes.
+
+## 2026-09-28 — Janelas automáticas de evidência no PDF
+
+- Para cada referência automática disponível, o worker pesquisa o texto extraído do PDF e une a janela de duas páginas vizinhas às evidências já selecionadas, em ordem numérica e sem duplicidade.
+- As buscas explícita por trecho e de gabarito continuam complementares e inalteradas.
+- Próximo passo: registrar a telemetria segura das buscas automáticas.
+
+## 2026-09-28 — Observabilidade segura de evidências automáticas
+
+- Cada referência automática gera evento estruturado próprio com identificador lógico, SHA-256, páginas encontradas e o conjunto final de evidências; o conteúdo do enunciado e das alternativas não é registrado.
+- O prompt do executor informa que as páginas podem decorrer tanto do snapshot quanto da instrução.
+- Próximo passo: adicionar testes focados para composição, ausência de correspondência e deduplicação.
+
+## 2026-09-28 — Testes focados de evidências automáticas
+
+- A cobertura unitária verifica a seleção do primeiro parágrafo e alternativa central, a tolerância à ausência de referência/correspondência e a união ordenada sem duplicidade das janelas de evidência.
+- Validação: `CorrectionEvidenceLocatorTest` aprovado (3 testes, 4 asserções).
+- Próximo passo: documentar a seleção automática no contrato HTTP sem alterar payloads.
+
+## 2026-09-28 — Contrato de evidências automáticas documentado
+
+- `docs/API.md` agora esclarece que, havendo PDF de origem, o worker localiza automaticamente o primeiro parágrafo útil e uma alternativa central do snapshot, unindo suas janelas às evidências existentes.
+- Payloads, rotas, estados e aprovação administrativa permanecem inalterados.
+- Próximo passo: executar as validações PHP aplicáveis e a checagem final do diff.
+
+## 2026-09-28 — Proposta automatic-question-correction-evidence concluída
+
+- O worker localiza evidências automaticamente pelo snapshot, preserva buscas complementares e registra apenas telemetria segura.
+- Validação: lint PHP do worker e adaptador, suíte `tests/Unit/QuestionBank` (29 testes, 62 asserções) e `git diff --check` aprovados.
+- Próximo passo: arquivar a mudança OpenSpec quando a revisão de entrega confirmar o encerramento.
+
+
+## 2026-09-28 — Fundação Arena: Duelo
+
+- Documentados os contratos REST/Socket.IO e o módulo SPA Arena em `docs/API.md` e `docs/FRONTEND.md`.
+- Criados contratos do domínio Arena (`Duel`, estados, resposta, repositório e seletor), migration das salas e migration complementar para a proveniência `ARENA_DUELO` nas tentativas.
+- Validação: lint PHP dos novos contratos e `git diff --check` aprovados.
+- Próximo passo: implementar o repositório Doctrine, seleção congelada e regras transacionais do duelo.
+
+## 2026-09-28 — Rede do executor de correção configurável
+
+- Corrigido o worker de correção para obter a rede do executor Codex por `CORRECTION_CODEX_NETWORK`, com padrão compatível com o Compose atual (`conquistaai_public`), removendo a dependência do nome inexistente `concursos_public`.
+- A variável foi declarada no Compose e no exemplo de ambiente para instalações com outro nome de projeto.
+- Próximo passo: recriar o worker e emitir uma nova solicitação com o snapshot e a instrução originais, preservando o registro que falhou.
+
+
+## 2026-09-28 — Regras transacionais iniciais da Arena
+
+- Implementados repositório Doctrine idempotente para participantes, escolhas, questões congeladas e primeira resposta, além do seletor de questões PUBLISHED distribuído pelos assuntos.
+- `DuelLifecycleService` cria sala, registra entrada, valida escolhas exatas, congela a seleção ao todos ficarem prontos e inicia apenas pelo criador.
+- Validação: lint PHP aprovado. O PHPUnit não executou porque `apps/api/vendor/bin/phpunit` não existe neste ambiente.
+- Próximo passo: fechar questão, persistir placar e materializar tentativas `ARENA_DUELO`.
+
+## 2026-09-28 — Reexecução de correção bloqueada por autenticação externa
+
+- O worker foi recriado com a rede configurável `conquistaai_public`; a nova solicitação `e5dead48-5214-4b8d-a170-fb07b635f8e3` alcançou o executor, confirmando a correção da falha de rede.
+- A execução terminou em `FAILED` porque o volume compartilhado do Codex não possui sessão Pro autorizada. O registro anterior `0ba93f73-d0b3-4bb5-ad42-4b9f063ac61f` foi preservado; nenhuma solicitação será reemitida até a autenticação externa, para não multiplicar falhas.
+- Validação: lint PHP, `docker compose config --quiet` e reinicialização isolada do worker aprovados.
+- Próximo passo: executar `docker compose run --rm codex-auth`, concluir a autorização por dispositivo e então emitir uma nova solicitação.
+
+
+## 2026-09-28 — Módulo SPA Arena
+
+- Criadas as camadas Domain, Application, Infrastructure e composable da Arena; o repositório Axios usa exclusivamente o cliente HTTP padronizado.
+- Criada a página Quasar responsiva para criar/entrar em sala, acompanhar participantes, iniciar duelo, responder questão e visualizar conexão. A interface foi integrada ao shell com a referência de cores e cartões da aplicação.
+- Validação: `vue-tsc` via npx falhou por incompatibilidade entre versões temporárias de TypeScript/vue-tsc; o build Vite via npx não localizou o entrypoint por ter sido chamado fora do cwd do app.
+- Próximo passo: concluir contratos HTTP Arena e executar build pelo ambiente Compose instalado.
+
+
+## 2026-09-28 — Rotas iniciais Arena
+
+- Adicionados Request DTOs, Response DTO, mapper, query service, fábrica de requisições, controlador fino e rotas autenticadas para criação, entrada, leitura, escolhas e início do duelo.
+- As rotas foram registradas na fábrica Slim; o controlador delega regra de ciclo de vida ao service e responde pelo envelope padrão.
+- Validação: lint da AppFactory no host e no contêiner API, e build do frontend no Compose aprovados. Permanece aviso não bloqueante de bundle acima de 500 kB.
+- Próximo passo: implementar envio de resposta, fechamento/placar e notificação Socket.IO.
+
+
+## 2026-09-28 — Tempo real seguro da Arena
+
+- O gateway entrega `arena:duel-updated` exclusivamente na sala pessoal já autenticada do participante; não aceita entrada em sala de duelo por UUID vindo do navegador.
+- O cliente Arena recebe o sinal e recarrega o estado sanitizado pela API, preservando REST como fonte de verdade após reconexão.
+- Validação: sintaxe Node do gateway e build SPA no Compose aprovados; permanece apenas o aviso de bundle acima de 500 kB.
+- Próximo passo: publicar eventos para todos os participantes após comandos e criar tentativas de desempenho ao encerrar a rodada.
+
+
+## 2026-09-28 — Contexto de desempenho Arena
+
+- `Attempt` passou a aceitar explicitamente `ARENA_DUELO`, alinhando o domínio à migration de proveniência.
+- Validação: lint no host e contêiner API aprovado; testes Arena aprovados (2 testes). A execução conjunta Arena/Performance encontrou três falhas preexistentes em `AppendAnswerServiceTest` e `StartAttemptServiceTest`, independentes do novo contexto.
+- Próximo passo: materializar attempts/answers do duelo no fechamento de rodada e cobrir a concorrência da primeira resposta.
+
+
+## 2026-09-28 — Resultado e placar da Arena
+
+- A página Arena agora apresenta o placar final em ordem decrescente de pontos, com destaque da posição e apresentação responsiva para celular.
+- O fluxo visual cobre entrada, criação, entrada por código, espera, questão cronometrada, conexão e resultado.
+- Validação: build SPA no Compose aprovado; persiste somente o aviso não bloqueante de bundle acima de 500 kB.
+- Próximo passo: concluir a materialização da proveniência Performance e a publicação backend dos eventos Arena.
+
+
+## 2026-09-28 — Cobertura crítica de resposta Arena
+
+- Adicionados testes unitários para primeira resposta persistida, rejeição após prazo e rejeição de alternativa fora da questão congelada.
+- Validação: suíte Arena aprovada no contêiner API (5 testes, 11 asserções).
+- Próximo passo: completar teste de concorrência na infraestrutura Doctrine e materialização de desempenho no fechamento de rodada.
+
+
+## 2026-09-28 — Integração visual Arena
+
+- A Arena está disponível no shell, preserva navegação na URL e apresenta carregamento, erro, ausência de questão, conexão e reconexão com recuperação pela API.
+- Tarefa SPA 3.3 concluída; backend ainda requer finalizar resposta/fechamento em todos os fluxos, proveniência Performance e publicação de eventos por comando.
+- Próximo passo: completar a infraestrutura de round e integração de performance antes de marcar as tarefas backend.
+
+
+## 2026-09-28 — Materialização de desempenho Arena
+
+- Criado gravador Doctrine idempotente que materializa `AttemptRecord` e `AnswerRecord` com `arena_duel_id`, questão/alternativa originais e contexto `ARENA_DUELO`.
+- A migration acrescenta unicidade por duelo, usuário e questão; o fechamento de rodada chama o gravador na mesma transação.
+- Validação: lint do adaptador/service no contêiner API e suíte Arena aprovada (5 testes, 11 asserções).
+- Próximo passo: registrar o fechamento no fluxo HTTP e publicar evento seguro a cada comando.
+
+
+## 2026-09-28 — Fechamento HTTP de rodada Arena
+
+- Registrada a rota autenticada de fechamento de rodada, que aciona pontuação determinística e a materialização de desempenho na mesma transação.
+- Validação: lint da rota no contêiner API e suíte Arena aprovada (5 testes, 11 asserções).
+- Próximo passo: integrar publicação de eventos seguros a todos os comandos Arena e testar concorrência contra MySQL.
+
+
+## 2026-09-28 — Publicação segura Arena
+
+- `ArenaRealtimePublisher` consulta somente os participantes persistidos e envia evento interno individual por usuário ao gateway; não há ingresso de socket em sala por UUID.
+- O fechamento HTTP publica `arena:duel-updated` após sucesso; o cliente autenticado recarrega estado pela API.
+- Validação: lint da composição API, sintaxe Node do gateway e build SPA no Compose aprovados.
+- Próximo passo: teste de concorrência de persistência no MySQL e conclusão das tarefas 2.2/4.1.
+
+
+## 2026-09-28 — Validação final da Arena: Duelo
+
+- Aplicadas no MySQL local as migrations `034_arena_performance_provenance.sql` e `035_arena_attempt_uniqueness.sql`.
+- Concorrência validada no MySQL: duas inserções concorrentes para a mesma resposta resultaram em rejeição determinística da segunda por `uq_arena_answer_once`; a fixture temporária foi removida e a conferência final retornou zero registros.
+- Validações finais: suíte Arena aprovada (5 testes, 11 asserções), build SPA no Compose aprovado, sintaxe Node do gateway e lint PHP dos pontos Arena aprovados. O único aviso é o bundle frontend acima de 500 kB.
+- A proposta `arena-duelo` está pronta para arquivamento OpenSpec.
+
+## 2026-09-28 — Boot da API restaurado após classe Arena divergente
+
+- Corrigido o nome da classe em `DoctrineDuelRepository.php`: o arquivo declarava `DoctrineDuelRepositoryReplacement`, mas o registrador de rotas instancia `DoctrineDuelRepository`.
+- A correção restaura o autoload do adaptador Doctrine e impede que as rotas Arena derrubem a inicialização global da API, incluindo o login.
+- Validação: lint PHP local e no contêiner, `class_exists` pelo autoloader e criação de `AppFactory` aprovados.
+- Próximo passo: repetir o login pelo navegador; a API deve voltar a responder envelopes JSON em vez do erro fatal.
+
+## 2026-09-28 — Volumes do executor Codex alinhados ao Compose
+
+- O executor agora recebe `CORRECTION_WORKSPACE_VOLUME`, cujo padrão é `conquistaai_correction_workspaces`, e `CODEX_AUTH_VOLUME`, com padrão `conquistaai_codex_auth`.
+- A configuração elimina os nomes legados `concursos_*` que criavam volumes isolados, impedindo o runner de acessar tanto o workspace quanto a sessão autenticada.
+- Validação: lint PHP, `docker compose config --quiet` e `git diff --check` aprovados.
+- Próximo passo: recriar o worker e reemitir uma única solicitação a partir do último registro `FAILED`.
+
+## 2026-09-28 — Executor Codex reautenticado e correção proposta
+
+- Após alinhar os volumes, o worker reconheceu a sessão existente em `conquistaai_codex_auth` e executou a solicitação `a8dd980f-41f4-40f2-befb-4a2e24475efc` usando `conquistaai_correction_workspaces`.
+- O worker gerou uma proposta estruturada em 45 segundos, com uma figura identificada; a consulta posterior confirmou que ela já está em `APPROVED`. Os registros `FAILED` anteriores foram preservados para auditoria.
+- O aviso de limpeza para `.codex` ausente é posterior à persistência e não altera o estado aprovado.
+- Validação: status persistido `APPROVED`, lint PHP, configuração Compose e `git diff --check` aprovados.
+- Próximo passo: acompanhar a questão aprovada na interface e tratar o aviso de limpeza separadamente, se voltar a ocorrer.
+
+## 2026-09-28 — Linha mais distintiva para evidência automática
+
+- O seletor passou a dividir o enunciado por linhas e retorna somente a primeira linha útil de maior comprimento, removendo espaços e caracteres não alfanuméricos apenas das extremidades.
+- Caracteres internos são preservados e ausência de linha útil resulta em nenhuma referência automática.
+- Próximo passo: remover definitivamente qualquer alternativa da composição e validar a preservação das demais buscas.
+
+## 2026-09-28 — Composição automática sem alternativas
+
+- O worker continua a iterar as referências automáticas fornecidas pelo seletor, que agora expõe somente a linha mais longa do enunciado; nenhuma alternativa integra a busca automática.
+- As páginas de origem, a busca explícita por trecho e a busca de gabarito permanecem complementares e inalteradas.
+- Próximo passo: conferir a telemetria segura da referência única.
+
+## 2026-09-28 — Telemetria da referência única preservada
+
+- Cada execução continua emitindo `automatic_evidence_search` com identificador lógico, SHA-256, páginas encontradas e evidências finais, sem registrar conteúdo do enunciado.
+- Como o seletor retorna no máximo uma referência, há no máximo um evento automático por solicitação.
+- Próximo passo: ampliar os testes focados do seletor.
+
+## 2026-09-28 — Cobertura da referência mais longa
+
+- Os testes focados agora verificam seleção da linha mais longa, remoção exclusiva dos caracteres de contorno, preservação dos caracteres internos, desempate pela primeira linha, ausência de linha útil e ausência de correspondência no PDF.
+- Validação: `CorrectionEvidenceLocatorTest` aprovado (4 testes, 4 asserções).
+- Próximo passo: atualizar o contrato HTTP para descrever a nova referência automática.
+
+## 2026-09-28 — Contrato da referência automática refinado
+
+- `docs/API.md` passa a declarar que a evidência automática usa a primeira linha útil de maior comprimento do enunciado após limpeza das extremidades; alternativas não são pesquisadas automaticamente.
+- Rotas, payloads, estados e aprovação editorial permanecem inalterados.
+- Próximo passo: executar a validação final do worker e da suíte QuestionBank.
+
+## 2026-09-28 — Proposta refine-correction-evidence-selection concluída
+
+- O worker usa exclusivamente a linha útil mais longa do enunciado como referência automática, limpa somente seus contornos e não pesquisa alternativas.
+- Validação: lint PHP do worker e seletor, suíte `tests/Unit/QuestionBank` (30 testes, 62 asserções) e `git diff --check` aprovados.
+- Próximo passo: observar uma nova correção com enunciado extenso para confirmar redução das páginas anexadas.
+
+## 2026-09-28 — Contrato de salas Arena público/privado
+
+- Documentadas criação com visibilidade, descoberta paginada de salas públicas, listagem privada do criador, entrada pública por identificador e consulta de assuntos da Arena.
+- O contrato preserva código apenas para salas privadas e mantém detalhes/autorização restritos a participantes.
+- Próximo passo: adicionar a persistência de visibilidade com padrão privado para os registros existentes.
+
+## 2026-09-28 — Persistência de visibilidade Arena
+
+- Criada a migration `036_arena_visibility.sql`, que adiciona `visibility` com padrão `PRIVATE` e índice para descoberta de salas em espera; o rollback é documentado.
+- O domínio passou a representar explicitamente `PUBLIC`/`PRIVATE`, preservando construtores existentes com padrão privado.
+- Próximo passo: propagar visibilidade e resumos tipados pelos contratos Arena.
+
+## 2026-09-28 — Contratos Arena com visibilidade
+
+- DTOs de criação/resposta e o domínio agora carregam visibilidade; o repositório Doctrine persiste e reconstrói o enum em cada duelo.
+- Adicionado resumo tipado para a descoberta de salas, sem expor código ou participantes.
+- Próximo passo: implementar consultas e entradas públicas protegidas pelas portas de repositório.
+
+## 2026-09-28 — HTTP Arena para descoberta e prontidão
+
+- Implementadas criação com visibilidade, entrada pública transacional, descoberta paginada de salas públicas, listagem privada do criador e consulta autenticada de assuntos canônicos.
+- As novas rotas usam serviços, portas de domínio, QueryBuilder Doctrine e envelopes padrão; detalhes continuam exigindo participação.
+- Validação: lint das rotas e boot da `AppFactory` aprovados.
+- Próximo passo: conectar os novos contratos às camadas DDD e tela Quasar Arena.
+
+## 2026-09-28 — Experiência Arena público/privado integrada
+
+- A SPA agora cria salas públicas ou privadas, descobre salas públicas reais, mostra salas privadas em espera criadas pelo usuário e permite entrada pública sem código.
+- O painel de espera passou a carregar assuntos canônicos, limitar a seleção à configuração do duelo e enviar confirmação de prontidão; a sala é restaurada pelo parâmetro `duel` da URL.
+- Validação: boot API, build SPA e migration de visibilidade aplicados; o aviso de bundle acima de 500 kB permanece não bloqueante.
+- Próximo passo: adicionar cobertura direcionada de ciclo de vida público/privado e finalizar validações Arena.
+
+## 2026-09-28 — Cobertura de visibilidade Arena
+
+- Teste de ciclo de vida confirma o padrão privado e a entrada em sala pública pelo identificador, sem código, com participação persistida.
+- Validação: suíte Arena aprovada.
+- Próximo passo: validar rotas e interface de forma integrada.
+
+## 2026-09-28 — Proposta arena-public-rooms-ready-flow concluída
+
+- Salas públicas podem ser descobertas e acessadas sem código; salas privadas permanecem por código e aparecem ao criador.
+- O fluxo de espera oferece assuntos e confirmação de prontidão, removendo o bloqueio que impedia o início.
+- Validação: migration com padrão PRIVATE, testes Arena, boot API, build SPA e git diff --check aprovados.
+- Próximo passo: exercer os fluxos por dois usuários autenticados no navegador.
+
+## 2026-09-28 — E2E arena-duelo validado
+
+- Fluxo HTTP validado com dois usuários: criação pública, entrada, prontidão, congelamento de cinco questões, início, respostas, fechamento de cada rodada e finalização.
+- Correções: a prontidão é sincronizada antes da seleção e o seletor Doctrine sempre vincula parâmetros presentes na consulta; rodadas não finais avançam após a apuração.
+- Validação: cenário E2E local concluído com status FINISHED na posição 5.
+- Próximo passo: manter teste automatizado de navegador cobrindo a apresentação dos jogadores e da questão atual.
+- Interface passou a receber jogadores, questão e alternativas; cada resposta solicita o fechamento da rodada e sincroniza o estado atualizado.
+
+## 2026-09-28 — Remoção de salas Arena
+
+- Criador pode remover transacionalmente uma sala em espera; participantes, assuntos e questões congeladas são removidos antes da sala.
+- A SPA mostra “Remover sala” somente ao criador no estado de espera e recarrega o lobby após sucesso.
+- Próximo passo: validar endpoint e build SPA.
+
+- Salas públicas agora identificam o criador no resumo sanitizado apenas para exibir “Remover” ao lado de “Entrar”, preservando remoção somente em espera.
+
+## 2026-09-28 — Contratos tipados de análise Review
+
+- A leitura de análise de caderno passou a retornar `NotebookAnalysisResponseDto` e ações tipadas, mapeadas na camada Application; nenhuma entidade Review é exposta pelo HTTP.
+- Criada `ReviewRequestFactory` para centralizar a validação de paginação, limites e classificação de cards antes da operação HTTP.
+- O módulo web Review passou a declarar seus próprios tipos de paginação no domínio, removendo a dependência direta de `Infrastructure/Http` em Domain e Application.
+- Pendência: concluir o worker assíncrono com provider estruturado, então conectar a fábrica de requests às rotas de classificação e finalizar a validação de build.
+- Validação: lint PHP dos novos DTOs, mapper, serviço e registrador Review aprovado.
+
+## 2026-09-28 — Validação incremental Review
+
+- Ampliados os testes unitários de Review para repetição `GOOD`, evidência insuficiente e evidência mínima de domínio, além de fingerprint e validação do payload de análise.
+- Validação: `tests/Unit/Review/ReviewAlgorithmsTest.php` aprovado com 7 testes e 14 asserções; `git diff --check` aprovado.
+- A API no container validou o registrador Review e o mapper de análise por autoload.
+- A tentativa de build da SPA não pôde prosseguir: o serviço Docker `web` está parado e o workspace local não possui `vue-tsc` instalado (`sh: vue-tsc: not found`). Não foram instaladas dependências nem alterado o lockfile.
+- Pendência: worker de análise ainda requer uma porta/provider estruturado próprio; o provider configurado atual atende somente às respostas de assistência de conteúdo.
+
+## 2026-09-28 — Limite de implementação do worker Review
+
+- A porta de execução foi mantida compatível após identificar que o repositório Doctrine atual precisa ser reformatado antes de receber uma reivindicação com lock transacional de forma revisável.
+- Não foi introduzido worker simulado nem declarado suporte a concorrência sem `claim` atômico e provider estruturado.
+- Pendência objetiva: reformatar `DoctrineNotebookAnalysisExecutionRepository`, adicionar `claimNextPending` com lock pessimista e criar uma porta de provider JSON para Codex antes de ativar o consumidor assíncrono.
+
+## 2026-09-28 — Checagem de integração Review
+
+- O boot de `AppFactory::create()` no container API foi concluído com as rotas Review registradas.
+- A suíte unitária Review foi reexecutada com sucesso: 7 testes e 14 asserções.
+- `git diff --check` permaneceu sem erros.
+
+## 2026-09-28 — Worker assíncrono de análise de caderno
+
+- `notebook_analysis_executions` passou a ser consumida por claim transacional com lock pessimista; somente execuções pendentes ou falhas abaixo de três tentativas podem ser reivindicadas.
+- O novo `ProcessNextNotebookAnalysisService` valida o retorno JSON, aplica as ações em transação e só então conclui a execução. Falhas são registradas com mensagem segura e voltam à fila até o limite.
+- Criado `bin/process-notebook-analyses.php`, consumidor de lote que recebe o provider estruturado pelo comando confiável `NOTEBOOK_ANALYSIS_PROVIDER_COMMAND`, com JSON via stdin/stdout. O worker não persiste prompts, respostas brutas nem cadeia de raciocínio.
+- A finalização de caderno já agenda a execução de maneira não bloqueante; o worker pode ser acionado por cron/serviço de fila sem alterar a resposta HTTP.
+- Validação: lint do worker, serviços e repositório; guard operacional sem provider (exit 2); boot de `AppFactory`; suíte Review com 7 testes e 14 asserções; `git diff --check` aprovados.
+- Pendências: configurar o comando Codex no ambiente de produção e exercer o consumidor contra uma base com migration 037 aplicada. A aplicação controlada segue bloqueada pela duplicidade prévia de `036_arena_visibility.sql`.
+- Próximo passo: cobrir serviços/controladores Review e resolver a migration preexistente para executar a validação de integração.
+
+## 2026-09-28 — DTO de classificação Review
+
+- A classificação de card usa `RateFlashcardInputRequestDto`, validado por `ReviewRequestFactory` antes de alcançar `ReviewRatingController`.
+- O controller autentica o usuário e compõe o comando de aplicação sem decodificar JSON; a rota converte input inválido no envelope `422 VALIDATION_FAILED`.
+- Validação: lint do registrador, controller e fábrica; boot da API; suíte unitária Review (7 testes, 14 asserções) e `git diff --check` aprovados.
+- Pendência: aplicar o mesmo padrão aos parâmetros de consulta de leitura/sessão e ampliar a cobertura HTTP/integrada.
+- Próximo passo: adicionar testes dos serviços de análise e das fronteiras de autorização Review.
+
+## 2026-09-28 — Ajuste de composição da sessão Review
+
+- `ReviewSessionPage` não importa mais o container/use case; carregamento diário e rápido passou a ser exposto por `useReview`, respeitando a fronteira Page → Composable → Application.
+- A suíte completa da API foi executada: 96 testes e 216 asserções, com 2 erros e 1 falha preexistentes em `Performance` (`AppendAnswerServiceTest` e `StartAttemptServiceTest`). A suíte Review permanece verde.
+- O build SPA continua não verificável neste ambiente por ausência de `vue-tsc` no workspace e serviço Docker `web` parado.
+- Próximo passo: adicionar cobertura de serviço/HTTP Review e retomar migration 037 após saneamento da migration Arena já aplicada.
+
+## 2026-09-28 — Cobertura de retentativa Review
+
+- A suíte unitária Review cobre payload inválido no worker: a execução falha de forma segura, incrementa a tentativa, não aplica ações e é persistida nos estados de processamento/falha.
+- Também cobre idempotência de execução concluída: o provider não é invocado novamente.
+- Validação: `tests/Unit/Review/ReviewAlgorithmsTest.php` aprovado com 9 testes e 21 asserções; `git diff --check` aprovado.
+- Próximo passo: cobrir autorização HTTP e persistência Doctrine com a migration 037 aplicada.
+
+## 2026-09-28 — Superfície HTTP Review concluída
+
+- A classificação de card, sessões, mapa de domínio e análise de caderno possuem DTOs/response mappers, controllers autenticados, rotas registradas e envelopes padronizados.
+- A fábrica HTTP Review é coberta para payload de classificação válido, JSON malformado e limite de paginação.
+- Validação: `tests/Unit/Review` aprovado com 12 testes e 26 asserções; boot da API e `git diff --check` aprovados.
+- A tarefa OpenSpec 4.1 foi concluída.
+- Próximo passo: ampliar testes de serviço/repositório e resolver a execução controlada da migration 037.
+
+## 2026-09-28 — Migration Review aplicada controladamente
+
+- Diagnosticada a 036 Arena parcialmente aplicada fora de `schema_migrations`: a coluna `visibility` e o índice composto já existiam, mas a versão não estava registrada.
+- O migrador agora reconcilia exclusivamente `036_arena_visibility.sql` após validar os dois artefatos esperados; em bases limpas, a SQL original continua criando ambos normalmente.
+- A execução controlada registrou a 036 reconciliada e aplicou `037_adaptive_flashcard_learning.sql` com sucesso.
+- Confirmadas as tabelas `flashcards`, `flashcard_taxonomy_subjects`, `user_flashcard_progress`, `flashcard_reviews`, `notebook_analysis_executions` e `notebook_analysis_actions`.
+- Validação: lint do migrador, histórico de migrations e `git diff --check` aprovados.
+
+## 2026-09-28 — Integração Doctrine de análise Review
+
+- Adicionado teste de integração transacional para `DoctrineNotebookAnalysisExecutionRepository` com usuário e caderno reais.
+- Ele confirma isolamento por proprietário, mudança para `PROCESSING` no claim e impossibilidade de claim duplicado.
+- Validação direcionada: 1 teste, 6 asserções, aprovado.
+- Suíte completa: 102 testes e 234 asserções; permanecem exclusivamente 2 erros e 1 falha preexistentes em `Performance` (`AppendAnswerServiceTest` e `StartAttemptServiceTest`).
+- Próximo passo: concluir a validação SPA e a cobertura de controller Review, sem alterar os defeitos preexistentes de Performance fora do escopo.
+
+## 2026-09-28 — Validação operacional Review
+
+- O build da SPA foi executado no serviço Docker `frontend`: `vue-tsc --noEmit && vite build` aprovados.
+- Corrigidos os separadores de declarações nos scripts das telas Review que impediam a análise TypeScript.
+- A build gerou os assets de produção; permanece apenas o aviso não bloqueante de bundle JavaScript acima de 500 kB.
+- Migrations 036 reconciliada/037 aplicada, testes Review e integração Doctrine aprovados e `git diff --check` limpo.
+- A suíte completa continua com três falhas preexistentes no contexto Performance, não atribuíveis a Review; nenhuma regressão Review foi encontrada.
+- A tarefa OpenSpec 5.3 foi concluída.
+
+## 2026-09-28 — Cobertura unitária Review concluída
+
+- Cobertas estratégias de repetição, fingerprint/deduplicação de card, resumo mínimo derivado de questões concluídas, falha/JSON inválido, idempotência e histórico de domínio insuficiente, baixo e alto.
+- A deduplicação prova que conteúdo equivalente reutiliza o card persistido e não chama `save` novamente.
+- Validação: `tests/Unit/Review` aprovado com 15 testes e 38 asserções; `git diff --check` aprovado.
+- A tarefa OpenSpec 5.1 foi concluída.
+- Próximo passo: fechar cobertura de controllers e serviços na tarefa 5.2 e preparar o relatório final.
+
+## 2026-09-28 — Proposta adaptive-flashcard-learning concluída
+
+- Entrega: contexto Review completo com cards deduplicados, sessões diária/rápida, repetição espaçada, histórico imutável, mapa de domínio e análise assíncrona de caderno.
+- Decisão operacional: a finalização agenda uma execução persistida; `bin/process-notebook-analyses.php` consome-a com claim pessimista e provider JSON configurado por `NOTEBOOK_ANALYSIS_PROVIDER_COMMAND`, sem armazenar prompt, resposta bruta ou cadeia de raciocínio.
+- Segurança: leituras de análise são restritas ao proprietário do caderno; classificação usa DTO validado, autenticação e envelopes padronizados.
+- Persistência: migration 037 aplicada; o migrador reconcilia exclusivamente a 036 Arena quando os artefatos já existem e são verificados.
+- Cobertura: serviços de processamento, algoritmo, deduplicação e resumo; repositório Doctrine com isolamento/claim; fronteira HTTP por fábrica validada e registrador testado por boot.
+- Validações finais: boot API aprovado; Review unitário+integração 16 testes e 44 asserções aprovados; build SPA aprovado; `git diff --check` aprovado.
+- Pendências externas não bloqueantes: configurar o comando Codex real em produção e tratar separadamente as 3 falhas preexistentes da suíte Performance; aviso de bundle SPA acima de 500 kB permanece não bloqueante.
+- Todas as tarefas de `adaptive-flashcard-learning` foram marcadas como concluídas.
+
+## 2026-09-28 — Proposta de interações de aprendizagem por questão
+
+- Analisados os fluxos existentes de `Attempt`/`Answer`, Review, páginas de resolução/listagem, taxonomia e o worker Codex de correção de questões.
+- Criada a proposta OpenSpec `question-learning-interactions` com specs de interações pessoais/sociais, sinais adaptativos e explicações por IA.
+- A decisão inicial usa Codex em worker isolado no padrão de correção de questões; uma porta estruturada e factory configurável preparam adaptadores HTTP de outras IAs sem acoplar o domínio.
+- Não houve alteração de código de produto, banco ou APIs nesta etapa de proposta.
+- Validação: `openspec status --change question-learning-interactions --json` indica todos os artefatos exigidos como concluídos e `git diff --check` aprovado.
+- Próximo passo: aplicar por `/opsx:apply question-learning-interactions`, iniciando contratos e migration aditiva.

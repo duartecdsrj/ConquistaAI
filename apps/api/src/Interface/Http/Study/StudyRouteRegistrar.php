@@ -10,12 +10,15 @@ use App\Application\Study\DTO\Request\ListNotebookQuestionsRequestDto;
 use App\Application\Study\Mapper\NotebookResponseMapper;
 use App\Application\Study\Service\CreateNotebookService;
 use App\Application\Study\Service\FinishNotebookService;
+use App\Application\Review\Service\ScheduleNotebookAnalysisService;
+use App\Infrastructure\Persistence\Doctrine\Review\DoctrineNotebookAnalysisExecutionRepository;
 use App\Application\Study\Service\GetNotebookStatisticsService;
 use App\Application\Study\Service\PauseNotebookService;
 use App\Application\Study\Service\GetNotebookService;
 use App\Application\Study\Service\ListNotebookQuestionsService;
 use App\Application\Study\Service\ListNotebooksService;
 use App\Application\Study\Service\StartNotebookService;
+use App\Application\Study\Service\SetActiveNotebookQuestionService;
 use App\Application\Study\Service\GetStudyGoalService;
 use App\Application\Study\Service\UpdateStudyGoalService;
 use App\Infrastructure\Http\ApiResponseFactory;
@@ -31,6 +34,7 @@ use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineDirectedStudyPlanRepository;
 use App\Application\Study\Service\CreateDirectedStudyPlanService;
 use App\Application\Study\Service\ListDirectedStudyPlansService;
+use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookQuestionExclusionReader;
 use App\Application\Study\Mapper\DirectedStudyPlanResponseMapper;
 use App\Interface\Http\Study\Controller\DirectedStudyPlanController;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookProgressReader;
@@ -56,13 +60,14 @@ final class StudyRouteRegistrar
         $mapper = new NotebookResponseMapper();
         $controller = new StudyController(
             $this->authentication,
-            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager), new DoctrineStudyContestSubjectRepository($entityManager)),
+            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager), new DoctrineStudyContestSubjectRepository($entityManager), new DoctrineNotebookQuestionExclusionReader($entityManager)),
             new GetNotebookService($notebooks, $mapper),
             new ListNotebooksService($notebooks, $mapper),
             new ListNotebookQuestionsService($notebooks, $questions, new PublishedQuestionResponseMapper()),
             new StartNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
             new PauseNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
-            new FinishNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
+            new SetActiveNotebookQuestionService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
+            new FinishNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager), new ScheduleNotebookAnalysisService(new DoctrineNotebookAnalysisExecutionRepository($entityManager))),
             new GetNotebookStatisticsService($notebooks, new DoctrineNotebookProgressReader($entityManager)),
             $this->responses,
         );
@@ -111,6 +116,8 @@ final class StudyRouteRegistrar
             try { return $controller->pauseNotebook($request, $response, $identity->accessToken($request), new GetNotebookRequestDto((string) ($arguments['id'] ?? ''))); }
             catch (InvalidArgumentException $exception) { return self::invalidRequest($responses, $request, $response, $exception); }
         });
+        $app->patch('/v1/notebooks/{id}/active-question', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($controller, $identity, $requests, $responses): ResponseInterface { try { return $controller->setActiveQuestion($request, $response, $identity->accessToken($request), $requests->activeQuestion($request, (string) ($arguments['id'] ?? ''))); } catch (InvalidArgumentException $exception) { return self::invalidRequest($responses, $request, $response, $exception); } });
+
         $app->get('/v1/notebooks/{id}/statistics', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($controller, $identity, $responses): ResponseInterface {
             try { return $controller->statistics($request, $response, $identity->accessToken($request), new GetNotebookRequestDto((string) ($arguments['id'] ?? ''))); }
             catch (InvalidArgumentException $exception) { return self::invalidRequest($responses, $request, $response, $exception); }

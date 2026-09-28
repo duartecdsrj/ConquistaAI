@@ -42,6 +42,18 @@ O modulo Identity possui:
 
 A tela de login apenas coleta os valores e emite um evento. A validacao de credenciais e a persistencia de sessao pertencem aos casos de uso e adaptadores.
 
+## Autenticação Google e aprovação
+
+Quando a configuração pública do Google estiver presente, a tela de entrada inicia o Google Identity Services por um adaptador de Infrastructure. A credencial OIDC é enviada apenas pelo comando tipado de login Google, por `AuthUseCases` e `AxiosAuthRepository`; páginas e componentes não validam tokens nem acessam a API diretamente.
+
+O retorno `PENDING_APPROVAL` não cria sessão local nem tenta restaurar token. `useAuth` mantém a mensagem segura de que a liberação administrativa é necessária enquanto a pessoa permanecer na entrada. Falhas `401`, `409` e demais erros normalizados são exibidas sem expor credenciais, tokens ou detalhes internos.
+
+## Administração de usuários
+
+O módulo UserManagement segue `Domain/UserManagement`, `Application/UserManagement`, `Infrastructure/Http/AxiosUserManagementRepository` e `Interface/Http/UserManagement`. A página Quasar administrativa usa seu composable para consultar `GET /admin/users` com filtros tipados e paginação, criar usuários, associar/remover e-mail Google e alterar papéis ou status.
+
+A interface trata carregamento, erro, vazio e paginação com dados reais. Formulários apenas emitem comandos tipados; conflitos ou validações devolvidos pela API mantêm os dados confirmados e mostram a mensagem segura correspondente. Nenhum componente consome Axios, envelope HTTP ou armazenamento do navegador diretamente.
+
 ## Execucao e validacao
 
 docker compose up -d --build
@@ -86,6 +98,14 @@ A marca oficial do produto está em apps/web/public/images/concursos-study-mark.
   A edição seleciona um assunto existente e envia o comando PATCH pelo caso de uso; a API bloqueia a troca de pai quando o assunto ainda possui filhos.
 
 Cada módulo mantém Domain, Application, Infrastructure e Interface separados; páginas Quasar somente coordenam composables e eventos.
+
+## Review adaptativo
+
+O módulo `Review` segue `Domain/Review -> Application/Review -> Infrastructure/Http/AxiosReviewRepository -> Interface/Http/Review`. `useReview` é o único adaptador de apresentação: carrega sessões diárias ou rápidas, envia a classificação tipada e consulta o mapa de domínio; páginas e componentes não acessam Axios, armazenamento local ou envelopes HTTP.
+
+A página de sessão usa cartões Quasar com frente inicialmente apresentada e verso revelado somente por ação explícita. Após revelar, exibe `AGAIN`, `HARD`, `GOOD` e `EASY`, progresso real e assunto canônico. A saída é segura: o identificador da sessão retornado pela API permite retomada sem simular respostas ou recalcular a fila no cliente. Em mobile, um card ocupa a largura disponível e as quatro ações mantêm alvos de toque adequados.
+
+O resultado de análise de caderno é integrado à experiência Study e consulta exclusivamente o estado persistido. `PENDING` e `PROCESSING` mostram processamento sem conteúdo inventado; `FAILED` oferece mensagem segura e possibilidade de atualização; `COMPLETED` mostra apenas resumo e ações que a API persistiu. O mapa de domínio é navegável pela hierarquia canônica, trata carregamento, erro e vazio, e apresenta `INSUFFICIENT` como "dados insuficientes", nunca como domínio baixo.
 
 ## Marca
 
@@ -221,6 +241,10 @@ A SPA abre um Socket.IO autenticado pelo access token em `/ws/socket.io`. O gate
 O diálogo global de correção apresenta a proposta real usando `QuestionCorrectionProposalPreview.vue`, incluindo todas as figuras em suas posições marcadas. Administradores podem aprovar a prévia ou reenviar uma nova solicitação com sugestões; o reenvio passa por `useQuestionCorrection -> RequestQuestionCorrectionUseCase -> QuestionRepository`, preservando o histórico de solicitações.
 
 
+## Continuidade da execução de caderno
+
+A troca da questão atual passa por `useNotebookExecution` e pelo caso de uso/repositório Study para persistir `activeQuestionId`; a reabertura restaura esse índice pela resposta da API. A página desabilita alternativas e confirmação quando o caderno não está `IN_PROGRESS`, mas a API permanece a autoridade para rejeitar tentativas ou respostas pausadas. A seleção já recebida vem congelada e agrupada por assunto; os botões de assunto usam essa ordem, sem reordenar localmente.
+
 ## Atualização editorial em Caderno aberto
 
 Ao aprovar uma correção pelo diálogo global, `App.vue` incrementa a versão editorial enviada a `NotebookExecutionPage`. O composable `useNotebookExecution` consulta novamente as questões pelo caso de uso de Study e preserva a questão aberta pelo ID, o índice e as respostas. A aprovação feita no diálogo local do Caderno executa a mesma atualização imediatamente.
@@ -228,3 +252,15 @@ Ao aprovar uma correção pelo diálogo global, `App.vue` incrementa a versão e
 O diálogo global permite que administradores reenviem uma solicitação em estado FAILED com novas sugestões. Somente uma solicitação PROPOSED mostra o botão de aprovação.
 ## Localização automática de figura em correção
 Em solicitações FAILED, administradores podem acionar Reenviar análise sem preencher sugestões. O worker recebe a solicitação original e escolhe automaticamente a página da figura dentro da janela de evidência; sugestões são apenas contexto adicional.
+
+
+## Arena: Duelo
+
+O módulo Arena segue `ArenaPage/components -> useArena -> ArenaUseCases -> ArenaRepository -> AxiosArenaRepository -> API`. Eventos Socket.IO apenas sinalizam atualização; o composable sempre recupera o estado sanitizado pela API e reentra na sala após reconexão. A experiência Quasar é mobile-first, reaproveita a paleta azul clara e cobre entrada, criação/entrada por código, sala de espera, questão cronometrada e placar final com estados reais de carregamento, erro, vazio e conexão.
+
+## Arena: salas públicas e prontidão
+
+A Arena permite criar salas `PUBLIC` ou `PRIVATE`. O composable `useArena` consulta salas públicas, salas privadas criadas pelo usuário e assuntos canônicos pela camada Application/Axios; `ArenaPage` nunca acessa HTTP diretamente. Participantes entram em salas públicas pelo resumo real e confirmam exatamente a quantidade exigida de assuntos antes que o criador possa iniciar. Ao abrir a página, o parâmetro `duel` da URL é restaurado pela API; erros, salas vazias, lotadas e privadas não acessíveis permanecem estados explícitos da interface.
+
+- A Arena oferece ao criador o botão “Remover sala” enquanto o duelo estiver aguardando; após sucesso, retorna ao lobby atualizado.
+- Em “Salas públicas”, o criador vê “Remover” ao lado de “Entrar”; a ação reaproveita a remoção segura de sala aguardando.

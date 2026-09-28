@@ -2,11 +2,38 @@
 
 Base: `/api/v1`. Respostas usam JSON, datas ISO 8601 UTC e erros no formato `{ "error": { "code", "message", "details" } }`. Listagens sao paginadas por `page` e `per_page` (maximo 100) e retornam `meta`. Rotas autenticadas usam `Authorization: Bearer <access-token>`.
 
+## Revisão adaptativa
+
+Todas as rotas deste grupo exigem usuário autenticado e sempre restringem dados ao próprio usuário. O contexto Review usa assuntos canônicos como conceitos; conteúdo de cards é compartilhado, mas progresso, domínio e histórico são individuais.
+
+| Método e rota | Regra |
+| --- | --- |
+| `GET /review/sessions/daily` | monta ou retoma a sessão diária priorizada; aceita `limit` de 1 a 100 (padrão 20) |
+| `GET /review/sessions/quick` | monta revisão rápida com os cards de maior prioridade; aceita `limit` de 1 a 100 (padrão 10) |
+| `POST /review/sessions/{sessionId}/cards/{cardId}/reviews` | registra uma classificação imutável (`AGAIN`, `HARD`, `GOOD` ou `EASY`) do card pertencente à sessão do usuário |
+| `GET /review/mastery-map` | retorna mapa paginado e hierárquico de domínio por assunto canônico; aceita `page` e `per_page` |
+| `GET /study/notebooks/{id}/analysis` | retorna somente o estado e resultado persistido da análise assíncrona do caderno do usuário |
+
+`GET /review/sessions/daily` e `GET /review/sessions/quick` retornam `data` com `id`, `kind` (`DAILY` ou `QUICK`), `status`, `totalCards`, `reviewedCards` e `cards`. Cada card expõe somente `id`, `front`, `back`, `concept` (`id`, `name`, `path`), `dueAt` e `priority`; a interface mantém `back` oculto até ação explícita do usuário. Não há criação de sessão aleatória nem exposição de progresso de terceiros.
+
+`POST /review/sessions/{sessionId}/cards/{cardId}/reviews` recebe:
+
+```json
+{ "rating": "GOOD" }
+```
+
+O retorno em `data` contém `cardId`, `rating`, `reviewedAt`, `nextReviewAt`, `intervalDays`, `masteryScore` e `session`. Reenvios idênticos não podem criar dois eventos para a mesma interação; uma classificação de card fora da sessão ou de outro usuário responde `404 RESOURCE_NOT_FOUND`.
+
+`GET /review/mastery-map` retorna uma lista paginada de nós com `concept` (`id`, `name`, `parentId`, `path`), `masteryScore` opcional de 0 a 100, `confidence` (`INSUFFICIENT`, `LOW`, `MEDIUM`, `HIGH`), `evidenceCount`, `lastEvidenceAt` e `children`. Sem amostra suficiente, `masteryScore` é `null` e a confiança é `INSUFFICIENT`; isso não representa domínio baixo.
+
+`GET /study/notebooks/{id}/analysis` retorna `data` com `notebookId`, `algorithmVersion`, `status` (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`), `requestedAt`, `completedAt` opcional, `summary` opcional (`correctAnswers`, `totalAnswers`, `identifiedPoints`) e `actions`. Cada ação persistida contém `type`, `concept`, `questionId` opcional, `reason`, `confidence` e `appliedAt`. Enquanto pendente ou processando, `summary` e `actions` refletem exclusivamente o resultado já persistido; a rota não inventa análise nem dispara processamento síncrono.
+
 ## Autenticacao
 
 | Metodo e rota | Regra |
 | --- | --- |
 | `POST /auth/login` | autentica e cria sessao |
+| `POST /auth/google` | valida a credencial OIDC Google e cria sessao somente para conta ativa vinculada |
 | `POST /auth/refresh` | rotaciona refresh via cookie seguro |
 | `POST /auth/logout` | revoga a sessao atual |
 | `GET /auth/me` | retorna usuario e papeis |
@@ -30,14 +57,14 @@ Todas as rotas abaixo que mutam dados requerem `ADMIN`. Leitura de conteudo publ
 | Fusão de Taxonomia | `POST /admin/taxonomy/subjects/{id}/merge` recebe `{ "target_subject_id": "uuid", "reason": "texto" }`, exige ADMIN, elimina associações duplicadas, reatribui vínculos canônicos de questões e assuntos locais, e grava auditoria |
 | Reconciliação de Taxonomia | `GET /admin/taxonomy/reconciliation-proposals` lista propostas determinísticas com confiança e justificativa; requer ADMIN e não executa fusões |
 | Taxonomia editorial | `PUT /admin/questions/{id}/taxonomy-subjects` recebe `{ "taxonomy_subject_ids": ["uuid"] }` e substitui as associações canônicas da questão para usuários ADMIN |
-| Usuarios | `GET /users`; `PATCH /users/{id}/roles`; `PATCH /users/{id}/status` |
+| Usuários | `GET, POST /admin/users`; `PUT, DELETE /admin/users/{id}/google-identity`; `PATCH /admin/users/{id}/roles`; `PATCH /admin/users/{id}/status` |
 
 `GET /admin/taxonomy/subjects` devolve `questionCount` por assunto canônico. O valor é agregado e inclui somente questões PUBLISHED ligadas ao nó e a todos os seus descendentes; em folhas, representa apenas as questões publicadas ligadas à própria folha.
 
 `GET /questions` aceita filtros `syllabus_id`, `subject_id`, `tag`, `board`, `year`, `difficulty`, `content`, `status` (admin) e `origin`. `content` recebe até 200 caracteres e localiza o texto no enunciado ou em qualquer alternativa publicada. Cada questão retornada inclui `answerKeySource`, que é `OFFICIAL` quando o gabarito foi explicitamente recuperado da fonte e `AI_ESTIMATED` quando foi inferido pela IA; o cliente deve sinalizar visualmente a segunda hipótese. A importacao primeiro valida e cria relatorio; `commit` insere apenas linhas validas explicitamente aprovadas. Assim nao ha insercao silenciosa.
 ### Correção assistida de questão
 
-`POST /questions/{id}/correction-requests` recebe `{ "instruction": "texto entre 3 e 2000 caracteres" }`, exige usuário autenticado e cria uma solicitação para **uma única questão publicada**. Quando a instrução contém um comando de busca, como `procure por trecho "..."`, `pesquise pela expressão ...` ou equivalente, o worker pesquisa o trecho no PDF de origem antes de chamar o Codex e adiciona as páginas encontradas, com duas páginas vizinhas, às evidências visuais. Se a instrução mencionar `gabarito`, `resposta correta` ou `alternativa correta`, o worker também anexa, no máximo, 12 páginas que contenham “gabarito” no PDF para verificação oficial. A resposta retorna a solicitação em `PENDING`; não altera a questão antes da aprovação administrativa.
+`POST /questions/{id}/correction-requests` recebe `{ "instruction": "texto entre 3 e 2000 caracteres" }`, exige usuário autenticado e cria uma solicitação para **uma única questão publicada**. Quando houver PDF de origem, o worker divide o enunciado do snapshot por linhas, remove espaços e caracteres especiais apenas das extremidades e pesquisa a primeira linha útil de maior comprimento; alternativas não participam da busca automática. As páginas encontradas, com duas páginas vizinhas, são unidas às evidências visuais. Quando a instrução contém um comando de busca, como `procure por trecho "..."`, `pesquise pela expressão ...` ou equivalente, o worker também pesquisa o trecho no PDF de origem e incorpora a mesma janela de evidência. Se a instrução mencionar `gabarito`, `resposta correta` ou `alternativa correta`, o worker também anexa, no máximo, 12 páginas que contenham “gabarito” no PDF para verificação oficial. A resposta retorna a solicitação em `PENDING`; não altera a questão antes da aprovação administrativa.
 
 `GET /questions/{id}/correction-requests/latest` retorna a última solicitação visível ao solicitante. Administradores recebem também a proposta estruturada quando o worker terminar; outros usuários recebem apenas o estado. Estados possíveis: `PENDING`, `PROCESSING`, `PROPOSED`, `APPROVED`, `REJECTED` e `FAILED`.
 
@@ -87,6 +114,7 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 | `GET /notebooks/{id}` | detalhes e progresso, com isolamento por dono |
 | `POST /notebooks/{id}/start` | inicia ou retoma a execução e grava `startedAt` |
 | `POST /notebooks/{id}/pause` | pausa o contador e preserva a duração acumulada |
+| `PATCH /notebooks/{id}/active-question` | persiste a questão ativa da seleção congelada |
 | `GET /notebooks/{id}/statistics` | resumo do progresso e desempenho do caderno |
 | `POST /notebooks/{id}/questions/{questionId}/attempts` | inicia tentativa |
 | `POST /attempts/{id}/answers` | registra marcacao imutavel |
@@ -94,8 +122,12 @@ A resposta contem `validRows`, `invalidRows` e `rows` com o numero da linha, a s
 | `POST /notebooks/{id}/finish` | finaliza caderno/simulado e revela resultado quando cabivel |
 
 `POST /notebooks/{id}/start` é idempotente enquanto o caderno está em andamento e retorna o caderno com `status`, `startedAt`, `finishedAt` e `durationSeconds`. `POST /notebooks/{id}/pause` acumula a duração já decorrida e muda o estado para `PAUSED`; `start` retoma a contagem sem perder o acumulado. `GET /notebooks/{id}/statistics` retorna `total`, `answered`, `correct`, `incorrect`, `percentage`, `averageElapsedSeconds`, `elapsedSeconds` e `answeredQuestionIds`, sempre restritos ao proprietário. `POST /notebooks/{id}/finish` encerra o caderno, calcula a duração acumulada e impede novas tentativas. Um caderno finalizado não pode ser iniciado nem finalizado novamente.
+`PATCH /notebooks/{id}/active-question` recebe `{ "question_id": "uuid" }`, exige que a questão pertença à seleção congelada e atualiza somente o caderno do proprietário. `GET /notebooks/{id}` devolve `activeQuestionId`; a interface o usa para restaurar a questão aberta após pausa, fechamento ou reabertura.
+
 
 `POST /notebooks` recebe `name`, `mode` (`STUDY` ou `EXAM`), `quantity` e o objeto opcional `filters`. Para estudo direcionado, `filters` deve informar conjuntamente `exam_id`, `position_id` e uma lista não vazia `subject_ids`; o cargo precisa pertencer ao concurso e todo assunto deve estar associado ao cargo. Os filtros aceitos no MVP sao `subject_id`, `board`, `year` e `difficulty` (`EASY`, `MEDIUM` ou `HARD`). O cliente nao envia IDs de questoes: o service consulta somente questoes publicadas, persiste a lista retornada em `notebook_questions` e a composicao nunca muda. A API responde `422 VALIDATION_FAILED` quando os filtros nao encontram a quantidade solicitada, em vez de completar o caderno com questoes fora dos filtros.
+A criação exclui questões com resposta final do mesmo usuário nos últimos 30 dias e questões já congeladas em cadernos `DRAFT`, `IN_PROGRESS` ou `PAUSED` do mesmo usuário. Se as exclusões não deixarem a quantidade solicitada, responde `422 VALIDATION_FAILED`; não reutiliza questões silenciosamente. A seleção é ordenada de forma determinística por assunto canônico antes de ser persistida. `POST /notebooks/{id}/questions/{questionId}/attempts` e `POST /attempts/{id}/answers` aceitam somente cadernos `IN_PROGRESS`; para `PAUSED`, retornam `409 STATE_CONFLICT`.
+
 
 ## Desempenho e revisoes
 
@@ -145,9 +177,25 @@ O provider usa `DISCOVERY_PROVIDER_BASE_URL` e só aceita resposta JSON de hosts
 
 `POST /auth/login` recebe `{ "email": "user@example.com", "password": "...", "device_name": "opcional" }`. Em sucesso, devolve `data` com `access_token` e `user`; o refresh token opaco e entregue exclusivamente em cookie `HttpOnly`, `Secure` e `SameSite=Lax`.
 
+`POST /auth/google` recebe `{ "credential": "oidc-id-token" }`. A credencial é validada no servidor quanto à assinatura, emissor Google, público configurado, expiração e `email_verified`; nunca é persistida, registrada em logs ou devolvida. Para uma identidade Google explicitamente vinculada a usuário `ACTIVE`, a resposta é igual ao login local: `data` contém `access_token` e `user`, e o refresh token é entregue somente no cookie seguro.
+
+Quando a identidade Google válida ainda não possuir vínculo, a API cria uma única conta com `status: "PENDING_APPROVAL"`, papel `USER`, sem senha local e com o e-mail Google normalizado. A resposta é `200` sem cookies de refresh e contém somente `{ "status": "PENDING_APPROVAL", "message": "Seu acesso aguarda liberação administrativa." }` em `data`; ela nunca contém `access_token`. Nova tentativa da mesma identidade retorna a mesma resposta. Se o e-mail Google coincidir com uma conta local sem vínculo explícito, a API devolve `409 STATE_CONFLICT`; credencial inválida devolve `401 UNAUTHENTICATED` sem criar ou alterar registros.
+
 `POST /auth/refresh` e `POST /auth/logout` usam somente o refresh token do cookie. O refresh cria uma nova sessao na mesma familia, revoga o token anterior e revoga toda a familia se um token ja rotacionado for reutilizado.
 
-`GET /auth/me` devolve `{ "id", "email", "name", "roles" }` em `data`. Credenciais, token expirado ou revogado e usuario bloqueado retornam `401 UNAUTHENTICATED`, sem revelar qual condicao falhou.
+`GET /auth/me` devolve `{ "id", "email", "name", "roles", "status" }` em `data`. Credenciais, token expirado ou revogado e usuario bloqueado retornam `401 UNAUTHENTICATED`, sem revelar qual condicao falhou. Login local com credenciais corretas de usuário `PENDING_APPROVAL` não cria sessão e devolve o mesmo retorno seguro de aprovação pendente de `POST /auth/google`.
+
+### Foto de perfil
+
+`GET /profile/avatar/metadata` retorna disponibilidade, MIME e data de atualização da foto do próprio usuário. `GET /profile/avatar` entrega o binário privado somente ao usuário autenticado; sem foto retorna `404 RESOURCE_NOT_FOUND`. `POST /profile/avatar` recebe multipart com o campo `avatar`, valida conteúdo, tamanho máximo de 5 MB e dimensões entre 32 e 4096 pixels, normaliza para WebP e substitui a foto anterior. Caminhos internos nunca são expostos; falhas de validação retornam `422 VALIDATION_FAILED`.
+
+### Administração de usuários
+
+Todas as rotas desta seção exigem papel `ADMIN`. `GET /admin/users` aceita `page`, `per_page` (padrão 25, máximo 100), `query` e `status`. Devolve lista paginada de `{ "id", "name", "email", "googleEmail", "roles", "status" }`, sem hash de senha, tokens ou eventos de auditoria.
+
+`POST /admin/users` recebe `{ "name": "...", "email": "...", "roles": ["USER"], "status": "ACTIVE", "password": "opcional", "google_email": "opcional" }`. A senha local é opcional; e-mails local e Google são normalizados e únicos nos respectivos vínculos. Conflitos devolvem `409 STATE_CONFLICT` e validações devolvem `422 VALIDATION_FAILED`, sem criar usuário parcial.
+
+`PUT /admin/users/{id}/google-identity` recebe `{ "google_email": "verified@example.com" }` e cria ou substitui o vínculo explícito. `DELETE /admin/users/{id}/google-identity` remove-o. Ambos preservam a unicidade e gravam auditoria segura. `PATCH /admin/users/{id}/roles` recebe `{ "roles": ["USER", "ADMIN"] }`; `PATCH /admin/users/{id}/status` recebe `{ "status": "ACTIVE|PENDING_APPROVAL|BLOCKED" }`. Todas as alterações são transacionais e auditadas; uma operação que removeria ou bloquearia o último administrador ativo devolve `409 STATE_CONFLICT` e mantém o estado anterior.
 
 Os services recebem Request DTOs e retornam Response DTOs; JWT, cookies, Argon2id e Doctrine pertencem aos adaptadores de infraestrutura.
 
@@ -225,3 +273,30 @@ POST /api/v1/admin/questions/publish-batch requer ADMIN e recebe { question_ids:
 ### Notificações de correção em tempo real
 
 `GET /question-correction-requests/latest` retorna, para o usuário autenticado, o último resultado concluído (`PROPOSED` ou `FAILED`) de correção solicitado por ele. A proposta detalhada só é incluída para administradores. O endpoint serve como recuperação após reconexão do WebSocket.
+
+### Configuração Google
+
+Defina `GOOGLE_OIDC_CLIENT_ID` na API e o mesmo identificador público em `VITE_GOOGLE_CLIENT_ID` na SPA. O cliente OAuth deve ser do tipo Web e autorizar exclusivamente as origens HTTPS/publicadas e os endereços de desenvolvimento confirmados para este produto. Não use nem exponha um client secret: o fluxo usa a credencial OIDC do Google Identity Services, verificada pela API.
+
+
+### Arena: Duelo privado
+
+Todas as rotas Arena exigem autenticação. `POST /api/v1/arena/duels` cria uma sala com `{ "max_players": 2..8, "subjects_per_player": 1..5, "question_count": 5|10|15|20, "question_seconds": 15|30|60 }`; a resposta devolve estado sanitizado e código curto. `POST /api/v1/arena/duels/join` recebe `{ "code": "ABC123" }`; `GET /api/v1/arena/duels/{id}` recupera estado somente para participante.
+
+`PUT /api/v1/arena/duels/{id}/subjects` recebe exatamente `subjects_per_player` IDs canônicos distintos e marca o participante pronto. O servidor congela questões `PUBLISHED` equilibradas entre assuntos quando todos estiverem prontos. `POST /api/v1/arena/duels/{id}/start` inicia somente pelo criador.
+
+`POST /api/v1/arena/duels/{id}/answers` recebe `{ "option_id": "uuid" }` e aceita somente a primeira resposta, antes do prazo do servidor. Duplicidade, atraso ou alternativa inválida retornam `409 STATE_CONFLICT`. Por `received_at, id`, acertos recebem 100, 75, 50 e 25; erros, -25. O estado aberto oculta gabarito, escolhas adversárias e questões futuras.
+
+Socket.IO usa a sala autenticada `arena:duel:{id}`. `arena:duel-updated` contém `{ duelId }`; após evento ou reconexão, o cliente recupera `GET /arena/duels/{id}` como fonte autoritativa.
+
+
+`POST /api/v1/arena/duels/{id}/round/close` requer participante autenticado. Fecha a rodada somente quando todos responderem ou quando o prazo do servidor tiver expirado; a operação é idempotente, calcula pontuação e materializa as tentativas de desempenho `ARENA_DUELO`.
+
+### Arena: salas públicas e privadas
+
+`POST /arena/duels` recebe `max_players`, `subjects_per_player`, `question_count`, `question_seconds` e `visibility` (`PUBLIC` ou `PRIVATE`, padrão `PRIVATE`). `POST /arena/duels/join` mantém a entrada por `{ "code": "..." }` exclusivamente para salas privadas. `POST /arena/duels/{id}/join` permite ao usuário autenticado entrar em sala pública `WAITING` sem código.
+
+`GET /arena/duels/public?page=1&per_page=25` lista somente salas públicas `WAITING`; `GET /arena/duels/mine/private?page=1&per_page=25` lista somente salas privadas `WAITING` criadas pelo usuário autenticado. Ambos devolvem paginação padrão e resumos sem código ou participantes. `GET /arena/subjects?page=1&per_page=25` devolve assuntos canônicos ativos para a escolha individual de prontidão. Detalhes e comandos de um duelo continuam restritos a seus participantes; tentativa de acessar sala privada de terceiro retorna `404`.
+
+- `DELETE /arena/duels/{id}` remove uma sala `WAITING` apenas quando solicitado pelo criador; salas iniciadas, finalizadas ou de terceiros retornam `409 STATE_CONFLICT`.
+- A listagem pública inclui `creatorUserId` apenas para permitir ao cliente autenticado exibir a ação de remoção da própria sala aguardando; `DELETE /arena/duels/{id}` mantém a regra de propriedade e estado `WAITING`.

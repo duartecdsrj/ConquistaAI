@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Domain\Review\Entity;
+use App\Domain\Review\Enum\NotebookAnalysisStatus;
+final class NotebookAnalysisExecution { public function __construct(public readonly string $id,public readonly string $notebookId,public readonly string $algorithmVersion,public NotebookAnalysisStatus $status,public int $retryCount,public ?string $provider,public ?string $model,public ?int $tokenCount,public ?int $durationMilliseconds,public ?array $summary,public ?string $errorCode,public ?string $errorMessage,public readonly \DateTimeImmutable $requestedAt,public ?\DateTimeImmutable $startedAt=null,public ?\DateTimeImmutable $completedAt=null){} public function begin(\DateTimeImmutable $now):void{$this->status=NotebookAnalysisStatus::PROCESSING;$this->startedAt=$now;} public function fail(string $code,string $message,\DateTimeImmutable $now):void{$this->status=NotebookAnalysisStatus::FAILED;$this->errorCode=$code;$this->errorMessage=$message;$this->completedAt=$now;} }

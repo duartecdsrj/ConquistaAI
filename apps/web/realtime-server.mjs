@@ -23,7 +23,7 @@ const http = createServer((request, response) => {
     try {
       const event = JSON.parse(body)
       if (typeof event.userId !== 'string' || !event.userId || typeof event.status !== 'string') throw Error('invalid')
-      io.to('user:' + event.userId).emit('question-correction', event)
+      if (typeof event.duelId === "string" && event.duelId) io.to("user:" + event.userId).emit("arena:duel-updated", { duelId: event.duelId }); else io.to("user:" + event.userId).emit("question-correction", event)
       response.writeHead(202, { 'content-type': 'application/json' }); response.end('{"accepted":true}')
     } catch { response.writeHead(400); response.end() }
   })

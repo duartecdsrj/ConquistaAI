@@ -12,4 +12,7 @@ interface UserRepositoryInterface
     public function findById(string $id): ?User;
 
     public function save(User $user): void;
+    /** @return list<User> */ public function list(int $offset, int $limit, ?string $query, ?string $status): array;
+    public function count(?string $query, ?string $status): int;
+    public function countActiveAdmins(): int;
 }

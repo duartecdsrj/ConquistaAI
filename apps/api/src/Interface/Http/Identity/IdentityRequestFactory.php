@@ -5,6 +5,7 @@ namespace App\Interface\Http\Identity;
 
 use App\Application\Identity\DTO\Request\AccessTokenRequestDto;
 use App\Application\Identity\DTO\Request\LoginRequestDto;
+use App\Application\Identity\DTO\Request\GoogleLoginRequestDto;
 use App\Application\Identity\DTO\Request\LogoutRequestDto;
 use App\Application\Identity\DTO\Request\RefreshTokenRequestDto;
 use InvalidArgumentException;
@@ -26,6 +27,12 @@ final class IdentityRequestFactory
             $this->clientIp($request),
             $this->optionalString($payload, 'device_name'),
         );
+    }
+
+    public function googleLogin(ServerRequestInterface $request): GoogleLoginRequestDto
+    {
+        $payload = $this->json($request);
+        return new GoogleLoginRequestDto($this->requiredString($payload, "credential"), $this->optionalString($payload, "device_name"));
     }
 
     public function refresh(ServerRequestInterface $request): RefreshTokenRequestDto

@@ -11,6 +11,7 @@ use App\Application\Catalog\Service\GetExamService;
 use App\Application\Catalog\Service\UpdateExamService;
 use App\Application\Catalog\Service\DeleteExamService;
 use App\Application\Identity\Service\AuthService;
+use App\Application\Identity\Service\GoogleAuthenticationService;
 use App\Application\QuestionBank\Service\PreviewQuestionImportService;
 use App\Application\QuestionBank\Service\GetQuestionImportService;
 use App\Application\QuestionBank\Service\CommitQuestionImportService;
@@ -23,6 +24,10 @@ use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineAuthEventRepository;
 use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineAuthSessionRepository;
 use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineUserRepository;
+use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineGoogleIdentityRepository;
+use App\Infrastructure\Identity\GoogleOidcValidator;
+use App\Infrastructure\Identity\GoogleAvatarImporter;
+use App\Infrastructure\Identity\Avatar\PrivateAvatarStorage;
 use App\Infrastructure\Persistence\Doctrine\Catalog\DoctrineExamRepository;
 use App\Infrastructure\Catalog\GeminiExamLogoResearcher;
 use App\Infrastructure\Database;
@@ -53,6 +58,9 @@ use App\Interface\Http\QuestionBank\QuestionPdfImportRouteRegistrar;
 use App\Interface\Http\QuestionBank\QuestionCorrectionRouteRegistrar;
 use App\Interface\Http\Performance\PerformanceRouteRegistrar;
 use App\Interface\Http\Taxonomy\TaxonomyRouteRegistrar;
+use App\Interface\Http\Arena\ArenaRouteRegistrar;
+use App\Interface\Http\Arena\ArenaAnswerRouteRegistrar;
+use App\Interface\Http\Arena\ArenaRoundRouteRegistrar;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -67,6 +75,8 @@ final class AppFactory
         $responses = new ApiResponseFactory();
         $identityRequests = new IdentityRequestFactory();
         $auth = self::authController($responses);
+        $userAdministration = self::userAdministrationController($responses);
+        $profileAvatar = self::profileAvatarController($responses);
         $catalogRequests = new CatalogRequestFactory();
         $catalog = self::catalogController($responses, self::authService());
         (new DiscoveryRouteRegistrar($responses, self::authService()))->register($app);
@@ -76,6 +86,7 @@ final class AppFactory
         (new SubjectRouteRegistrar($responses, self::authService()))->register($app);
         $importRequests = new QuestionImportRequestFactory();
         (new StudyRouteRegistrar($responses, self::authService()))->register($app);
+        (new \App\Interface\Http\Review\ReviewRouteRegistrar($responses, self::authService()))->register($app);
         $imports = self::questionImportController($responses, self::authService());
         (new PerformanceRouteRegistrar($responses, self::authService()))->register($app);
         (new PublishedQuestionRouteRegistrar($responses, self::authService()))->register($app);
@@ -84,17 +95,64 @@ final class AppFactory
         (new QuestionPdfImportRouteRegistrar($responses, self::authService()))->register($app);
         (new QuestionCorrectionRouteRegistrar($responses, self::authService()))->register($app);
         (new TaxonomyRouteRegistrar($responses, self::authService()))->register($app);
+        (new ArenaRouteRegistrar($responses, self::authService()))->register($app);
+        (new ArenaAnswerRouteRegistrar($responses, self::authService()))->register($app);
+        (new ArenaRoundRouteRegistrar($responses, self::authService()))->register($app);
 
         $app->get('/health', static function (ServerRequestInterface $request, ResponseInterface $response) use ($responses): ResponseInterface {
             return $responses->success($response, ['status' => 'ok'], (string) $request->getAttribute('request_id'));
         });
 
-        $app->post('/v1/auth/login', static function (ServerRequestInterface $request, ResponseInterface $response) use ($auth, $identityRequests, $responses): ResponseInterface {
+        $app->get('/v1/profile/avatar/metadata', static function (ServerRequestInterface $request, ResponseInterface $response) use ($profileAvatar, $identityRequests, $responses): ResponseInterface { try { return $profileAvatar->metadata($request, $response, $identityRequests->accessToken($request)); } catch (InvalidArgumentException) { return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id')); } });
+        $app->get('/v1/profile/avatar', static function (ServerRequestInterface $request, ResponseInterface $response) use ($profileAvatar, $identityRequests, $responses): ResponseInterface { try { return $profileAvatar->get($request, $response, $identityRequests->accessToken($request)); } catch (InvalidArgumentException) { return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id')); } });
+        $app->post('/v1/profile/avatar', static function (ServerRequestInterface $request, ResponseInterface $response) use ($profileAvatar, $identityRequests, $responses): ResponseInterface { try { return $profileAvatar->replace($request, $response, $identityRequests->accessToken($request)); } catch (InvalidArgumentException) { return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id')); } });
+
+        $app->get('/v1/admin/users', static function (ServerRequestInterface $request, ResponseInterface $response) use ($userAdministration, $identityRequests, $responses): ResponseInterface { try { return $userAdministration->list($request, $response, $identityRequests->accessToken($request)); } catch (InvalidArgumentException) { return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id')); } });
+        $userAdministrationRequests = new \App\Interface\Http\Identity\UserAdministrationRequestFactory();
+        $app->post('/v1/admin/users', static function (ServerRequestInterface $request, ResponseInterface $response) use ($userAdministration, $identityRequests, $userAdministrationRequests, $responses): ResponseInterface {
+            try {
+                return $userAdministration->create($request, $response, $identityRequests->accessToken($request), $userAdministrationRequests);
+            } catch (InvalidArgumentException) {
+                return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id'));
+            }
+        });
+        $app->put('/v1/admin/users/{id}/google-identity', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($userAdministration, $identityRequests, $userAdministrationRequests, $responses): ResponseInterface {
+            try {
+                return $userAdministration->setGoogle($request, $response, $identityRequests->accessToken($request), (string) ($arguments['id'] ?? ''), $userAdministrationRequests);
+            } catch (InvalidArgumentException) {
+                return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id'));
+            }
+        });
+        $app->delete('/v1/admin/users/{id}/google-identity', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($userAdministration, $identityRequests, $responses): ResponseInterface {
+            try {
+                return $userAdministration->removeGoogle($request, $response, $identityRequests->accessToken($request), (string) ($arguments['id'] ?? ''));
+            } catch (InvalidArgumentException) {
+                return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id'));
+            }
+        });
+        $app->patch('/v1/admin/users/{id}/roles', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($userAdministration, $identityRequests, $userAdministrationRequests, $responses): ResponseInterface {
+            try {
+                return $userAdministration->roles($request, $response, $identityRequests->accessToken($request), (string) ($arguments['id'] ?? ''), $userAdministrationRequests);
+            } catch (InvalidArgumentException) {
+                return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id'));
+            }
+        });
+        $app->patch('/v1/admin/users/{id}/status', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($userAdministration, $identityRequests, $userAdministrationRequests, $responses): ResponseInterface {
+            try {
+                return $userAdministration->status($request, $response, $identityRequests->accessToken($request), (string) ($arguments['id'] ?? ''), $userAdministrationRequests);
+            } catch (InvalidArgumentException) {
+                return $responses->problem($response, 'UNAUTHENTICATED', 'Credenciais invalidas ou expiradas.', 401, (string) $request->getAttribute('request_id'));
+            }
+        });        $app->post('/v1/auth/login', static function (ServerRequestInterface $request, ResponseInterface $response) use ($auth, $identityRequests, $responses): ResponseInterface {
             try {
                 return $auth->login($request, $response, $identityRequests->login($request));
             } catch (InvalidArgumentException $exception) {
                 return self::validationProblem($responses, $request, $response, $exception->getMessage());
             }
+        });
+        $app->post('/v1/auth/google', static function (ServerRequestInterface $request, ResponseInterface $response) use ($auth, $identityRequests, $responses): ResponseInterface {
+            try { return $auth->google($request, $response, $identityRequests->googleLogin($request)); }
+            catch (InvalidArgumentException $exception) { return self::validationProblem($responses, $request, $response, $exception->getMessage()); }
         });
         $app->post('/v1/auth/refresh', static function (ServerRequestInterface $request, ResponseInterface $response) use ($auth, $identityRequests, $responses): ResponseInterface {
             try {
@@ -221,10 +279,40 @@ $errorMiddleware = $app->addErrorMiddleware(false, true, true);
     }
 
 
+    private static function googleAuthenticationService(): GoogleAuthenticationService
+    {
+        $entityManager = DoctrineEntityManagerFactory::create();
+        return new GoogleAuthenticationService(
+            new GoogleOidcValidator(Database::env('GOOGLE_OIDC_CLIENT_ID')),
+            new DoctrineUserRepository($entityManager),
+            new DoctrineGoogleIdentityRepository($entityManager),
+            self::authService(), new SystemClock(), new DoctrineTransactionManager($entityManager),
+            new GoogleAvatarImporter(new PrivateAvatarStorage()),
+        );
+    }
+    private static function profileAvatarController(ApiResponseFactory $responses): \App\Interface\Http\Identity\Controller\ProfileAvatarController
+    {
+        $entityManager = DoctrineEntityManagerFactory::create();
+        return new \App\Interface\Http\Identity\Controller\ProfileAvatarController(self::authService(), new \App\Application\Identity\Service\ProfileAvatarService(new DoctrineUserRepository($entityManager), new PrivateAvatarStorage(), new DoctrineTransactionManager($entityManager)), $responses);
+    }
+
+    private static function userAdministrationController(ApiResponseFactory $responses): \App\Interface\Http\Identity\Controller\UserAdministrationController
+    {
+        $em = DoctrineEntityManagerFactory::create();
+        return new \App\Interface\Http\Identity\Controller\UserAdministrationController(
+            self::authService(),
+            new \App\Application\Identity\Service\UserAdministrationService(
+                new DoctrineUserRepository($em), new DoctrineGoogleIdentityRepository($em),
+                new \App\Infrastructure\Persistence\Doctrine\Identity\DoctrineIdentityAuditEventRepository($em),
+                new NativePasswordHasher(), new SystemClock(), new DoctrineTransactionManager($em),
+            ), $responses,
+        );
+    }
     private static function authController(ApiResponseFactory $responses): AuthController
     {
         return new AuthController(
             self::authService(),
+            self::googleAuthenticationService(),
             new IdentityResponseMapper(),
             $responses,
         );

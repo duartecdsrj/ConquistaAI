@@ -34,6 +34,7 @@ export class StartNotebookUseCase {
   }
 }
 
+export class SetActiveNotebookQuestionUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(id:string,questionId:string):Promise<Notebook>{return this.repository.setActiveQuestion(id,questionId)} }
 export class PauseNotebookUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(id: string): Promise<Notebook> { return this.repository.pause(id) } }
 export class GetNotebookStatisticsUseCase { public constructor(private readonly repository: StudyRepository) {} public execute(id: string): Promise<NotebookStatistics> { return this.repository.statistics(id) } }
 

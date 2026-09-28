@@ -1,0 +1,8 @@
+export interface ReviewPageQuery { readonly page?: number; readonly perPage?: number }
+export interface ReviewPageResult<T> { readonly items: readonly T[]; readonly pagination: { readonly page: number; readonly per_page: number; readonly total: number; readonly total_pages: number }; readonly requestId: string }
+export interface ReviewCard { readonly id:string; readonly front:string; readonly back:string; readonly conceptId:string }
+export interface ReviewSession { readonly id: string; readonly kind: 'DAILY' | 'QUICK'; readonly status: string; readonly requestedLimit: number; readonly cards: readonly ReviewCard[] }
+export interface MasteryNode { readonly conceptId: string; readonly parentId: string | null; readonly name: string; readonly masteryScore: number | null; readonly confidence: string; readonly evidenceCount: number; readonly lastEvidenceAt: string | null }
+export interface NotebookAnalysisAction { readonly id:string; readonly type:string; readonly conceptId:string|null; readonly flashcardId:string|null; readonly reason:string; readonly confidence:number; readonly appliedAt:string|null }
+export interface NotebookAnalysis { readonly id: string; readonly notebookId: string; readonly status: string; readonly summary: Readonly<Record<string, unknown>> | null; readonly errorCode:string|null; readonly completedAt:string|null; readonly actions:readonly NotebookAnalysisAction[] }
+export interface ReviewRepository { daily(limit?: number): Promise<ReviewSession>; quick(limit?: number): Promise<ReviewSession>; rate(sessionId:string, cardId:string, rating:'AGAIN'|'HARD'|'GOOD'|'EASY'): Promise<void>; mastery(query?: ReviewPageQuery): Promise<ReviewPageResult<MasteryNode>>; analysis(notebookId: string): Promise<NotebookAnalysis> }

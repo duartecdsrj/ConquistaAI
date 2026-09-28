@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Domain\Review\Service; use App\Domain\Review\Enum\ReviewRating;use App\Domain\Review\ValueObject\FlashcardProgressState; interface SpacedRepetitionStrategyInterface { public function next(FlashcardProgressState $current,ReviewRating $rating,\DateTimeImmutable $now):FlashcardProgressState; }

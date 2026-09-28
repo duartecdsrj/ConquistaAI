@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Application\Review\DTO\Response; final readonly class MasteryMapNodeResponseDto { public function __construct(public string $conceptId,public ?string $parentId,public string $name,public ?float $masteryScore,public string $confidence,public int $evidenceCount,public ?string $lastEvidenceAt){} }

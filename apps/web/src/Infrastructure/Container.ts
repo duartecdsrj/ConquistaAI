@@ -1,14 +1,19 @@
 import { ListDiscoveryResourcesUseCase, SearchDiscoveryUseCase } from '../Application/Discovery/DiscoveryUseCases'
 import { AxiosDiscoveryRepository } from './Discovery/AxiosDiscoveryRepository'
+import { ProfileAvatarUseCases } from '../Application/Profile/ProfileAvatarUseCases'
+import { AxiosProfileAvatarRepository } from './Profile/AxiosProfileAvatarRepository'
+import { UserManagementUseCases } from '../Application/UserManagement/UserManagementUseCases'
+import { AxiosUserManagementRepository } from './UserManagement/AxiosUserManagementRepository'
 import { CreateAssistantConversationUseCase, ListAssistantConversationsUseCase, ListAssistantMessagesUseCase, ListAssistantSyllabiUseCase, SendAssistantMessageUseCase } from '../Application/Assistant/AssistantUseCases'
 import { AxiosAssistantRepository } from './Assistant/AxiosAssistantRepository'
-import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
+import { GoogleLoginUseCase, LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ApproveQuestionCorrectionUseCase, AskQuestionPdfAssistanceUseCase, GetLatestQuestionCorrectionUseCase, GetLatestCompletedQuestionCorrectionUseCase, ListPublishedQuestionsUseCase, RequestQuestionCorrectionUseCase } from '../Application/QuestionBank/QuestionUseCases'
 import { GetLatestQuestionAuditReportUseCase, ListLatestQuestionAuditFindingsUseCase } from '../Application/QuestionBank/QuestionAuditUseCases'
-import { CreateNotebookUseCase, CreateDirectedStudyPlanUseCase, FinishNotebookUseCase, ListDirectedStudyPlansUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
+import { CreateNotebookUseCase, CreateDirectedStudyPlanUseCase, FinishNotebookUseCase, ListDirectedStudyPlansUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, SetActiveNotebookQuestionUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider, configureRefreshHandler } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
+import { GoogleIdentityServices } from './Identity/GoogleIdentityServices'
 import { CatalogUseCases } from '../Application/Catalog/CatalogUseCases'
 import { AxiosCatalogRepository } from './Catalog/AxiosCatalogRepository'
 import { ImportUseCases } from '../Application/Import/ImportUseCases'
@@ -26,8 +31,11 @@ import { CreateTaxonomySubjectAliasUseCase, CreateTaxonomySubjectUseCase, MergeT
 const sessionStore = new BrowserSessionStore()
 configureAccessTokenProvider(() => sessionStore.accessToken())
 const authRepository = new AxiosAuthRepository()
+export const googleIdentityServices = new GoogleIdentityServices(import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '')
 configureRefreshHandler(async () => { try { const session = await authRepository.refresh(); sessionStore.save(session); return session.accessToken } catch { sessionStore.clear(); return null } })
 const discoveryRepository = new AxiosDiscoveryRepository()
+export const profileAvatarUseCases = new ProfileAvatarUseCases(new AxiosProfileAvatarRepository())
+export const userManagementUseCases = new UserManagementUseCases(new AxiosUserManagementRepository())
 export const discoveryUseCases = { list: new ListDiscoveryResourcesUseCase(discoveryRepository), search: new SearchDiscoveryUseCase(discoveryRepository) }
 const assistantRepository = new AxiosAssistantRepository()
 export const assistantUseCases = { syllabi: new ListAssistantSyllabiUseCase(assistantRepository), conversations: new ListAssistantConversationsUseCase(assistantRepository), create: new CreateAssistantConversationUseCase(assistantRepository), messages: new ListAssistantMessagesUseCase(assistantRepository), send: new SendAssistantMessageUseCase(assistantRepository) }
@@ -35,6 +43,7 @@ export const assistantUseCases = { syllabi: new ListAssistantSyllabiUseCase(assi
 const studyRepository = new AxiosStudyRepository()
 export const identityUseCases = {
   login: new LoginUseCase(authRepository, sessionStore),
+  googleLogin: new GoogleLoginUseCase(authRepository, sessionStore),
   logout: new LogoutUseCase(authRepository, sessionStore),
   restoreSession: new RestoreSessionUseCase(authRepository, sessionStore),
 }
@@ -48,6 +57,7 @@ export const studyUseCases = {
   create: new CreateNotebookUseCase(studyRepository),
   start: new StartNotebookUseCase(studyRepository),
   pause: new PauseNotebookUseCase(studyRepository),
+  setActiveQuestion: new SetActiveNotebookQuestionUseCase(studyRepository),
   statistics: new GetNotebookStatisticsUseCase(studyRepository),
   finish: new FinishNotebookUseCase(studyRepository),
   plan: new GetStudyPlanUseCase(studyRepository),
@@ -66,3 +76,10 @@ export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())
 export const importUseCases = new ImportUseCases(new AxiosImportRepository())
 const editorialRepository = new AxiosEditorialRepository()
 export const editorialUseCases = { listDrafts: new ListDraftQuestionsUseCase(editorialRepository), publish: new PublishEditorialQuestionUseCase(editorialRepository), assignTaxonomy: new AssignEditorialQuestionTaxonomyUseCase(editorialRepository), markForApproval: new MarkEditorialQuestionsForApprovalUseCase(editorialRepository), publishMany: new PublishEditorialQuestionsUseCase(editorialRepository) }
+
+import { ArenaUseCases } from "../Application/Arena/ArenaUseCases"
+import { AxiosArenaRepository } from "./Arena/AxiosArenaRepository"
+import { ReviewUseCases } from '../Application/Review/ReviewUseCases'
+import { AxiosReviewRepository } from './Review/AxiosReviewRepository'
+export const arenaUseCases = new ArenaUseCases(new AxiosArenaRepository())
+export const reviewUseCases = new ReviewUseCases(new AxiosReviewRepository())

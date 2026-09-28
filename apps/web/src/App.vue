@@ -1,18 +1,22 @@
 <template>
   <q-inner-loading :showing="loading" label="Carregando sessão..." />
-  <LoginPage v-if="!loading && !authenticated" :submitting="submitting" :error="error" @submit="login" />
+  <LoginPage v-if="!loading && !authenticated" :submitting="submitting" :error="error" :pending-approval="pendingApproval" :google-enabled="googleEnabled" @submit="login" @google-ready="initializeGoogleButton" />
   <NotebookExecutionPage v-else-if="!loading && user && activeNotebookId" :notebook-id="activeNotebookId" :can-manage="user.roles.includes('ADMIN')" :question-content-version="questionContentVersion" @exit="closeNotebook" />
   <AppShell v-else-if="!loading && user" :user="user" :active="section" :can-manage="user.roles.includes('ADMIN')" @navigate="section = $event" @logout="logout">
-    <HomePage v-if="section === 'home'" :user="user" @navigate="section = $event" />
+    <ProfilePage v-if="section === 'profile'" :name="user.name" />
+    <HomePage v-else-if="section === 'home'" :user="user" @navigate="section = $event" />
     <NotebooksPage v-else-if="section === 'notebooks'" @open="openNotebook" @performance="openPerformance" />
+    <ReviewInsightsPage v-else-if="section === 'review'" />
     <QuestionsPage v-else-if="section === 'questions'" />
     <CatalogPage v-else-if="section === 'catalog'" />
     <ImportPage v-else-if="section === 'import'" />
     <EditorialPage v-else-if="section === 'editorial'" />
     <TaxonomyPage v-else-if="section === 'taxonomy'" />
     <QuestionAuditPage v-else-if="section === 'audit'" />
+    <UserManagementPage v-else-if="section === 'users'" />
     <AssistantPage v-else-if="section === 'assistant'" />
     <DiscoveryPage v-else-if="section === 'discovery'" />
+    <ArenaPage v-else-if="section === 'arena'" :user-id="user.id" />
     <PerformancePage v-else :initial-exam-id="selectedPerformanceExamId" />
   </AppShell>
   <q-banner v-if="activeNotification" class="global-correction-notification" rounded inline-actions>
@@ -32,6 +36,7 @@ import NotebooksPage from './Interface/Http/Study/NotebooksPage.vue'
 import NotebookExecutionPage from './Interface/Http/Study/NotebookExecutionPage.vue'
 import QuestionsPage from './Interface/Http/QuestionBank/QuestionsPage.vue'
 import PerformancePage from './Interface/Http/Performance/PerformancePage.vue'
+import ReviewInsightsPage from './Interface/Http/Review/ReviewInsightsPage.vue'
 import AssistantPage from './Interface/Http/Assistant/AssistantPage.vue'
 import CatalogPage from './Interface/Http/Catalog/CatalogPage.vue'
 import ImportPage from './Interface/Http/Import/ImportPage.vue'
@@ -39,6 +44,9 @@ import DiscoveryPage from './Interface/Http/Discovery/DiscoveryPage.vue'
 import EditorialPage from './Interface/Http/Editorial/EditorialPage.vue'
 import TaxonomyPage from './Interface/Http/Taxonomy/TaxonomyPage.vue'
 import QuestionAuditPage from './Interface/Http/QuestionBank/QuestionAuditPage.vue'
+import UserManagementPage from './Interface/Http/UserManagement/UserManagementPage.vue'
+import ProfilePage from './Interface/Http/Profile/ProfilePage.vue'
+import ArenaPage from './Interface/Http/Arena/ArenaPage.vue'
 import QuestionCorrectionProposalPreview from './Interface/Http/QuestionBank/QuestionCorrectionProposalPreview.vue'
 import { useAuth } from './Interface/Http/Identity/useAuth'
 import { useQuestionCorrection } from './Interface/Http/QuestionBank/useQuestionCorrection'
@@ -51,7 +59,7 @@ const selectedPerformanceExamId = ref<string | null>(null)
 const correctionDialog = ref(false)
 const correctionSuggestions = ref("")
 const questionContentVersion = ref(0)
-const { authenticated, error, loading, login, logout, restore, submitting, user } = useAuth()
+const { authenticated, error, googleEnabled, initializeGoogleButton, loading, login, logout, pendingApproval, restore, submitting, user } = useAuth()
 const { approve, error: correctionError, loading: correctionLoading, refresh, request: correctionRequest, submit } = useQuestionCorrection()
 const { connect, dismiss, ignore, isIgnored, event: notification } = useQuestionCorrectionNotifications()
 const pendingNotification = ref<import("./Infrastructure/Realtime/QuestionCorrectionRealtimeClient").QuestionCorrectionRealtimeEvent | null>(null)
@@ -61,7 +69,7 @@ const canResendCorrection = computed(() => user.value?.roles.includes("ADMIN") =
 async function recoverNotification(): Promise<void> { try { const completed = await questionUseCases.latestCompletedCorrection.execute(); if ((completed.status === "PROPOSED" || completed.status === "FAILED") && !isIgnored(completed.id)) pendingNotification.value = { userId: "", requestId: completed.id, questionId: completed.questionId, status: completed.status } } catch { } }
 function dismissNotification(): void { pendingNotification.value = null; dismiss() }
 function ignoreNotification(): void { const active = activeNotification.value; if (!active) return; ignore(active.requestId); pendingNotification.value = null; dismiss() }
-const validSections: readonly ApplicationSection[] = ['home', 'notebooks', 'questions', 'catalog', 'import', 'editorial', 'taxonomy', 'audit', 'assistant', 'discovery', 'performance']
+const validSections: readonly ApplicationSection[] = ['profile', 'home', 'notebooks', 'questions', 'catalog', 'import', 'editorial', 'taxonomy', 'audit', 'assistant', 'discovery', 'users', 'arena', 'performance']
 
 function openNotebook(id: string): void { activeNotebookId.value = id }
 function openPerformance(examId: string): void { selectedPerformanceExamId.value = examId; section.value = 'performance' }

@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); namespace App\Application\Review\DTO\Response; final readonly class ReviewSessionResponseDto { /** @param list<array{id:string,front:string,back:string,conceptId:string}> $cards */ public function __construct(public string $id,public string $kind,public string $status,public int $requestedLimit,public array $cards){} }

@@ -30,7 +30,7 @@ import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import type { AuthenticatedUser } from '../../../Domain/Identity/AuthRepository'
 
-export type ApplicationSection = 'home' | 'notebooks' | 'questions' | 'performance' | 'assistant' | 'catalog' | 'import' | 'editorial' | 'taxonomy' | 'discovery' | 'audit'
+export type ApplicationSection = 'home' | 'notebooks' | 'review' | 'questions' | 'arena' | 'performance' | 'assistant' | 'catalog' | 'import' | 'editorial' | 'taxonomy' | 'discovery' | 'audit' | 'users' | 'profile'
 
 const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection; readonly canManage: boolean }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection]; logout: [] }>()
@@ -38,12 +38,16 @@ const $q = useQuasar()
 const drawer = ref(!$q.screen.lt.md)
 const initials = computed(() => props.user.name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase())
 const navigationItems = computed<readonly { id: ApplicationSection; label: string; caption: string; icon: string }[]>(() => [
+  { id: 'profile', label: 'Perfil', caption: 'Sua foto e conta', icon: 'account_circle' },
   { id: 'home', label: 'Início', caption: 'Visão geral', icon: 'home_outlined' },
   { id: 'assistant', label: 'Assistente', caption: 'Pergunte ao edital', icon: 'diversity_3' },
   { id: 'notebooks', label: 'Cadernos e plano', caption: 'Monte e retome estudos', icon: 'menu_book' },
+  { id: 'review', label: 'Revisão', caption: 'Cards e domínio', icon: 'school' },
   { id: 'questions', label: 'Questões', caption: 'Banco publicado', icon: 'article_outlined' },
   { id: 'performance', label: 'Desempenho', caption: 'Resultados reais', icon: 'insights' },
+  { id: 'arena', label: 'Arena', caption: 'Duelo em tempo real', icon: 'sports_esports' },
   ...(props.canManage ? [
+    { id: 'users' as const, label: 'Usuários', caption: 'Acessos e aprovações', icon: 'group' },
     { id: 'catalog' as const, label: 'Catálogo', caption: 'Administração', icon: 'inventory_2_outlined' },
     { id: 'discovery' as const, label: 'Descobertas', caption: 'Provas e gabaritos', icon: 'travel_explore' },
     { id: 'import' as const, label: 'Importar questões', caption: 'PDFs em lote e arquivos', icon: 'cloud_upload_outlined' },

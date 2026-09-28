@@ -6,12 +6,13 @@ namespace App\Application\Performance\Service;
 use App\Application\Performance\DTO\Request\AppendAnswerRequestDto;
 use App\Application\Performance\Port\TransactionManagerInterface;
 use App\Domain\Performance\Entity\Answer;
-use App\Domain\Performance\Repository\AttemptRepositoryInterface;
+use App\Domain\Performance\Repository\AttemptRepositoryInterface;use App\Domain\Study\Repository\NotebookRepositoryInterface;use App\Domain\Study\Enum\NotebookStatus;
 
 final class AppendAnswerService
 {
     public function __construct(
         private readonly AttemptRepositoryInterface $attempts,
+        private readonly NotebookRepositoryInterface $notebooks,
         private readonly TransactionManagerInterface $transactions,
         private readonly \DateTimeZone $utc = new \DateTimeZone('UTC'),
     ) {
@@ -20,9 +21,13 @@ final class AppendAnswerService
     public function append(AppendAnswerRequestDto $request): Answer
     {
         return $this->transactions->transactional(function () use ($request): Answer {
-            if ($this->attempts->findByIdForUser($request->attemptId, $request->userId) === null) {
+            $attempt = $this->attempts->findByIdForUser($request->attemptId, $request->userId);
+            if ($attempt === null) {
                 throw new \DomainException('Tentativa nao encontrada.');
             }
+
+            $notebook = $this->notebooks->findByIdForUser($attempt->notebookId, $request->userId);
+            if ($notebook === null || $notebook->status !== NotebookStatus::IN_PROGRESS) throw new \DomainException('Caderno pausado ou finalizado não aceita respostas.');
 
             $answers = $this->attempts->listAnswers($request->attemptId);
             $answer = new Answer(

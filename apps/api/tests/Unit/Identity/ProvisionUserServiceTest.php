@@ -35,7 +35,7 @@ final class ProvisioningUsers implements UserRepositoryInterface
     public ?User $saved = null;
     public function findByEmail(string $email): ?User { return null; }
     public function findById(string $id): ?User { return null; }
-    public function save(User $user): void { $this->saved = $user; }
+    public function save(User $user): void { $this->saved = $user; } public function list(int $offset,int $limit,?string $query,?string $status): array { return []; } public function count(?string $query,?string $status): int { return 0; } public function countActiveAdmins(): int { return 0; }
 }
 final class ProvisioningPasswordHasher implements PasswordHasherInterface
 {
