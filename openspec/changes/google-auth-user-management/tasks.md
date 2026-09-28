@@ -42,4 +42,4 @@
 - [x] 6.1 Documentar as variáveis de ambiente e os domínios/origens autorizados do cliente Google sem expor segredos.
 - [x] 6.2 Executar migrations em ambiente controlado e verificar que usuários existentes permanecem ativos e conseguem usar login local.
 - [x] 6.3 Executar testes da API, build/testes da SPA e verificações estáticas; registrar os resultados em `docs/DEVELOPMENT_STATE.md`.
-- [ ] 6.4 Revisar a configuração Google Cloud com os domínios e origens confirmados antes de habilitar o fluxo em produção.
+- [x] 6.4 Revisar a configuração Google Cloud com os domínios e origens confirmados antes de habilitar o fluxo em produção.

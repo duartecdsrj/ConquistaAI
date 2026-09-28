@@ -1793,3 +1793,8 @@ docker compose exec -T frontend npm run build
 - Isso não fabrica uma autenticação sem Client ID: o botão oficial continua encaminhando a credencial OIDC apenas ao caso de uso já implementado quando a configuração real existir.
 - Validação: build SPA e cenário Playwright público de entrada aprovados.
 - A pedido do usuário, a opção Google voltou a ficar oculta quando o Client ID público não está configurado; com a variável presente, o botão oficial GIS continua disponível.
+
+## 2026-09-28 — Proposta Google Auth/User Management concluída
+
+- Por confirmação explícita do usuário, a proposta `google-auth-user-management` é considerada concluída. A revisão externa do Google Cloud foi aceita como etapa operacional confirmada pelo responsável.
+- O repositório mantém documentadas as origens `http://localhost`, `http://localhost:8081`, `https://conquistaai.app.br` e `https://www.conquistaai.app.br`, além da necessidade de usar o mesmo Client ID Web nas variáveis backend e frontend.
