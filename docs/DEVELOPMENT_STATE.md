@@ -1,5 +1,11 @@
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-28 — Inicialização da API Study restaurada
+
+- Corrigida a composição de `StudyController`: o registrador injetava `CreateNotebookService` no parâmetro de autenticação e deslocava todas as dependências, produzindo erro fatal HTML para qualquer endpoint da API, inclusive login.
+- O controlador volta a receber `AuthService` seguido de um único caso de uso de criação com a exclusão de questões configurada.
+- Próximo passo: validar o endpoint de sessão com token inválido, garantindo resposta JSON `401` em vez de HTML fatal.
+
 ## 2026-09-28 — Compatibilidade de resposta na autenticação
 
 - O adaptador Axios passa a extrair dados tanto do envelope canônico `data/meta` quanto do payload direto legado devolvido pelo login, eliminando a falha de leitura de `access_token` quando o proxy/API retorna a forma direta.

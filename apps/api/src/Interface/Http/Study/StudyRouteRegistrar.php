@@ -57,8 +57,8 @@ final class StudyRouteRegistrar
         $questions = new DoctrinePublishedQuestionRepository($entityManager);
         $mapper = new NotebookResponseMapper();
         $controller = new StudyController(
+            $this->authentication,
             new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager), new DoctrineStudyContestSubjectRepository($entityManager), new DoctrineNotebookQuestionExclusionReader($entityManager)),
-            new CreateNotebookService($notebooks, $questions, $mapper, new DoctrineTransactionManager($entityManager), new DoctrinePositionRepository($entityManager), new DoctrinePositionTaxonomyAssignmentRepository($entityManager), new DoctrineStudyContestSubjectRepository($entityManager)),
             new GetNotebookService($notebooks, $mapper),
             new ListNotebooksService($notebooks, $mapper),
             new ListNotebookQuestionsService($notebooks, $questions, new PublishedQuestionResponseMapper()),
