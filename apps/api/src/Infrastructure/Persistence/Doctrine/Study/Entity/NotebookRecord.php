@@ -25,6 +25,8 @@ class NotebookRecord
     public string $status;
     #[ORM\Column(type: 'json')]
     public array $filters = [];
+    #[ORM\Column(name: 'active_question_id', type: 'string', length: 36, nullable: true)]
+    public ?string $activeQuestionId = null;
     #[ORM\Column(name: 'duration_seconds', type: 'integer', nullable: true)]
     public ?int $durationSeconds = null;
     #[ORM\Column(name: 'started_at', type: 'datetime_immutable', nullable: true)]

@@ -6,7 +6,7 @@ import { LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Applicati
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ApproveQuestionCorrectionUseCase, AskQuestionPdfAssistanceUseCase, GetLatestQuestionCorrectionUseCase, GetLatestCompletedQuestionCorrectionUseCase, ListPublishedQuestionsUseCase, RequestQuestionCorrectionUseCase } from '../Application/QuestionBank/QuestionUseCases'
 import { GetLatestQuestionAuditReportUseCase, ListLatestQuestionAuditFindingsUseCase } from '../Application/QuestionBank/QuestionAuditUseCases'
-import { CreateNotebookUseCase, CreateDirectedStudyPlanUseCase, FinishNotebookUseCase, ListDirectedStudyPlansUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
+import { CreateNotebookUseCase, CreateDirectedStudyPlanUseCase, FinishNotebookUseCase, ListDirectedStudyPlansUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, SetActiveNotebookQuestionUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider, configureRefreshHandler } from './Http/AxiosApiClient'
 import { AxiosAuthRepository } from './Identity/AxiosAuthRepository'
 import { CatalogUseCases } from '../Application/Catalog/CatalogUseCases'
@@ -48,6 +48,7 @@ export const studyUseCases = {
   create: new CreateNotebookUseCase(studyRepository),
   start: new StartNotebookUseCase(studyRepository),
   pause: new PauseNotebookUseCase(studyRepository),
+  setActiveQuestion: new SetActiveNotebookQuestionUseCase(studyRepository),
   statistics: new GetNotebookStatisticsUseCase(studyRepository),
   finish: new FinishNotebookUseCase(studyRepository),
   plan: new GetStudyPlanUseCase(studyRepository),

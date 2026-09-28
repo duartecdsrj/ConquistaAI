@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\Study\Service;
+use App\Application\Study\DTO\Request\SetActiveNotebookQuestionRequestDto;use App\Application\Study\DTO\Response\NotebookResponseDto;use App\Application\Study\Mapper\NotebookResponseMapper;use App\Application\Study\Port\TransactionManagerInterface;use App\Domain\Study\Repository\NotebookRepositoryInterface;
+final class SetActiveNotebookQuestionService { public function __construct(private readonly NotebookRepositoryInterface $notebooks,private readonly NotebookResponseMapper $mapper,private readonly TransactionManagerInterface $transactions){} public function setForUser(string $userId,SetActiveNotebookQuestionRequestDto $request):?NotebookResponseDto{return $this->transactions->transactional(function()use($userId,$request){$notebook=$this->notebooks->findByIdForUser($request->notebookId,$userId);if($notebook===null)return null;$notebook->setActiveQuestion($request->questionId);$this->notebooks->save($notebook);return $this->mapper->toResponse($notebook);});} }

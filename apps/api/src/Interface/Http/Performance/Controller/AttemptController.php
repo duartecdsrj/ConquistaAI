@@ -67,9 +67,7 @@ final class AttemptController
 
         try {
             $answer = $this->appendAnswers->append(new AppendAnswerRequestDto($user->id, $attemptId, $optionId, $elapsedSeconds));
-        } catch (DomainException $exception) {
-            return $this->notFound($request, $response, 'attempt_id', 'RESOURCE_NOT_FOUND', $exception->getMessage());
-        }
+        } catch (DomainException $exception) { return str_contains($exception->getMessage(), 'pausado') ? $this->responses->problem($response, 'STATE_CONFLICT', 'O caderno não aceita respostas neste estado.', 409, $this->requestId($request)) : $this->notFound($request, $response, 'attempt_id', 'RESOURCE_NOT_FOUND', $exception->getMessage()); }
 
         return $this->responses->success($response, [
             'id' => $answer->id,

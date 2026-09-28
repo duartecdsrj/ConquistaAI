@@ -17,6 +17,7 @@ final readonly class NotebookResponseDto
         public ?string $finishedAt,
         /** @var array<string,mixed> */ public array $filters,
         public ?int $durationSeconds,
+        public ?string $activeQuestionId,
     ) {
     }
 }

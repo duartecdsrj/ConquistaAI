@@ -98,6 +98,7 @@ final class DoctrineNotebookRepository implements NotebookRepositoryInterface
         $record->startedAt = $notebook->startedAt;
         $record->finishedAt = $notebook->finishedAt;
         $record->durationSeconds = $notebook->durationSeconds;
+        $record->activeQuestionId = $notebook->activeQuestionId;
         $record->updatedAt = new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
     }
 
@@ -126,6 +127,7 @@ final class DoctrineNotebookRepository implements NotebookRepositoryInterface
             $record->startedAt,
             $record->finishedAt,
             $record->durationSeconds,
+            $record->activeQuestionId,
             is_array($record->filters) ? $record->filters : [],
         );
     }

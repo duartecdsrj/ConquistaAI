@@ -38,6 +38,7 @@ final class StudyRequestFactory
         return new CreateNotebookInputRequestDto($name, $mode, $quantity, $filters);
     }
 
+    public function activeQuestion(ServerRequestInterface $request,string $notebookId): \App\Application\Study\DTO\Request\SetActiveNotebookQuestionRequestDto { $payload=$this->json($request);$questionId=$payload['question_id']??null;if(!is_string($questionId)||$questionId==='')throw new InvalidArgumentException('Questão ativa inválida.');return new \App\Application\Study\DTO\Request\SetActiveNotebookQuestionRequestDto($notebookId,$questionId); }
     public function updateGoal(ServerRequestInterface $request): \App\Application\Study\DTO\Request\UpdateStudyGoalRequestDto
     {
         $payload = $this->json($request);

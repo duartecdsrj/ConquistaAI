@@ -13,6 +13,7 @@ interface NotebookApi {
   readonly finishedAt: string | null
   readonly filters: Readonly<Record<string, unknown>>
   readonly durationSeconds: number | null
+  readonly activeQuestionId: string | null
 }
 
 const mapNotebook = (value: NotebookApi): Notebook => ({ ...value })
@@ -28,6 +29,7 @@ export class AxiosStudyRepository implements StudyRepository {
   public async start(id: string): Promise<Notebook> { return mapNotebook(await postData<NotebookApi, undefined>('/notebooks/' + encodeURIComponent(id) + '/start')) }
   public async pause(id: string): Promise<Notebook> { return mapNotebook(await postData<NotebookApi, undefined>('/notebooks/' + encodeURIComponent(id) + '/pause')) }
   public statistics(id: string): Promise<NotebookStatistics> { return getData<NotebookStatistics>('/notebooks/' + encodeURIComponent(id) + '/statistics') }
+  public async setActiveQuestion(id: string, questionId: string): Promise<Notebook> { return mapNotebook(await putData<NotebookApi, { question_id: string }>('/notebooks/' + encodeURIComponent(id) + '/active-question', { question_id: questionId })) }
   public async finish(id: string): Promise<Notebook> { return mapNotebook(await postData<NotebookApi, undefined>('/notebooks/' + encodeURIComponent(id) + '/finish')) }
   public plan(): Promise<StudyPlan> { return getData<StudyPlan>('/study-plan/me') }
   public getGoal(): Promise<StudyGoal> { return getData<StudyGoal>('/study-goals/me') }

@@ -15,6 +15,7 @@ export interface Notebook {
   readonly finishedAt: string | null
   readonly filters: Readonly<Record<string, unknown>>
   readonly durationSeconds: number | null
+  readonly activeQuestionId: string | null
 }
 
 export interface NotebookStatistics { readonly total: number; readonly answered: number; readonly correct: number; readonly incorrect: number; readonly percentage: number; readonly averageElapsedSeconds: number; readonly elapsedSeconds: number; readonly answeredQuestionIds: readonly string[] }
@@ -45,5 +46,6 @@ export interface StudyRepository {
   start(id: string): Promise<Notebook>
   pause(id: string): Promise<Notebook>
   statistics(id: string): Promise<NotebookStatistics>
+  setActiveQuestion(id: string, questionId: string): Promise<Notebook>
   finish(id: string): Promise<Notebook>
 }

@@ -21,6 +21,7 @@ final class NotebookResponseMapper
             $notebook->finishedAt?->format(DATE_ATOM),
             $notebook->filters,
             $notebook->durationSeconds,
+            $notebook->activeQuestionId,
         );
     }
 }

@@ -16,6 +16,7 @@ use App\Application\Study\Service\GetNotebookService;
 use App\Application\Study\Service\ListNotebookQuestionsService;
 use App\Application\Study\Service\ListNotebooksService;
 use App\Application\Study\Service\StartNotebookService;
+use App\Application\Study\Service\SetActiveNotebookQuestionService;
 use App\Application\Study\Service\GetStudyGoalService;
 use App\Application\Study\Service\UpdateStudyGoalService;
 use App\Infrastructure\Http\ApiResponseFactory;
@@ -62,6 +63,7 @@ final class StudyRouteRegistrar
             new ListNotebookQuestionsService($notebooks, $questions, new PublishedQuestionResponseMapper()),
             new StartNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
             new PauseNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
+            new SetActiveNotebookQuestionService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
             new FinishNotebookService($notebooks, $mapper, new DoctrineTransactionManager($entityManager)),
             new GetNotebookStatisticsService($notebooks, new DoctrineNotebookProgressReader($entityManager)),
             $this->responses,
@@ -111,6 +113,8 @@ final class StudyRouteRegistrar
             try { return $controller->pauseNotebook($request, $response, $identity->accessToken($request), new GetNotebookRequestDto((string) ($arguments['id'] ?? ''))); }
             catch (InvalidArgumentException $exception) { return self::invalidRequest($responses, $request, $response, $exception); }
         });
+        $app->patch('/v1/notebooks/{id}/active-question', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($controller, $identity, $requests, $responses): ResponseInterface { try { return $controller->setActiveQuestion($request, $response, $identity->accessToken($request), $requests->activeQuestion($request, (string) ($arguments['id'] ?? ''))); } catch (InvalidArgumentException $exception) { return self::invalidRequest($responses, $request, $response, $exception); } });
+
         $app->get('/v1/notebooks/{id}/statistics', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($controller, $identity, $responses): ResponseInterface {
             try { return $controller->statistics($request, $response, $identity->accessToken($request), new GetNotebookRequestDto((string) ($arguments['id'] ?? ''))); }
             catch (InvalidArgumentException $exception) { return self::invalidRequest($responses, $request, $response, $exception); }
