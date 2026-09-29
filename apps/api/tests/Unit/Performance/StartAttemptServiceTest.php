@@ -11,6 +11,7 @@ use App\Domain\Performance\Entity\Attempt;
 use App\Domain\Performance\Repository\AttemptRepositoryInterface;
 use App\Domain\Study\Entity\Notebook;
 use App\Domain\Study\Enum\NotebookMode;
+use App\Domain\Study\Enum\NotebookStatus;
 use App\Domain\Study\Repository\NotebookRepositoryInterface;
 use App\Domain\Study\ValueObject\FrozenQuestionSelection;
 use PHPUnit\Framework\TestCase;
@@ -26,6 +27,7 @@ final class StartAttemptServiceTest extends TestCase
             NotebookMode::STUDY,
             FrozenQuestionSelection::fromQuestionIds(['question-1'], 1),
             new \DateTimeImmutable('2026-01-01'),
+            NotebookStatus::IN_PROGRESS,
         );
         $notebooks = new class($notebook) implements NotebookRepositoryInterface {
             public function __construct(private readonly Notebook $notebook) {}
@@ -61,7 +63,7 @@ final class StartAttemptServiceTest extends TestCase
         $notebooks = new class implements NotebookRepositoryInterface {
             public function save(Notebook $notebook): void {}
             public function findByIdForUser(string $id, string $userId): ?Notebook {
-                return new Notebook('notebook-1', 'user-1', 'Caderno', NotebookMode::STUDY, FrozenQuestionSelection::fromQuestionIds(['question-1'], 1), new \DateTimeImmutable());
+                return new Notebook('notebook-1', 'user-1', 'Caderno', NotebookMode::STUDY, FrozenQuestionSelection::fromQuestionIds(['question-1'], 1), new \DateTimeImmutable(), NotebookStatus::IN_PROGRESS);
             }
             public function listForUser(string $userId, int $offset, int $limit): array { return []; }
             public function countForUser(string $userId): int { return 0; }

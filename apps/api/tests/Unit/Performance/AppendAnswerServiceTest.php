@@ -9,6 +9,7 @@ use App\Application\Performance\Service\AppendAnswerService;
 use App\Domain\Performance\Entity\Answer;
 use App\Domain\Performance\Entity\Attempt;
 use App\Domain\Performance\Repository\AttemptRepositoryInterface;
+use App\Domain\Study\Entity\Notebook;use App\Domain\Study\Enum\NotebookMode;use App\Domain\Study\Enum\NotebookStatus;use App\Domain\Study\Repository\NotebookRepositoryInterface;use App\Domain\Study\ValueObject\FrozenQuestionSelection;
 use PHPUnit\Framework\TestCase;
 
 final class AppendAnswerServiceTest extends TestCase
@@ -26,11 +27,12 @@ final class AppendAnswerServiceTest extends TestCase
             public function appendAnswer(Answer $answer): void { $this->answer = $answer; }
             public function listAnswers(string $attemptId): array { return [new Answer('old', $attemptId, 'old-option', 1, 1, new \DateTimeImmutable())]; }
         };
+        $notebooks = new class implements NotebookRepositoryInterface { public function save(Notebook $notebook): void {} public function findByIdForUser(string $id,string $userId): ?Notebook { return new Notebook('notebook',$userId,'Caderno',NotebookMode::STUDY,FrozenQuestionSelection::fromQuestionIds(['question'],1),new \DateTimeImmutable(),NotebookStatus::IN_PROGRESS); } public function listForUser(string $userId,int $offset,int $limit): array{return [];} public function countForUser(string $userId): int{return 0;} };
         $transactions = new class implements TransactionManagerInterface {
             public function transactional(callable $callback): mixed { return $callback(); }
         };
 
-        $answer = (new AppendAnswerService($repository, $transactions))
+        $answer = (new AppendAnswerService($repository, $notebooks, $transactions))
             ->append(new AppendAnswerRequestDto('user', 'attempt', 'option', 4));
 
         self::assertSame($answer, $repository->answer);
@@ -47,12 +49,13 @@ final class AppendAnswerServiceTest extends TestCase
             public function appendAnswer(Answer $answer): void {}
             public function listAnswers(string $attemptId): array { return []; }
         };
+        $notebooks = new class implements NotebookRepositoryInterface { public function save(Notebook $notebook): void {} public function findByIdForUser(string $id,string $userId): ?Notebook { return new Notebook('notebook',$userId,'Caderno',NotebookMode::STUDY,FrozenQuestionSelection::fromQuestionIds(['question'],1),new \DateTimeImmutable(),NotebookStatus::IN_PROGRESS); } public function listForUser(string $userId,int $offset,int $limit): array{return [];} public function countForUser(string $userId): int{return 0;} };
         $transactions = new class implements TransactionManagerInterface {
             public function transactional(callable $callback): mixed { return $callback(); }
         };
 
         $this->expectException(\DomainException::class);
-        (new AppendAnswerService($repository, $transactions))
+        (new AppendAnswerService($repository, $notebooks, $transactions))
             ->append(new AppendAnswerRequestDto('other-user', 'attempt', 'option', 4));
     }
 }

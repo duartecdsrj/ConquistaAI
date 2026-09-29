@@ -129,11 +129,20 @@ services:
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      QUESTION_IMPORT_ANALYZER: ${QUESTION_IMPORT_ANALYZER:-codex}
+      QUESTION_IMPORT_CODEX_MODEL: ${QUESTION_IMPORT_CODEX_MODEL:-gpt-5}
+      QUESTION_IMPORT_CODEX_TIMEOUT: ${QUESTION_IMPORT_CODEX_TIMEOUT:-180}
+      QUESTION_IMPORT_CODEX_NETWORK: ${QUESTION_IMPORT_CODEX_NETWORK:-conquistaai_public}
+      QUESTION_IMPORT_MAX_CANDIDATES: ${QUESTION_IMPORT_MAX_CANDIDATES:-0}
+      CORRECTION_WORKSPACE_VOLUME: ${CORRECTION_WORKSPACE_VOLUME:-conquistaai_correction_workspaces}
+      CODEX_AUTH_VOLUME: ${CODEX_AUTH_VOLUME:-conquistaai_codex_auth}
     volumes:
       - ./apps/api:/app
       - api_vendor:/app/vendor
       - question_pdf_documents:/app/storage/question-pdfs
       - question_pdf_assets:/app/storage/question-pdf-assets
+      - correction_workspaces:/correction-workspaces
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       mysql:
         condition: service_healthy

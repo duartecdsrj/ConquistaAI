@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\QuestionBank\DTO\Response;
+final readonly class QuestionImportAnalysisResponseDto { /** @param list<int> $evidencePages @param list<QuestionImportAnalysisFindingResponseDto> $findings @param list<QuestionImportAnalysisAnchorResponseDto> $imageAnchors */ public function __construct(public string $id, public ?string $questionId, public string $candidateFingerprint, public string $provider, public ?string $model, public array $evidencePages, public ?string $exam, public ?string $position, public ?string $board, public ?int $year, public string $structureType, public string $answerKeyAssessment, public string $imageAssessment, public int $durationMilliseconds, public string $usageAvailability, public ?int $inputTokens, public ?int $outputTokens, public ?int $totalTokens, public ?string $costUsd, public array $findings, public array $imageAnchors, public string $createdAt) {} }

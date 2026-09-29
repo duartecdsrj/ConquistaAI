@@ -1,3 +1,177 @@
+## 2026-09-29 — Correção de GD e testes de Performance
+
+- A imagem da API foi reconstruída; a extensão GD, já declarada no Dockerfile, agora está carregada no contêiner e os testes de avatar voltaram a executar.
+- Atualizados os fixtures de Performance para injetar `NotebookRepositoryInterface` e usar cadernos `IN_PROGRESS`, conforme os contratos atuais de tentativa e resposta.
+- Validação: suíte completa da API aprovada com 129 testes e 316 asserções. Permanece somente um aviso não bloqueante do PHPUnit.
+- Próximo passo: nenhum para esta correção; acompanhar o aviso do PHPUnit separadamente se necessário.
+
+## 2026-09-29 — Conclusão da mudança de análise Codex
+
+- Coberturas focais aprovadas para schema/não revelação, telemetria, factory de providers e persistência Doctrine de análise, achado e âncora.
+- Build SPA, Compose, migration 039, worker Codex e validação OpenSpec foram aprovados. A suíte completa mantém falhas preexistentes de GD e Performance, documentadas sem relação com esta mudança.
+- Próximo passo: validar em um PDF real na fila administrativa e acompanhar telemetria do primeiro job Codex.
+
+## 2026-09-29 — Integração Doctrine de análise de importação
+
+- Adicionado teste integrado transacional para persistir e reler análise, achado de conflito e âncora visual ambígua. A tentativa de regravar o mesmo ID é rejeitada, confirmando imutabilidade.
+- Validação: teste Doctrine aprovado (1 teste, 4 asserções); a transação é revertida ao fim.
+- Próximo passo: concluir os cenários restantes de integração e contrato HTTP/SPA.
+
+## 2026-09-29 — Preparação de integração Doctrine
+
+- Preparado o diretório de testes de integração do contexto QuestionBank para a fixture transacional de análises; nenhuma fixture foi persistida após a tentativa inicial.
+- Próximo passo: executar a persistência/releitura de análise, achado e âncora e validar imutabilidade.
+
+## 2026-09-29 — Correção de imports de telemetria
+
+- Corrigidas as importações com namespace ausente no repositório Doctrine de jobs PDF; a leitura de `analysisTelemetry` agora resolve os value objects e enum corretos em runtime.
+- Validação: lint PHP e busca por imports equivalentes corrompidos aprovados.
+- Próximo passo: executar a integração Doctrine de gravação/leitura da análise.
+
+## 2026-09-29 — Correção de validação de achados
+
+- Corrigida a validação de páginas no value object `QuestionImportFinding`: páginas inválidas agora são rejeitadas independentemente do resumo estar válido.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: persistir e reler análise, achado e âncora em teste Doctrine integrado.
+
+## 2026-09-29 — Cobertura da factory de analisadores
+
+- Adicionado teste da factory configurável: resolve `codex` independentemente de capitalização e rejeita provider futuro não configurado com erro explícito, sem fallback silencioso.
+- A suíte unitária focal de schema, telemetria e factory passa (6 testes, 16 asserções).
+- Próximo passo: concluir a cobertura de orçamento e a integração Doctrine dos registros imutáveis.
+
+## 2026-09-29 — Cobertura de schema e não revelação
+
+- Adicionado teste do `QuestionImportAnalysisResponseValidator` para conflito de gabarito com evidência e para bloqueio de resumo que revele alternativa/gabarito.
+- Em conjunto com a telemetria, os testes focais novos passam (4 testes, 14 asserções). A cobertura de integração Doctrine e de contrato HTTP/SPA continua pendente.
+- Próximo passo: revisar persistência e rotas no ambiente integrado.
+
+## 2026-09-29 — Diagnóstico da suíte completa
+
+- A suíte integral da API executou 124 testes: 120 passaram; há três erros e uma falha preexistentes fora da importação (extensão GD ausente em avatar e contratos desatualizados de Performance para tentativa/resposta).
+- O build da SPA continua aprovado no contêiner frontend; permanece apenas o alerta não bloqueante de chunk acima de 500 kB.
+- As tarefas de cobertura específica permanecem abertas até incluir testes de schema, persistência Doctrine e contrato HTTP/SPA da análise.
+- Próximo passo: revisar o diff completo e adicionar casos focais remanescentes sem mascarar as falhas preexistentes.
+
+## 2026-09-29 — Cobertura de telemetria de importação
+
+- Adicionado teste unitário do agregador de telemetria: valida soma de duração, tokens, custo e totais dos três achados editoriais, além da indisponibilidade explícita de uso.
+- O teste revelou que o custo da primeira análise reportada era perdido; o acumulador foi corrigido para preservá-lo e somá-lo nas análises seguintes.
+- Validação: suíte focal de importação aprovada (5 testes, 18 asserções), lint do agregador e `git diff --check` aprovados.
+- Próximo passo: ampliar cobertura para schema/política e persistência Doctrine dos novos registros.
+
+## 2026-09-29 — Validação operacional da análise Codex
+
+- O Compose validou a composição do worker com o runner isolado. A migration 039 foi aplicada e confirmada no MySQL, incluindo tabelas de análise e colunas agregadas do job.
+- O worker recriado iniciou normalmente; a suíte focal de importação passou (3 testes, 7 asserções) e o build da SPA no contêiner frontend foi aprovado.
+- O build preserva apenas o aviso não bloqueante de chunk JavaScript acima de 500 kB. Permanecem pendentes testes específicos de schema, projeção Doctrine e contratos HTTP/SPA da nova análise.
+- Próximo passo: adicionar cobertura focal para telemetria, não revelação e persistência de sinais.
+
+## 2026-09-29 — Operação do worker Codex de importação
+
+- A migration `039_question_import_analysis.sql` foi aplicada pelo migrador do projeto e registrada em `schema_migrations`; as tabelas de análises, achados, âncoras e sinais de qualidade passaram a existir no banco ativo.
+- O `question-pdf-worker` foi configurado com `QUESTION_IMPORT_ANALYZER=codex`, limites e volumes de workspace/autenticação, além do socket Docker autorizado para executar o runner isolado. O Compose foi validado e o worker recriado iniciou sem jobs pendentes.
+- Próximo passo: concluir testes focais, validação de frontend e documentação de estados da interface.
+
+## 2026-09-29 — Ressalva editorial na explicação pós-tentativa
+
+- O contexto da explicação recebe a mensagem segura de qualidade somente em `POST_ANSWER`, após validar a tentativa concluída do próprio usuário. Em modo conceitual não há ressalva nem revelação de resposta.
+- O prompt do provider Codex instrui que a ressalva é editorial, não um fato conclusivo, e deve orientar a explicação do entendimento aplicável depois da resposta.
+- A configuração do worker Codex permanece pendente de autorização explícita para montar `/var/run/docker.sock`: esse acesso permite controlar o daemon Docker do host e tem impacto amplo.
+- Validação: lint PHP do value object, leitor Doctrine e provider, além de `git diff --check`, aprovados.
+- Próximo passo: obter autorização explícita para o socket Docker ou definir um executor remoto com privilégio menor; depois validar Compose, migração e suíte.
+
+## 2026-09-29 — Aviso editorial seguro na resolução
+
+- A projeção de questão publicada lê apenas a mensagem segura de `question_quality_signals` e a expõe como `qualityNotice`; nenhuma alternativa, gabarito ou raciocínio inferido é transportado.
+- As telas de listagem e execução de caderno exibem esse aviso permanentemente junto aos metadados da questão, com orientação para responder normalmente e solicitar explicação após a tentativa.
+- Validação: lint PHP do read model, mapper, DTO e repositório Doctrine, além de `git diff --check`, aprovados.
+- Próximo passo: adicionar o contexto editorial à explicação pós-tentativa e validar a infraestrutura do worker.
+
+## 2026-09-29 — Histórico e revisão de análise na SPA
+
+- O módulo DDD de importação recebeu contratos para telemetria e análises; o repositório Axios usa o novo endpoint administrativo sem vazar envelopes HTTP para a interface.
+- Cada job mostra provider, duração, tokens reportados ou indisponíveis e totais de achados. A revisão apresenta resumos seguros, páginas de evidência e discrepância visual de forma direta, sem revelar alternativa/gabarito inferidos.
+- A validação de tipos via `vue-tsc` ficou pendente: a dependência local não está instalada e a cópia executada por `npx` é incompatível com a versão de TypeScript disponível.
+- Próximo passo: projetar o aviso seguro da questão para resolução/revisão e ampliar o contexto da explicação pós-tentativa.
+
+## 2026-09-29 — Contrato administrativo de análises de importação
+
+- `GET /admin/question-pdf-imports/{id}/analyses` expõe, somente ao administrador dono do job, as análises imutáveis com achados seguros, âncoras visuais, metadados evidenciados, provider/modelo, duração e telemetria disponível ou indisponível.
+- O resumo/listagem de jobs passa a incluir `analysisTelemetry`; jobs anteriores permanecem compatíveis com valor nulo. A documentação API descreve a não revelação de gabarito no histórico.
+- Validação: lint PHP do controller, rota, DTOs, mapper e serviço, além de `git diff --check`, aprovados.
+- Próximo passo: integrar o histórico e a revisão visual na SPA administrativa.
+
+## 2026-09-29 — Compatibilidade de runtime da análise de importação
+
+- Corrigidos o namespace do enum de avaliação visual e a validação de páginas de evidência para não depender de `array_any`; a análise é compatível com o runtime PHP atual.
+- Validação: `php -l` dos agregados de análise e job, e busca de referências corrompidas, aprovados.
+- Próximo passo: expor os detalhes administrativos de análise e telemetria no contrato HTTP.
+
+## 2026-09-29 — Telemetria e histórico da análise de importação
+
+- Cada análise concluída agora agrega no job o provider, modelo, versão do schema, duração, total de análises e totais de conflito de gabarito, discrepância visual e incoerência estrutural.
+- O uso de tokens e custo é acumulado somente quando reportado pelo provider; para o Codex CLI atual, a indisponibilidade é persistida de forma explícita e exposta pelo DTO administrativo, sem estimativas.
+- A telemetria é preservada ao atualizar estado, retentar ou encerrar o job. Validação: lint PHP dos contratos e serviços alterados, além de `git diff --check`, aprovados.
+- Próximo passo: documentar o contrato HTTP e implementar histórico administrativo e avisos seguros na interface.
+
+## 2026-09-29 — Worker e escrita auditável de importação
+
+- O worker de PDF passou a segmentar e analisar cada candidato pelo provider configurado antes de escrever; cancelamento, timeout, orçamento `QUESTION_IMPORT_MAX_CANDIDATES` e retentativa permanecem no job persistido.
+- A escrita agora devolve o ID por fingerprint para vincular análise, achados e sinal seguro à questão criada. Metadados vêm do validador com evidência; somente âncoras `ANCHORED` associam ativos ao enunciado ou alternativa.
+- `ANSWER_KEY_CONFLICT`, discrepância visual e incoerência estrutural persistem como achados e deixam a questão em `REVIEW`; gabarito conflituoso não é gravado automaticamente.
+- Criado adaptador callable para testes e futura API externa pela mesma porta. Validação: lint dos contratos, worker, writer e repositórios, `git diff --check` e OpenSpec estrito aprovados.
+- Próximo passo: agregar telemetria e achados no histórico do job e expor DTOs/rotas administrativas.
+
+
+## 2026-09-29 — Adaptador Codex de importação
+
+- Implementado `CodexQuestionImportAnalyzer` em workspace efêmero: ele recebe somente o candidato, páginas de evidência e cópias das imagens extraídas, valida a saída pelo schema e remove todos os artefatos ao concluir.
+- A execução isolada usa o runner Codex autorizado, sem acesso ao banco pelo contrato do caso de uso. Como o CLI não expõe consumo confiável no resultado estruturado, a telemetria é persistida explicitamente como indisponível, nunca estimada.
+- Validação: lint PHP do adaptador e da factory, além de `git diff --check`, aprovados.
+- Próximo passo: integrar segmentação/analisador ao worker com cancelamento, orçamento e retentativas.
+
+
+## 2026-09-29 — Segmentação determinística de candidatos PDF
+
+- Implementada segmentação por início de questão, em vez de lotes fixos de páginas, com fingerprint canônico, evidência limitada ao trecho e páginas vizinhas quando houver referência visual.
+- O candidato transporta manifesto de imagens por página e índice, permitindo que o analisador indique âncora no enunciado ou alternativa sem obter acesso livre ao PDF.
+- Validação: lint do segmentador e `git diff --check` aprovados.
+- Próximo passo: implementar o adaptador Codex isolado e seu consumo de schema/telemetria.
+
+
+## 2026-09-29 — Porta configurável de análise de importação
+
+- Criada `QuestionImportAnalyzerInterface` separada do provider de conversa, factory de aplicação e composição por `QUESTION_IMPORT_ANALYZER` na infraestrutura.
+- Enquanto o adaptador selecionado não estiver registrado, o analisador indisponível lança falha explícita para que o job aplique retentativa; não há fallback silencioso ao extrator legado.
+- Validação: lint PHP das portas, providers e factory, além de `git diff --check`, aprovados.
+- Próximo passo: preparar segmentação determinística e manifesto de imagens para cada candidato.
+
+
+## 2026-09-29 — Schema validado de análise por questão
+
+- Criados DTOs tipados para candidato, páginas, manifesto de imagens, opções, achados, âncoras e resposta do analisador, além do schema `question-import-analysis-v1`.
+- O validador limita as páginas à evidência fornecida, exige alternativas A–E distintas, gabarito existente, metadados provados, achados correspondentes a conflitos e impede resumos que revelem alternativa ou gabarito.
+- Validação: lint PHP dos DTOs, schema e validador aprovado.
+- Próximo passo: criar a porta de provider e a factory configurável, com indisponibilidade segura.
+
+
+## 2026-09-29 — Contratos de domínio da análise de importação
+
+- Modelados análise imutável, achados tipados, âncoras de imagem, metadados com páginas de evidência, uso de tokens e sinal seguro de qualidade no contexto `QuestionBank`.
+- Os value objects rejeitam metadados sem página de prova, confiança fora de 0–1, âncoras ambíguas e telemetria inconsistente; os repositórios separam o histórico da projeção exibida ao usuário.
+- Validação: lint de todos os contratos de `Domain/QuestionBank` e `git diff --check` aprovados.
+- Próximo passo: definir DTOs e schema versionado para a resposta dos analisadores.
+
+
+## 2026-09-29 — Schema de análise de importação
+
+- Adicionada a migration `039_question_import_analysis.sql`, inteiramente aditiva, para análises e achados imutáveis, âncoras de imagem, projeção segura de qualidade e telemetria agregada dos jobs de PDF.
+- Jobs e questões existentes permanecem compatíveis: as novas métricas começam em zero ou indisponíveis e referências de questão em análises preservam o histórico via `ON DELETE SET NULL`.
+- Validação: revisão de compatibilidade contra as migrations de jobs, proveniência e ativos; `git diff --check` pendente ao fim da etapa.
+- Próximo passo: modelar os contratos de domínio, incluindo análise, achados, uso de tokens e sinal seguro.
+
+
 ## 2026-09-29 — Proposta de análise Codex na importação de questões
 
 - Criada a mudança OpenSpec `codex-question-import-analysis` para substituir a análise semântica genérica de PDFs por provider estruturado, com Codex isolado inicial e adaptadores futuros configuráveis.

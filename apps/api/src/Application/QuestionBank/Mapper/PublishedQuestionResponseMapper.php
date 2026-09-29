@@ -33,6 +33,7 @@ final class PublishedQuestionResponseMapper
             $question->assetUrls,
             $question->answerKeySource,
             $question->taxonomySubjectNames,
+            $question->qualityNotice,
         );
     }
 }

@@ -33,6 +33,7 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         $existing = $this->duplicates->findExistingByStatements($statements);
         $created = $duplicates = $classified = $failed = $createdSubjects = 0;
         $pendingAnswerKeys = [];
+        $questionIdsByCandidateFingerprint = [];
 
         foreach ($questions as $question) {
             if (!is_array($question) || ($question['type'] ?? null) !== 'MULTIPLE_CHOICE' || !is_string($question['statement'] ?? null)) { $failed++; continue; }
@@ -69,6 +70,7 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
             $correctLabel = strtoupper((string) ($question['correct_option'] ?? ''));
             if (isset($optionIds[$correctLabel])) $pendingAnswerKeys[] = [$record, $optionIds[$correctLabel], in_array($question['answer_key_source'] ?? null, ['OFFICIAL', 'AI_ESTIMATED'], true) ? $question['answer_key_source'] : 'OFFICIAL'];
             $this->assignments->replaceForQuestion($record->id, [$taxonomy->id]);
+            if (is_string($question["source_candidate_fingerprint"] ?? null)) $questionIdsByCandidateFingerprint[$question["source_candidate_fingerprint"]] = $record->id;
             $existing[$key] = $record->id;
             $created++;
             $classified++;
@@ -77,7 +79,7 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         $this->em->flush();
         foreach ($pendingAnswerKeys as [$record, $optionId, $source]) { $record->correctOptionId = $optionId; $record->answerKeySource = $source; }
         if ($pendingAnswerKeys !== []) $this->em->flush();
-        return compact('created', 'duplicates', 'classified', 'failed', 'createdSubjects');
+        return compact('created', 'duplicates', 'classified', 'failed', 'createdSubjects', 'questionIdsByCandidateFingerprint');
     }
 
     /** @return array{TaxonomySubject,bool}|null */

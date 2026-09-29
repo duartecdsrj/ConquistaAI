@@ -1,0 +1,8 @@
+<?php
+declare(strict_types=1);
+namespace App\Application\QuestionBank\Mapper;
+use App\Application\QuestionBank\DTO\Response\QuestionImportAnalysisAnchorResponseDto;
+use App\Application\QuestionBank\DTO\Response\QuestionImportAnalysisFindingResponseDto;
+use App\Application\QuestionBank\DTO\Response\QuestionImportAnalysisResponseDto;
+use App\Domain\QuestionBank\Entity\QuestionImportAnalysis;
+final class QuestionImportAnalysisResponseMapper { public function map(QuestionImportAnalysis $analysis): QuestionImportAnalysisResponseDto { return new QuestionImportAnalysisResponseDto($analysis->id,$analysis->questionId,$analysis->candidateFingerprint,$analysis->provider,$analysis->model,$analysis->evidencePages,$analysis->metadata->exam,$analysis->metadata->position,$analysis->metadata->board,$analysis->metadata->year,$analysis->structureType->value,$analysis->answerKeyAssessment->value,$analysis->imageAssessment->value,$analysis->durationMilliseconds,$analysis->tokenUsage->availability->value,$analysis->tokenUsage->inputTokens,$analysis->tokenUsage->outputTokens,$analysis->tokenUsage->totalTokens,$analysis->tokenUsage->costUsd,array_map(static fn($finding): QuestionImportAnalysisFindingResponseDto => new QuestionImportAnalysisFindingResponseDto($finding->code->value,$finding->severity->value,$finding->confidence,$finding->safeSummary,$finding->evidencePages),$analysis->findings),array_map(static fn($anchor): QuestionImportAnalysisAnchorResponseDto => new QuestionImportAnalysisAnchorResponseDto($anchor->target->value,$anchor->optionPosition,$anchor->sourcePage,$anchor->sourceAssetIndex,$anchor->status->value),$analysis->imageAnchors),$analysis->createdAt->format(DATE_ATOM)); } }
