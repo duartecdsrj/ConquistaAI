@@ -300,3 +300,27 @@ Socket.IO usa a sala autenticada `arena:duel:{id}`. `arena:duel-updated` contém
 
 - `DELETE /arena/duels/{id}` remove uma sala `WAITING` apenas quando solicitado pelo criador; salas iniciadas, finalizadas ou de terceiros retornam `409 STATE_CONFLICT`.
 - A listagem pública inclui `creatorUserId` apenas para permitir ao cliente autenticado exibir a ação de remoção da própria sala aguardando; `DELETE /arena/duels/{id}` mantém a regra de propriedade e estado `WAITING`.
+
+### Interações de aprendizagem por questão
+
+Todas as rotas deste grupo exigem autenticação, operam exclusivamente sobre questões `PUBLISHED` e seguem o envelope padrão. O estado pessoal é limitado ao usuário autenticado; comentários são públicos para usuários autenticados e relatos ficam visíveis somente ao autor e à administração.
+
+| Rota | Contrato |
+| --- | --- |
+| `GET /questions/{id}/learning-interactions` | devolve as flags pessoais `favorite`, `reviewLater`, `notMastered`, a anotação privada opcional e os contadores públicos de comentários e relatos próprios |
+| `PATCH /questions/{id}/learning-interactions` | recebe uma ou mais flags booleanas `favorite`, `review_later` e `not_mastered`; flags ausentes são preservadas |
+| `PUT /questions/{id}/note` | cria ou atualiza a anotação privada com `{ "content": "1 a 5000 caracteres" }` |
+| `DELETE /questions/{id}/note` | remove exclusivamente a anotação do próprio usuário; ausência é idempotente |
+| `GET /questions/{id}/comments` | lista paginada comentários públicos, com `parentId` opcional e autor sanitizado |
+| `POST /questions/{id}/comments` | recebe `{ "content": "1 a 2000 caracteres", "parent_id": "uuid opcional" }`; o pai, quando presente, deve pertencer à mesma questão |
+| `POST /questions/{id}/problem-reports` | recebe `{ "category": "CONTENT|ANSWER_KEY|IMAGE|DUPLICATE|OTHER", "description": "3 a 2000 caracteres" }` e cria relato `OPEN` auditável |
+| `POST /questions/{id}/explanations` | recebe `{ "attempt_id": "uuid opcional" }`, cria ou reutiliza execução de explicação do próprio usuário |
+| `GET /questions/{id}/explanations/latest` | retorna a execução mais recente visível ao solicitante, ou `404 RESOURCE_NOT_FOUND` se não houver |
+
+`GET /questions/{id}/learning-interactions` retorna `data` com `questionId`, `favorite`, `reviewLater`, `notMastered`, `note` opcional (`content`, `createdAt`, `updatedAt`), `commentCount` e `ownOpenReportCount`. A atualização de flags é atômica por usuário e questão e não modifica tentativas, respostas ou o resultado corrigido. Ativar ou desativar `not_mastered` registra um sinal de aprendizagem imutável distinto.
+
+Cada comentário retornado contém `id`, `content`, `parentId` opcional, `author` (`id`, `name`) e `createdAt`; não expõe e-mail ou dados privados. Relatos retornam ao autor `id`, `category`, `description`, `status` (`OPEN`, `TRIAGED`, `RESOLVED`, `REJECTED`), `createdAt` e `updatedAt`; não há alteração de status por usuário comum.
+
+A explicação retorna `id`, `questionId`, `attemptId` opcional, `status` (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`), `requestedAt`, `completedAt` opcional e, somente em `COMPLETED`, `result` com `summary`, `concepts`, `reinforcement` e `safetyMode`. Antes de uma tentativa concluída, `safetyMode` é `CONCEPTUAL_ONLY`: o resultado não pode conter gabarito, alternativa correta nem texto que permita inferi-los. Após tentativa concluída do próprio usuário, `safetyMode` é `POST_ANSWER`; a resposta pode relacionar escolha, resultado e conceitos. Execuções pendentes, em processamento ou concluídas com o mesmo usuário, questão, tentativa e versão do algoritmo são reutilizadas. Falhas expõem somente mensagem segura.
+
+`GET /questions` passa a aceitar, para o usuário autenticado, os filtros combináveis `answered` (`true|false`), `favorite`, `review_later`, `not_mastered`, `has_note` (`true|false`) e `taxonomy_subject_id`. Eles são combinados com os filtros já existentes e conservam a paginação padrão; filtros pessoais nunca consideram dados de outro usuário.

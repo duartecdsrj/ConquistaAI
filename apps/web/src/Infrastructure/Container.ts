@@ -9,6 +9,7 @@ import { AxiosAssistantRepository } from './Assistant/AxiosAssistantRepository'
 import { GoogleLoginUseCase, LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
 import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ApproveQuestionCorrectionUseCase, AskQuestionPdfAssistanceUseCase, GetLatestQuestionCorrectionUseCase, GetLatestCompletedQuestionCorrectionUseCase, ListPublishedQuestionsUseCase, RequestQuestionCorrectionUseCase } from '../Application/QuestionBank/QuestionUseCases'
+import { CreateQuestionCommentUseCase, CreateQuestionProblemReportUseCase, GetLatestQuestionExplanationUseCase, GetQuestionInteractionUseCase, GetQuestionNoteUseCase, ListQuestionCommentsUseCase, RequestQuestionExplanationUseCase, SaveQuestionNoteUseCase, UpdateQuestionInteractionUseCase } from '../Application/QuestionLearning/QuestionLearningUseCases'
 import { GetLatestQuestionAuditReportUseCase, ListLatestQuestionAuditFindingsUseCase } from '../Application/QuestionBank/QuestionAuditUseCases'
 import { CreateNotebookUseCase, CreateDirectedStudyPlanUseCase, FinishNotebookUseCase, ListDirectedStudyPlansUseCase, ListPositionSubjectsUseCase, GetNotebookStatisticsUseCase, GetNotebookUseCase, GetStudyGoalUseCase, GetStudyPlanUseCase, ListNotebookQuestionsUseCase, ListNotebooksUseCase, PauseNotebookUseCase, SetActiveNotebookQuestionUseCase, StartNotebookUseCase, UpdateStudyGoalUseCase } from '../Application/Study/StudyUseCases'
 import { configureAccessTokenProvider, configureRefreshHandler } from './Http/AxiosApiClient'
@@ -21,6 +22,7 @@ import { AxiosImportRepository } from './Import/AxiosImportRepository'
 import { BrowserSessionStore } from './Identity/BrowserSessionStore'
 import { AxiosPerformanceRepository } from './Performance/AxiosPerformanceRepository'
 import { AxiosQuestionRepository } from './QuestionBank/AxiosQuestionRepository'
+import { AxiosQuestionLearningRepository } from './QuestionLearning/AxiosQuestionLearningRepository'
 import { AxiosQuestionAuditRepository } from './QuestionBank/AxiosQuestionAuditRepository'
 import { AxiosStudyRepository } from './Study/AxiosStudyRepository'
 import { AxiosTaxonomyRepository } from './Taxonomy/AxiosTaxonomyRepository'
@@ -66,6 +68,8 @@ export const studyUseCases = {
 }
 const taxonomyRepository = new AxiosTaxonomyRepository()
 export const taxonomyUseCases = { list: new ListTaxonomySubjectsUseCase(taxonomyRepository), duplicateSuggestions: new ListTaxonomyDuplicateSuggestionsUseCase(taxonomyRepository), create: new CreateTaxonomySubjectUseCase(taxonomyRepository), createAlias: new CreateTaxonomySubjectAliasUseCase(taxonomyRepository), merge: new MergeTaxonomySubjectsUseCase(taxonomyRepository), reconciliationProposals: new ListTaxonomyReconciliationProposalsUseCase(taxonomyRepository), update: new UpdateTaxonomySubjectUseCase(taxonomyRepository) }
+const questionLearningRepository = new AxiosQuestionLearningRepository()
+export const questionLearningUseCases = { interaction: new GetQuestionInteractionUseCase(questionLearningRepository), updateInteraction: new UpdateQuestionInteractionUseCase(questionLearningRepository), note: new GetQuestionNoteUseCase(questionLearningRepository), saveNote: new SaveQuestionNoteUseCase(questionLearningRepository), comments: new ListQuestionCommentsUseCase(questionLearningRepository), createComment: new CreateQuestionCommentUseCase(questionLearningRepository), reportProblem: new CreateQuestionProblemReportUseCase(questionLearningRepository), requestExplanation: new RequestQuestionExplanationUseCase(questionLearningRepository), latestExplanation: new GetLatestQuestionExplanationUseCase(questionLearningRepository) }
 const questionRepository = new AxiosQuestionRepository()
 export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCase(questionRepository), askPdfAssistance: new AskQuestionPdfAssistanceUseCase(questionRepository), requestCorrection: new RequestQuestionCorrectionUseCase(questionRepository), latestCorrection: new GetLatestQuestionCorrectionUseCase(questionRepository), latestCompletedCorrection: new GetLatestCompletedQuestionCorrectionUseCase(questionRepository), approveCorrection: new ApproveQuestionCorrectionUseCase(questionRepository) }
 const questionAuditRepository = new AxiosQuestionAuditRepository()

@@ -16,6 +16,8 @@ use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Infrastructure\Persistence\Doctrine\Performance\DoctrineAttemptRepository;
 use App\Infrastructure\Persistence\Doctrine\Performance\DoctrinePerformanceStatisticsRepository;
+use App\Infrastructure\Persistence\Doctrine\QuestionLearning\DoctrineCompletedAttemptLearningSignalReader;
+use App\Infrastructure\Persistence\Doctrine\QuestionLearning\DoctrineLearningEventRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
 use App\Interface\Http\Identity\IdentityRequestFactory;
 use App\Interface\Http\Performance\Controller\AttemptController;
@@ -42,7 +44,7 @@ final class PerformanceRouteRegistrar
             $this->authentication,
             new StartAttemptService(new DoctrineNotebookRepository($entityManager), $attempts, $transactions),
             new AppendAnswerService($attempts, new DoctrineNotebookRepository($entityManager), $transactions),
-            new CompleteAttemptService($attempts, $transactions),
+            new CompleteAttemptService($attempts, $transactions, new DoctrineCompletedAttemptLearningSignalReader($entityManager), new DoctrineLearningEventRepository($entityManager)),
             $this->responses,
         );
         $statistics = new DoctrinePerformanceStatisticsRepository($entityManager);

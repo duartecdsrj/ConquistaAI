@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+use App\Application\QuestionLearning\AI\QuestionExplanationResponseValidator;use App\Application\QuestionLearning\Service\ProcessNextQuestionExplanationService;use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;use App\Infrastructure\Persistence\Doctrine\QuestionLearning\DoctrineQuestionExplanationExecutionRepository;use App\Infrastructure\QuestionLearning\CodexQuestionExplanationProvider;use App\Infrastructure\Persistence\Doctrine\QuestionLearning\DoctrineQuestionExplanationContextReader;
+require __DIR__.'/../vendor/autoload.php';
+$em=DoctrineEntityManagerFactory::create();$service=new ProcessNextQuestionExplanationService(new DoctrineQuestionExplanationExecutionRepository($em),new DoctrineQuestionExplanationContextReader($em),new CodexQuestionExplanationProvider(),new QuestionExplanationResponseValidator());$processed=$service->execute(new DateTimeImmutable('now',new DateTimeZone('UTC')));fwrite(STDOUT,json_encode(['event'=>'question_explanation','processed'=>$processed,'at'=>(new DateTimeImmutable('now',new DateTimeZone('UTC')))->format(DATE_ATOM)])."\n");

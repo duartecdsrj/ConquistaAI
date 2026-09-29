@@ -1,0 +1,4 @@
+<?php
+declare(strict_types=1);
+namespace App\Domain\QuestionLearning\Entity;
+final class QuestionNote { public function __construct(public readonly string $id, public readonly string $userId, public readonly string $questionId, private string $content, public readonly \DateTimeImmutable $createdAt, private \DateTimeImmutable $updatedAt) { $this->assertContent($content); } public function content(): string { return $this->content; } public function update(string $content, \DateTimeImmutable $now): void { $this->assertContent($content); $this->content = $content; $this->updatedAt = $now; } public function updatedAt(): \DateTimeImmutable { return $this->updatedAt; } private function assertContent(string $content): void { if (mb_strlen(trim($content)) < 1 || mb_strlen($content) > 5000) { throw new \DomainException('Anotação inválida.'); } } }

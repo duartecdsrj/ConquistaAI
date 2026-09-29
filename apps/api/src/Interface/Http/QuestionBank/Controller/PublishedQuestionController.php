@@ -29,7 +29,7 @@ final class PublishedQuestionController
         ListPublishedQuestionsRequestDto $input,
     ): ResponseInterface {
         try {
-            $this->authentication->currentUser($access);
+            $user = $this->authentication->currentUser($access);
         } catch (DomainException|UnavailableUserException) {
             return $this->responses->problem(
                 $response,
@@ -40,7 +40,7 @@ final class PublishedQuestionController
             );
         }
 
-        $page = $this->questions->list($input);
+        $page = $this->questions->list($input, $user->id);
 
         return $this->responses->paginated(
             $response,

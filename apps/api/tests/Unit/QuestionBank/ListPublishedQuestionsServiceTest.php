@@ -48,4 +48,21 @@ final class ListPublishedQuestionsServiceTest extends TestCase
         self::assertSame('subject-1', $repository->receivedFilter?->subjectId);
         self::assertSame(10, $repository->receivedFilter?->offset);
     }
+    public function testForwardsCombinedPersonalFiltersOnlyForAuthenticatedUser(): void
+    {
+        $repository = new class implements PublishedQuestionRepositoryInterface { public ?PublishedQuestionFilter $filter=null; public function findPublished(PublishedQuestionFilter $filter): PublishedQuestionPage { $this->filter=$filter; return new PublishedQuestionPage([], 0); } };
+        $service = new ListPublishedQuestionsService($repository, new PublishedQuestionResponseMapper());
+        $service->list(new ListPublishedQuestionsRequestDto(1, 25, null, null, null, null, favorite: true, reviewLater: true, notMastered: false), 'user-1');
+        self::assertSame('user-1', $repository->filter?->interactionUserId);
+        self::assertTrue($repository->filter?->favorite ?? false);
+        self::assertTrue($repository->filter?->reviewLater ?? false);
+        self::assertFalse($repository->filter?->notMastered ?? true);
+    }
+
+    public function testRejectsPersonalFiltersWithoutAuthenticatedUser(): void
+    {
+        $repository = new class implements PublishedQuestionRepositoryInterface { public function findPublished(PublishedQuestionFilter $filter): PublishedQuestionPage { return new PublishedQuestionPage([], 0); } };
+        $this->expectException(\DomainException::class);
+        (new ListPublishedQuestionsService($repository, new PublishedQuestionResponseMapper()))->list(new ListPublishedQuestionsRequestDto(1, 25, null, null, null, null, favorite: true));
+    }
 }

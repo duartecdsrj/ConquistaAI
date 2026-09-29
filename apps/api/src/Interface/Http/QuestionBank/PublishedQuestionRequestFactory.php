@@ -20,7 +20,7 @@ final class PublishedQuestionRequestFactory
         $difficulty = $this->nullableString($query['difficulty'] ?? null, 'difficulty');
 
         $content = $this->nullableString($query['content'] ?? null, 'content');
-        return new ListPublishedQuestionsRequestDto($page, $perPage, $subjectId, $board, $year, $difficulty, $content);
+        return new ListPublishedQuestionsRequestDto($page, $perPage, $subjectId, $board, $year, $difficulty, $content, $this->nullableBoolean($query['favorite'] ?? null, 'favorite'), $this->nullableBoolean($query['review_later'] ?? null, 'review_later'), $this->nullableBoolean($query['not_mastered'] ?? null, 'not_mastered'));
     }
 
     private function integer(mixed $value, string $field): int
@@ -33,6 +33,8 @@ final class PublishedQuestionRequestFactory
         }
         throw new InvalidArgumentException(sprintf('Parametro %s invalido.', $field));
     }
+
+    private function nullableBoolean(mixed $value, string $field): ?bool { if ($value === null || $value === '') return null; if ($value === 'true' || $value === true || $value === '1') return true; if ($value === 'false' || $value === false || $value === '0') return false; throw new InvalidArgumentException(sprintf('Parametro %s invalido.', $field)); }
 
     private function nullableString(mixed $value, string $field): ?string
     {

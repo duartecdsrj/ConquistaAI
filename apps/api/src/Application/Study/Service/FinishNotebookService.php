@@ -31,7 +31,7 @@ final class FinishNotebookService
 
             $notebook->finish(new \DateTimeImmutable('now', $this->utc));
             $this->notebooks->save($notebook);
-            $this->analysisScheduler?->execute($notebook->id, 'notebook-analysis-v1', new \DateTimeImmutable('now', $this->utc));
+            $this->analysisScheduler?->execute($notebook->id, 'notebook-analysis-v2-learning-signals', new \DateTimeImmutable('now', $this->utc));
 
             return $this->mapper->toResponse($notebook);
         });

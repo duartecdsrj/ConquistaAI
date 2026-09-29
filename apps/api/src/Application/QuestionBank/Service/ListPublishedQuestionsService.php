@@ -18,8 +18,9 @@ final class ListPublishedQuestionsService
     }
 
     /** @return array{items:list<object>,total:int,page:int,perPage:int} */
-    public function list(ListPublishedQuestionsRequestDto $request): array
+    public function list(ListPublishedQuestionsRequestDto $request, ?string $userId = null): array
     {
+        if ($request->hasPersonalFilters() && $userId === null) { throw new \DomainException("Filtros pessoais exigem usuário autenticado."); }
         $page = $this->questions->findPublished(new PublishedQuestionFilter(
             $request->offset(),
             $request->perPage,
@@ -28,6 +29,13 @@ final class ListPublishedQuestionsService
             $request->year,
             $request->difficulty,
             $request->content,
+            null,
+            [],
+            null,
+            $userId,
+            $request->favorite,
+            $request->reviewLater,
+            $request->notMastered,
         ));
 
         return [

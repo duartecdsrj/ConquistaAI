@@ -52,6 +52,8 @@ use App\Interface\Http\Discovery\DiscoveryRouteRegistrar;
 use App\Interface\Http\QuestionBank\QuestionImportRequestFactory;
 use App\Interface\Http\Study\StudyRouteRegistrar;
 use App\Interface\Http\QuestionBank\PublishedQuestionRouteRegistrar;
+use App\Interface\Http\QuestionLearning\QuestionLearningRouteRegistrar;
+use App\Interface\Http\QuestionLearning\QuestionExplanationRouteRegistrar;
 use App\Interface\Http\QuestionBank\EditorialQuestionRouteRegistrar;
 use App\Interface\Http\QuestionBank\QuestionAuditRouteRegistrar;
 use App\Interface\Http\QuestionBank\QuestionPdfImportRouteRegistrar;
@@ -90,6 +92,8 @@ final class AppFactory
         $imports = self::questionImportController($responses, self::authService());
         (new PerformanceRouteRegistrar($responses, self::authService()))->register($app);
         (new PublishedQuestionRouteRegistrar($responses, self::authService()))->register($app);
+        (new QuestionLearningRouteRegistrar($responses, self::authService()))->register($app);
+        (new QuestionExplanationRouteRegistrar($responses, self::authService()))->register($app);
         (new EditorialQuestionRouteRegistrar($responses, self::authService()))->register($app);
         (new QuestionAuditRouteRegistrar($responses, self::authService()))->register($app);
         (new QuestionPdfImportRouteRegistrar($responses, self::authService()))->register($app);

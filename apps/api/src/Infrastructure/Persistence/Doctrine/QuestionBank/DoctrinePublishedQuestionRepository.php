@@ -12,6 +12,7 @@ use App\Domain\QuestionBank\Repository\FrozenQuestionReaderInterface;
 use App\Domain\QuestionBank\Repository\PublishedQuestionRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionOptionRecord;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\Entity\QuestionRecord;
+use App\Infrastructure\Persistence\Doctrine\QuestionLearning\Entity\UserQuestionInteractionRecord;
 use App\Infrastructure\Persistence\Doctrine\Taxonomy\Entity\TaxonomySubjectRecord;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -69,6 +70,7 @@ final class DoctrinePublishedQuestionRepository implements PublishedQuestionRepo
                 ->setParameter('subjectId', $filter->subjectId);
         }
 
+if ($filter->interactionUserId !== null) {            $query->leftJoin(UserQuestionInteractionRecord::class, 'interaction', 'WITH', 'interaction.questionId = question.id AND interaction.userId = :interactionUserId')                ->setParameter('interactionUserId', $filter->interactionUserId);            foreach (['favorite' => $filter->favorite, 'reviewLater' => $filter->reviewLater, 'notMastered' => $filter->notMastered] as $field => $value) {                if ($value === true) {                    $query->andWhere('interaction.' . $field . ' = true');                } elseif ($value === false) {                    $query->andWhere('(interaction.' . $field . ' = false OR interaction.userId IS NULL)');                }            }        }
         $countQuery = clone $query;
         $total = (int) $countQuery->select('COUNT(DISTINCT question.id)')->getQuery()->getSingleScalarResult();
         $records = $query->orderBy('question.id', 'ASC')->setFirstResult($filter->offset)->setMaxResults($filter->limit)->getQuery()->getResult();

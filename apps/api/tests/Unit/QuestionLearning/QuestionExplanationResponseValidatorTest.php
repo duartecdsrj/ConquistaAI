@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace Tests\Unit\QuestionLearning;
+use App\Application\QuestionLearning\AI\QuestionExplanationResponseValidator;use App\Domain\QuestionLearning\Enum\ExplanationSafetyMode;use PHPUnit\Framework\TestCase;
+final class QuestionExplanationResponseValidatorTest extends TestCase { public function testRejectsAnswerKeyDisclosureInConceptualMode(): void { $this->expectException(\InvalidArgumentException::class);(new QuestionExplanationResponseValidator())->validate(['summary'=>'A alternativa correta é A.','concepts'=>['conceito'],'reinforcement'=>'Revise a base teórica.'],ExplanationSafetyMode::CONCEPTUAL_ONLY); } public function testAcceptsPostAnswerStructuredExplanation(): void { $result=(new QuestionExplanationResponseValidator())->validate(['summary'=>'A escolha diverge do conceito avaliado.','concepts'=>['conceito'],'reinforcement'=>'Revise a definição e compare exemplos.'],ExplanationSafetyMode::POST_ANSWER);self::assertSame('POST_ANSWER',$result['safety_mode']); } }

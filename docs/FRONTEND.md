@@ -264,3 +264,13 @@ A Arena permite criar salas `PUBLIC` ou `PRIVATE`. O composable `useArena` consu
 
 - A Arena oferece ao criador o botão “Remover sala” enquanto o duelo estiver aguardando; após sucesso, retorna ao lobby atualizado.
 - Em “Salas públicas”, o criador vê “Remover” ao lado de “Entrar”; a ação reaproveita a remoção segura de sala aguardando.
+
+## Interações de aprendizagem por questão
+
+O módulo `QuestionLearning` seguirá `QuestionPage/NotebookExecutionPage -> QuestionLearningActionBar e drawers -> useQuestionLearning -> QuestionLearningUseCases -> QuestionLearningRepository -> AxiosQuestionLearningRepository -> API`. A barra reutilizável recebe o identificador da questão e o estado confirmado, não importa Axios nem acessa armazenamento do navegador.
+
+Favorito, revisar depois e não dominei são as três ações sempre visíveis. Cada toque atualiza a flag de forma otimista; enquanto a requisição estiver em curso, a ação correspondente fica indisponível. Em falha, o composable restaura o último estado confirmado e mostra a mensagem segura da API. Em telas até 599 px, as três ações permanecem visíveis como botões de toque de ao menos 40 px e as ações secundárias são agrupadas em `QBtnDropdown` ou `QMenu`.
+
+Anotação abre `QDrawer` em desktop e `QDialog`/bottom sheet em mobile, com carregamento, conteúdo vazio, edição e salvamento explícito. Comentários, relato de problema e explicação usam painéis Quasar equivalentes e nunca bloqueiam a resolução: comentários apresentam paginação real, relato confirma o envio e explicação mostra `PENDING`/`PROCESSING`, `FAILED` seguro, vazio e resultado concluído devolvido pela API. Antes de a tentativa ser concluída, a tela identifica a explicação como conceitual e não apresenta resposta correta.
+
+A lista de questões expõe filtros pessoais como controles Quasar combináveis (`respondida`, favorito, revisar depois, não dominei, anotada e assunto canônico). `useQuestionLearning` converte os valores para o DTO tipado de consulta e recarrega a paginação real; a página não filtra resultados localmente. A interface preserva filtros e página ao retornar da visão completa de uma questão.

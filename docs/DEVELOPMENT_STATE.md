@@ -1,3 +1,26 @@
+## 2026-09-29 — Proposta de análise Codex na importação de questões
+
+- Criada a mudança OpenSpec `codex-question-import-analysis` para substituir a análise semântica genérica de PDFs por provider estruturado, com Codex isolado inicial e adaptadores futuros configuráveis.
+- A proposta exige análise individual antes da persistência, evidências de metadados/imagens/estrutura, achados imutáveis de possível incoerência, telemetria de tokens e avisos seguros na revisão, resolução e explicação pós-tentativa.
+- Artefatos de proposta, design, especificações delta e tarefas foram concluídos; nenhuma mudança de código ou banco foi aplicada nesta etapa.
+- Próximo passo: aplicar por `/opsx:apply codex-question-import-analysis`.
+
+
+## 2026-09-29 — Correção do método de questão ativa
+
+- Corrigido o cliente de cadernos para usar `PATCH /notebooks/{id}/active-question`, conforme contrato da API; ele enviava `PUT`, método sem rota correspondente.
+- Validação concluída: build da SPA aprovado; permanece apenas o aviso não bloqueante de chunk acima de 500 kB.
+- Próximo passo: retestar a navegação de questões no caderno.
+
+
+## 2026-09-29 — Persistência das interações de questão
+
+- Corrigida a persistência das interações de aprendizagem: os repositórios Doctrine agora sincronizam as alterações de favorito, revisão posterior, não domínio, notas, comentários, denúncias, eventos e solicitações de explicação no banco antes da resposta HTTP.
+- Adicionada cobertura de integração que limpa o contexto Doctrine sem `flush` explícito após gravar nota e solicitação de explicação, garantindo que os repositórios façam a persistência.
+- Validações concluídas: suíte focalizada de QuestionLearning aprovada (15 testes, 41 asserções), lint dos seis repositórios PHP e `git diff --check` sem apontamentos.
+- Próximo passo: retestar no caderno existente “Prática para ampliar amostra”.
+
+
 ## 2026-09-28 — Fundação OpenSpec da Arena Duelo
 
 - Criada a mudança OpenSpec `arena-duelo`, com proposta, decisões, requisitos e tarefas para sala privada, sincronização e proveniência de desempenho.
@@ -2336,3 +2359,210 @@ docker compose exec -T frontend npm run build
 - Não houve alteração de código de produto, banco ou APIs nesta etapa de proposta.
 - Validação: `openspec status --change question-learning-interactions --json` indica todos os artefatos exigidos como concluídos e `git diff --check` aprovado.
 - Próximo passo: aplicar por `/opsx:apply question-learning-interactions`, iniciando contratos e migration aditiva.
+## 2026-09-28 — Migrations pendentes aplicadas
+
+- Aplicadas no MySQL do Compose as migrations `031_notebook_active_question.sql` a `037_adaptive_flashcard_learning.sql`.
+- A `036_arena_visibility.sql` foi aplicada diretamente neste banco; as sete versões foram confirmadas em `schema_migrations`.
+- Validação: reexecução idempotente do migrador e healthcheck da API aprovados.
+- Próximo passo: nenhum relacionado às migrations; seguir o recurso ativo conforme o registro de desenvolvimento.
+
+## 2026-09-28 — Contrato de interações de aprendizagem
+
+- Documentados em `docs/API.md` os contratos autenticados de flags pessoais, anotação privada, comentários públicos, relatos categorizados, filtros combináveis e explicações assíncronas com anti-revelação.
+- A explicação explicita os modos `CONCEPTUAL_ONLY` antes de tentativa concluída e `POST_ANSWER` depois dela, sem expor gabarito antes da resposta.
+- Validação: contrato revisado contra as três especificações OpenSpec e `git diff --check` aprovado.
+- Próximo passo: documentar a experiência Quasar da barra de ações e painéis responsivos (tarefa 1.2).
+
+## 2026-09-28 — Experiência de interações documentada
+
+- `docs/FRONTEND.md` define o módulo `QuestionLearning`, a barra reutilizável, atualização otimista com rollback e os drawers/painéis Quasar para anotação, comentários, relato e explicação.
+- Mobile mantém as três ações principais acessíveis, agrupa apenas ações secundárias e trata loading, erro e vazio com dados reais.
+- Validação: documentação alinhada à arquitetura frontend e `git diff --check` aprovado.
+- Próximo passo: criar a migration aditiva de interações, sinais e execuções de explicação (tarefa 1.3).
+
+## 2026-09-28 — Fundação de persistência para interações
+
+- Criada a migration aditiva `038_question_learning_interactions.sql` com estado pessoal, anotação privada, comentários encadeados, relatos e auditoria, sinais imutáveis e execuções de explicação.
+- O esquema preserva `Attempt` e `Answer`; os novos índices compostos atendem filtros pessoais, histórico de sinais, filas de worker e isolamento por proprietário.
+- Validação: revisão de chaves/índices contra migrations 001/037 e `git diff --check` aprovado. A aplicação controlada permanece para a tarefa operacional 6.4.
+- Próximo passo: modelar entidades, enums, value objects e portas de repositório (tarefa 1.4).
+
+## 2026-09-28 — Contratos de domínio de interações
+
+- Criado o contexto `Domain/QuestionLearning` com entidades para estado pessoal, anotação, comentário, relato, evento imutável e execução de explicação.
+- Enums, value objects e seis portas de repositório isolam flags, histórico de sinais, fila de explicações e persistência do restante da aplicação.
+- Validação: lint PHP de todos os contratos novos e `git diff --check` aprovados.
+- Próximo passo: implementar estado independente com leitura e filtros por usuário (tarefa 2.1).
+
+## 2026-09-28 — Estado pessoal de interação
+
+- Implementados estado independente favorito/revisar depois/não dominei, DTOs e casos de uso de leitura e atualização parcial, sempre validados contra questão publicada.
+- A listagem interna de questões aceita as três flags de maneira combinável e condiciona qualquer filtro pessoal ao usuário autenticado; ausência de estado persistido equivale a flags desativadas.
+- Validação: lint dos contratos novos, `ListPublishedQuestionsServiceTest` (1 teste, 7 asserções) e `git diff --check` aprovados.
+- Próximo passo: implementar anotação privada com criação, edição, datas e isolamento (tarefa 2.2).
+
+## 2026-09-28 — Anotação privada de questão
+
+- Implementados DTOs, mapper, casos de uso e repositório Doctrine de anotação única por usuário e questão.
+- A criação e edição reutilizam o mesmo registro, preservam `createdAt`, atualizam `updatedAt` e todas as leituras/deleções são condicionadas ao proprietário.
+- Validação: lint PHP de Application e Infrastructure do contexto e `git diff --check` aprovados.
+- Próximo passo: implementar comentários públicos encadeados (tarefa 2.3).
+
+## 2026-09-28 — Comentários públicos encadeados
+
+- Comentários públicos possuem criação e leitura paginada por questão, com autor, data e `parentId` opcional.
+- O caso de uso valida questão publicada e exige que a resposta aponte para comentário da mesma questão, impedindo encadeamento cruzado.
+- Validação: lint PHP dos novos contratos e `git diff --check` aprovados.
+- Próximo passo: implementar relato categorizado, estado e auditoria (tarefa 2.4).
+
+## 2026-09-28 — Relatos categorizados de problema
+
+- Implementado relato por usuário e questão com categorias tipadas, descrição validada e estado inicial `OPEN`.
+- Cada criação grava evento de auditoria imutável, preparado para futuras mudanças administrativas de estado.
+- Validação: lint PHP da camada Application/Doctrine e `git diff --check` aprovados.
+- Próximo passo: expor DTOs, mappers, serviços e rotas autenticadas no envelope padrão (tarefa 2.5).
+
+## 2026-09-28 — HTTP autenticado de interações
+
+- As operações de flags, anotação, comentários e relatos foram expostas em rotas autenticadas com DTOs validados antes dos controllers, envelopes padrão e composição Doctrine.
+- `GET /questions` recebeu filtros pessoais booleanos combináveis e repassa o usuário autenticado ao caso de uso; a leitura agregada devolve flags, nota própria e contadores seguros.
+- Validação: boot da AppFactory, rota sem credencial retorna `401 UNAUTHENTICATED`, teste existente de listagem e `git diff --check` aprovados.
+- Próximo passo: registrar eventos imutáveis de resposta concluída (tarefa 3.1).
+
+## 2026-09-28 — Sinais de tentativa e migration de interações
+
+- A migration `038_question_learning_interactions.sql` foi aplicada no MySQL do Compose e confirmada em `schema_migrations`; a reexecução do migrador foi idempotente.
+- `CompleteAttemptService` agora deriva escolha final, resultado, tempo, origem e assuntos canônicos por porta de domínio e persiste um evento imutável por assunto na mesma transação.
+- Validação: boot da AppFactory e `git diff --check` aprovados. A suíte legada Performance não atingiu o novo fluxo: 2 erros e 1 falha preexistentes em `AppendAnswerServiceTest`/`StartAttemptServiceTest` por assinaturas/estado incompatíveis.
+- Próximo passo: criar teste focal de sinal de tentativa concluída e então concluir a tarefa 3.1.
+
+## 2026-09-28 — Evento imutável de resposta concluída
+
+- `CompleteAttemptService` grava sinais `ANSWER_COMPLETED` por assunto canônico, com escolha final, resultado, tempo, origem e referência à tentativa, preservando o histórico existente.
+- Validação focal: `CompleteAttemptLearningSignalTest` aprovado (1 teste, 6 asserções); boot da API e `git diff --check` permanecem aprovados.
+- Próximo passo: registrar o sinal distinto ao ativar/desativar não dominei (tarefa 3.2).
+
+## 2026-09-28 — Sinal explícito de não domínio
+
+- Mudanças reais da flag `not_mastered` geram `NOT_MASTERED_ENABLED` ou `NOT_MASTERED_DISABLED` por assunto, sem alterar resultado de tentativa.
+- Atualizações idênticas não duplicam eventos; o fluxo é válido mesmo após acerto, porque não usa o resultado para bloquear a intenção do usuário.
+- Validação: `UpdateQuestionInteractionSignalTest` aprovado (1 teste, 2 asserções), boot API e `git diff --check` aprovados.
+- Próximo passo: criar leitores/agregados pessoais para Performance, Review e análises (tarefa 3.3).
+
+## 2026-09-28 — Leitura agregada de sinais pessoais
+
+- O repositório Doctrine lê eventos exclusivamente por usuário e assunto; `GetLearningSignalAggregateService` entrega contagens mínimas de acerto, erro, não domínio e recência.
+- O contrato não depende de HTTP ou de entidades Doctrine e pode ser consumido por Performance, Review e futuros processadores.
+- Validação: `GetLearningSignalAggregateServiceTest` aprovado (1 teste, 3 asserções) e `git diff --check` aprovado.
+- Próximo passo: integrar elegibilidade idempotente de análise à finalização de caderno (tarefa 3.4).
+
+## 2026-09-28 — Elegibilidade assíncrona por sinais
+
+- A finalização de caderno agenda, na mesma transação e sem trabalho caro HTTP, a versão `notebook-analysis-v2-learning-signals`; a porta Review já reutiliza a execução pendente/concluída idempotente.
+- A nova versão permite ao consumidor futuro distinguir análises baseadas nos sinais de aprendizagem dos algoritmos anteriores.
+- Validação: `NotebookExecutionServiceTest` aprovado (2 testes, 6 asserções), lint e `git diff --check` aprovados.
+- Próximo passo: criar execução persistida e schema seguro de explicação por IA (tarefa 4.1).
+
+## 2026-09-28 — Fundação segura de explicação por IA
+
+- A execução de explicação possui entidade, migration e mapeamento Doctrine; contexto mínimo, modos `CONCEPTUAL_ONLY`/`POST_ANSWER` e schema de resposta foram definidos.
+- O validador rejeita menções a gabarito/alternativa correta no modo conceitual antes da tentativa concluída.
+- Validação: `QuestionExplanationResponseValidatorTest` aprovado (2 testes, 2 asserções) e `git diff --check` aprovado.
+- Próximo passo: definir a porta de provider, factory configurável e adaptadores (tarefa 4.2).
+
+## 2026-09-28 — Porta configurável de explicação
+
+- Definida `QuestionExplanationProviderInterface` com contexto e schema estruturados; a factory seleciona provider por nome sem vazar detalhes ao caso de uso.
+- `CallableQuestionExplanationProvider` prepara adaptadores HTTP futuros e o provider indisponível falha de modo seguro, sem resposta inventada.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: implementar worker Codex isolado com claim, timeout e retentativas (tarefa 4.3).
+
+## 2026-09-28 — Consumidor seguro de explicações
+
+- O consumidor reivindica a próxima execução com lock, recupera somente contexto autorizado, valida o schema e persiste resposta, provider/modelo e telemetria; falhas ficam seguras e retentáveis.
+- O leitor Doctrine garante proprietário, questão publicada e tentativa finalizada antes de incluir escolha/resultado no modo `POST_ANSWER`.
+- Validação: lint PHP dos contratos/consumidor e `git diff --check` aprovados.
+- Próximo passo: finalizar o worker Codex isolado usando o consumidor (tarefa 4.3).
+
+## 2026-09-28 — Solicitação e leitura autenticadas de explicação
+
+- Foram expostas `POST /v1/questions/{id}/explanations` e `GET /v1/questions/{id}/explanations/latest`; ambas obtêm o usuário autenticado antes de consultar ou criar execução e preservam o envelope padrão.
+- A solicitação é idempotente por usuário, questão, tentativa e versão; a leitura sempre restringe o resultado ao proprietário. Execuções permanecem `PENDING` até o worker isolado da tarefa 4.3 ser autorizado/configurado.
+- Validação: lint PHP, boot da `AppFactory` e chamada direta da rota sem credenciais retornando `401 UNAUTHENTICATED` aprovados.
+- Próximo passo: concluir o worker Codex isolado quando houver autorização para o mount do Docker socket, ou avançar nas telas Quasar independentes.
+
+## 2026-09-28 — Módulo frontend de interações
+
+- Criado o contexto `QuestionLearning` nas camadas Domain, Application e Infrastructure, com contratos tipados para flags, anotações, comentários, relatos e explicações.
+- `AxiosQuestionLearningRepository` é o único adaptador HTTP do contexto e foi composto em `Infrastructure/Container.ts`; casos de uso validam conteúdos obrigatórios antes da requisição.
+- Validação: `docker compose exec -T frontend npm run build` aprovado. O bundle alerta sobre chunk acima de 500 kB, sem erro de compilação.
+- Próximo passo: criar a barra de ações reutilizável e o composable de apresentação para atualização otimista (tarefa 5.2).
+
+## 2026-09-28 — Barra reutilizável de ações de aprendizagem
+
+- `QuestionLearningActions` passou a integrar a lista pública e a execução de caderno, com favorito, revisar depois e não dominei.
+- `useQuestionInteractions` carrega o estado por questão, atualiza a interface de modo otimista e restaura o estado confirmado quando a API falha.
+- Validação: `docker compose exec -T frontend npm run build` aprovado; permanece apenas o aviso conhecido de chunk acima de 500 kB.
+- Próximo passo: implementar os painéis de anotação, comentários, relato e explicação (tarefa 5.3).
+
+## 2026-09-28 — Painel de interação por questão
+
+- O painel lateral reutilizável reúne anotação privada, comentários públicos, relato categorizado e explicação segura, consumindo somente os casos de uso do contexto `QuestionLearning`.
+- Ele apresenta carregamento, falhas normalizadas, listas vazias e estado pendente/falha da explicação; em telas pequenas ocupa toda a largura para manter a leitura e os controles acessíveis.
+- Validação: `docker compose exec -T frontend npm run build` aprovado, com o aviso conhecido de tamanho de chunk.
+- Próximo passo: adicionar filtros pessoais à listagem de questões com paginação real (tarefa 5.4).
+
+## 2026-09-28 — Filtros pessoais de questões
+
+- A listagem pública passou a oferecer favoritos, revisar depois e não dominei como filtros tipados, serializados pelo repositório Axios e combinados com os filtros já existentes.
+- A paginação continua dirigida por `PageResult` e cada mudança apenas recarrega a página solicitada à API, sem dados simulados.
+- Validação: `docker compose exec -T frontend npm run build` aprovado; apenas aviso não bloqueante de chunk acima de 500 kB.
+- Próximo passo: ampliar cobertura focal dos serviços, repositórios, idempotência e worker (tarefas 6.1 a 6.4).
+
+## 2026-09-28 — Verificação integrada de migrations e SPA
+
+- O migrador foi reexecutado no Compose sem pendências, confirmando a aplicação idempotente da migration de interações.
+- A suíte focal de QuestionLearning e listagem publicada passou com 6 testes e 20 asserções; foi corrigido o fake de `CompleteAttemptLearningSignalTest` para implementar a porta atual de assuntos.
+- O build SPA voltou a passar. `git diff --check` não apontou erros; o aviso de chunk acima de 500 kB permanece não bloqueante.
+- Próximo passo: ampliar os testes de isolamento/repositórios e, quando autorizado, configurar e cobrir o worker Codex.
+
+## 2026-09-28 — Cobertura focal de interações e explicações
+
+- Os testes de serviços cobrem notas isoladas por proprietário, comentário pai de outra questão, evento inicial de relato, filtros pessoais autenticados e rejeição sem autenticação.
+- A solicitação de explicação foi coberta quanto a idempotência por usuário e isolamento; o teste transacional Doctrine confirma que notas e explicações de proprietários distintos não se misturam.
+- Validação: suíte focal aprovada com 13 testes e 38 asserções, além de `git diff --check` sem apontamentos.
+- Próximo passo: cobrir e concluir o worker Codex isolado quando houver autorização para sua montagem no Compose.
+
+## 2026-09-28 — Testes do consumidor de explicações
+
+- O consumidor foi exercitado com provider fake em sucesso, falha sanitizada e incremento de retry; a factory também foi coberta para provider configurado e fallback seguro.
+- A configuração contínua do worker no Compose continua pendente porque ela requer acesso ao socket Docker para iniciar o runner isolado; nenhum mount adicional foi criado sem autorização.
+- Validação: suíte focal aprovada com 16 testes e 48 asserções; migrador e build SPA continuam aprovados.
+- Próximo passo: mediante autorização, adicionar `question-explanation-worker` ao Compose e concluir a cobertura operacional/final.
+
+## 2026-09-29 — Worker Codex de explicações
+
+- Adicionado `question-explanation-worker` ao Compose, com loop de processamento, timeout configurável, rede pública para o runner, volume de workspaces e socket Docker autorizados.
+- O provider passou a drenar stdout e stderr em modo não bloqueante; logs do worker expõem somente evento, resultado de processamento e data, sem contexto, prompt ou dados pessoais.
+- Validação: `docker compose config --quiet`, lint PHP e worker ativo no Compose; o primeiro ciclo confirmou estado ocioso por `{"event":"question_explanation","processed":false}`. Testes com provider fake cobrem sucesso, falha sanitizada/retry e fallback de adaptador.
+- Próximo passo: gerar relatório técnico final e concluir a mudança OpenSpec.
+
+## 2026-09-29 — Relatório técnico final
+
+- Gerado `docs/QUESTION_LEARNING_INTERACTIONS_REPORT.md` com escopo entregue, isolamento, worker Codex, frontend, validações e limitações operacionais.
+- Todas as tarefas da proposta `question-learning-interactions` estão marcadas como concluídas; o relatório preserva o aviso não bloqueante de tamanho do bundle SPA e o requisito operacional de sessão Codex válida.
+- Próximo passo: arquivar a mudança OpenSpec após a auditoria final dos artefatos e validações.
+
+## 2026-09-29 — Arquivamento OpenSpec concluído
+
+- A mudança `question-learning-interactions` foi arquivada em `openspec/changes/archive/2026-09-29-question-learning-interactions`.
+- As specs principais receberam 12 requisitos sincronizados nos contextos de sinais adaptativos, explicações por IA e interações de aprendizagem.
+- Validação final: tarefas OpenSpec completas, suíte focal com 16 testes/48 asserções, build SPA, `docker compose config --quiet`, worker ativo e `git diff --check` aprovados.
+- Próximo passo: nenhum para esta mudança; monitorar normalmente o worker e a autenticação do volume Codex.
+
+## 2026-09-29 — Correção de payload das interações de questão
+
+- Corrigido o factory HTTP de `QuestionLearning`: ele agora decodifica o corpo JSON diretamente, como os demais factories da API, em vez de depender de `getParsedBody()` sem middleware instalado.
+- O repositório Axios passou a serializar `review_later` e `not_mastered` em snake_case; antes, essas flags eram enviadas em camelCase e ignoradas pelo backend.
+- Validação: teste de regressão do factory aprovado (2 testes, 5 asserções), build SPA aprovado e containers API/frontend reiniciados para carregar a correção.
+- Próximo passo: retestar as ações no caderno existente; as marcações, anotação, comentários, relatos e solicitação de explicação devem deixar de retornar `422 VALIDATION_FAILED`.

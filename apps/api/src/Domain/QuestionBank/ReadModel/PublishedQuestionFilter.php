@@ -16,6 +16,13 @@ final readonly class PublishedQuestionFilter
         public ?string $syllabusId = null,
         /** @var list<string> */ public array $taxonomySubjectIds = [],
         public ?string $examId = null,
+        public ?string $interactionUserId = null,
+        public ?bool $favorite = null,
+        public ?bool $reviewLater = null,
+        public ?bool $notMastered = null,
     ) {
+        if (($favorite !== null || $reviewLater !== null || $notMastered !== null) && $interactionUserId === null) {
+            throw new \InvalidArgumentException('Filtros pessoais exigem usuário autenticado.');
+        }
     }
 }

@@ -1,6 +1,6 @@
 import type { PublishedQuestion } from '../../Domain/QuestionBank/QuestionRepository'
 import type { DirectedStudyPlan, CreateNotebookCommand, Notebook, NotebookStatistics, NotebookStatus, StudyContestSubject, StudyGoal, StudyPlan, StudyRepository } from '../../Domain/Study/StudyRepository'
-import { getData, getPage, postData, putData, type PageQuery, type PageResult } from '../Http/AxiosApiClient'
+import { getData, getPage, patchData, postData, putData, type PageQuery, type PageResult } from '../Http/AxiosApiClient'
 
 interface NotebookApi {
   readonly id: string
@@ -29,7 +29,7 @@ export class AxiosStudyRepository implements StudyRepository {
   public async start(id: string): Promise<Notebook> { return mapNotebook(await postData<NotebookApi, undefined>('/notebooks/' + encodeURIComponent(id) + '/start')) }
   public async pause(id: string): Promise<Notebook> { return mapNotebook(await postData<NotebookApi, undefined>('/notebooks/' + encodeURIComponent(id) + '/pause')) }
   public statistics(id: string): Promise<NotebookStatistics> { return getData<NotebookStatistics>('/notebooks/' + encodeURIComponent(id) + '/statistics') }
-  public async setActiveQuestion(id: string, questionId: string): Promise<Notebook> { return mapNotebook(await putData<NotebookApi, { question_id: string }>('/notebooks/' + encodeURIComponent(id) + '/active-question', { question_id: questionId })) }
+  public async setActiveQuestion(id: string, questionId: string): Promise<Notebook> { return mapNotebook(await patchData<NotebookApi, { question_id: string }>('/notebooks/' + encodeURIComponent(id) + '/active-question', { question_id: questionId })) }
   public async finish(id: string): Promise<Notebook> { return mapNotebook(await postData<NotebookApi, undefined>('/notebooks/' + encodeURIComponent(id) + '/finish')) }
   public plan(): Promise<StudyPlan> { return getData<StudyPlan>('/study-plan/me') }
   public getGoal(): Promise<StudyGoal> { return getData<StudyGoal>('/study-goals/me') }
