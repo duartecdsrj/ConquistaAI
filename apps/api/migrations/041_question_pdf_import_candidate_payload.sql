@@ -1,0 +1,1 @@
+ALTER TABLE question_pdf_import_candidate_checkpoints ADD COLUMN candidate_payload JSON NOT NULL AFTER position_index;

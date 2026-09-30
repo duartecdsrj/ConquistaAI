@@ -21,6 +21,7 @@ final readonly class PublishedQuestion
         public ?string $sourcePdfJobId = null,
         /** @var list<int> */ public array $sourcePdfPages = [],
         /** @var list<string> */ public array $taxonomySubjectNames = [],
+        public ?string $qualityNotice = null,
     ) {
     }
 }

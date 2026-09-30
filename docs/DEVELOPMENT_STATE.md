@@ -205,6 +205,40 @@
 - As dependências PHP não existem no checkout local; validações futuras devem continuar sendo executadas no contêiner API.
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-29 — Executor Codex da importação restaurado
+
+- O `question-pdf-worker` foi reconstruído a partir da imagem que já instala `docker-cli`; a instância anterior estava defasada e não possuía o binário necessário para executar o runner isolado pelo socket Docker.
+- A rede pública e os volumes de workspace/autenticação do Compose passaram a ter os nomes estáveis `conquistaai_public`, `conquistaai_correction_workspaces` e `conquistaai_codex_auth`, compatíveis com o executor configurado para importação, correção e explicação. Isso evita que o runner receba rede, workspace ou sessão diferentes dos usados pelos workers.
+- O runner foi validado com os mounts efetivos de rede, workspace e autenticação (`codex-cli 0.157.1`). O job `f3370a78-3aa3-4ac4-9cfb-67d514588442`, antes `FAILED` por indisponibilidade do executor, foi reenfileirado e assumido pelo worker em `PROCESSING`.
+- Corrigida a leitura do código de saída do subprocesso Codex: o worker preserva o resultado terminal de `proc_get_status()` antes de chamar `proc_close()`, evitando falha falsa quando o PHP devolve `-1` no fechamento apesar de `result.json` ter sido gerado.
+- O adaptador também passou a registrar, de modo truncado e somente em `stderr`, o diagnóstico técnico de falha do executor. A mensagem não inclui conteúdo de candidatos nem a saída do modelo.
+- A validação isolada do Codex revelou schema inválido para Structured Outputs: `schema_version` usava `const` sem `type`. O schema agora declara tipos explícitos nos campos constantes e enumerados, conforme a exigência do provider.
+- O sandbox `workspace-write` do Codex dependia de namespaces de usuário via Bubblewrap, indisponíveis no kernel do host. Mediante autorização explícita, o runner isolado passou a usar `danger-full-access` somente no contêiner efêmero; ele não recebe socket Docker e monta apenas workspace e autenticação.
+- A execução real foi validada após a correção: o runner leu `input.json` no workspace montado e o job foi novamente assumido em `PROCESSING`, sem a falha imediata anterior. Na conferência operacional ele atingiu 12% e persistiu a primeira questão. Lint dos dois arquivos e a suíte focal do validador passaram (2 testes, 3 asserções).
+- Próximo passo: acompanhar a evolução e a conclusão do lote; o PDF possui 2.592 páginas e 1.260 candidatos, portanto o processamento completo não é imediato.
+
+## 2026-09-29 — Retomada resiliente da importação PDF
+
+- Corrigido o agendamento de retry de análises inválidas: os argumentos de checkpoint, tentativas e próxima execução eram enviados em posições incorretas, produzindo `TypeError` e deixando o job em `PROCESSING`.
+- Jobs em `PROCESSING` sem atualização por 10 minutos são recuperados pelo worker. Cada checkpoint renova o lease, evitando que uma análise ativa seja retomada em paralelo.
+- A retomada consulta análises já persistidas e pula o candidato correspondente; isso impede que uma interrupção reexecute o Codex e crie questões duplicadas.
+- Os contadores do job agora são preservados quando ele é retomado. O worker registra erros PHP no `stderr`, tornando falhas futuras diagnosticáveis pelo log do Compose.
+- Validação: lint PHP, `docker compose config --quiet`, `git diff --check` e suíte focal (3 testes, 4 asserções) aprovados. O job `f3370a78-3aa3-4ac4-9cfb-67d514588442` foi reenfileirado e está novamente em análise.
+- Próximo passo: monitorar as novas tentativas e revisar a questão duplicada criada antes da proteção idempotente.
+
+## 2026-09-29 — Limpeza controlada do banco de dados
+
+- Dados de uso foram removidos mediante autorização explícita: questões e alternativas, importações e jobs PDF, cadernos, tentativas, revisões, interações, históricos, recursos auxiliares e sessões de autenticação.
+- Foram preservados 5 usuários e sua configuração de acesso, o concurso Transpetro, exclusivamente o cargo `ANÁLISE DE SISTEMAS – INFRAESTRUTURA`, seu edital, 80 assuntos legados, 126 assuntos canônicos e os 72 vínculos canônicos do cargo preservado.
+- Conferência posterior: 0 questões, 0 alternativas, 0 jobs PDF, 0 cadernos, 0 tentativas, 0 revisões e 0 sessões. O dump anterior à limpeza está em `concursos-backups/concursos-before-clean-20260929-105800.sql.gz`.
+- Próximo passo: importar ou cadastrar novas questões para o cargo preservado.
+
+## 2026-09-29 — Resiliência do contrato de paginação no cliente
+
+- O cliente Axios de listas agora valida integralmente o envelope `data/meta/pagination` antes de acessar seus campos. Respostas incompatíveis passam a gerar `INVALID_API_CONTRACT` controlado, em vez de uma exceção JavaScript ao acessar `response.data.meta.pagination`.
+- Corrigido o defeito que corrompia `GET /questions`: o repositório preenchia `qualityNotice`, mas o read model `PublishedQuestion` não declarava essa propriedade; o mapper emitia warning HTML antes do JSON. O modelo agora expõe o campo opcional do contrato.
+- Próximo passo: validar a resposta autenticada e a página de questões após o recarregamento.
+
 ## 2026-09-28 — Proposta de evidência automática na correção de questões
 
 - Criada a proposta OpenSpec `automatic-question-correction-evidence` para que o worker de correção localize páginas do PDF usando o primeiro parágrafo do enunciado e uma alternativa central não vazia, mesmo sem comando de busca na instrução.
@@ -2740,3 +2774,262 @@ docker compose exec -T frontend npm run build
 - O repositório Axios passou a serializar `review_later` e `not_mastered` em snake_case; antes, essas flags eram enviadas em camelCase e ignoradas pelo backend.
 - Validação: teste de regressão do factory aprovado (2 testes, 5 asserções), build SPA aprovado e containers API/frontend reiniciados para carregar a correção.
 - Próximo passo: retestar as ações no caderno existente; as marcações, anotação, comentários, relatos e solicitação de explicação devem deixar de retornar `422 VALIDATION_FAILED`.
+
+## 2026-09-29 — Retomada e metadados da importação PDF
+
+- O job ativo foi interrompido e marcado como `CANCELLED` antes de novas alterações.
+- Corrigidos retry, lease, checkpoint e idempotência de candidatos para impedir jobs órfãos e reanálises persistidas.
+- O normalizador determinístico extrai cabeçalho explícito como `(FCC – SABESP/Analista de Gestão – Sistemas/2014)`, remove-o do enunciado e preserva banca, concurso, cargo e ano com evidência da página. O writer passa a compor concurso/cargo no metadado consumido pela revisão.
+- Validação: lints PHP e caso de regressão direta do cabeçalho aprovados.
+- Próximo passo: anexar figuras por marcador no ponto semântico, reduzir extração antecipada e mostrar início/fim no histórico.
+
+## 2026-09-29 — Figuras e histórico de importação PDF
+
+- O adaptador Codex agora exige marcador sequencial `[[FIGURA:n]]` no enunciado ou alternativa para cada âncora visual. O writer só persiste o ativo quando marcador e âncora `ANCHORED` correspondem.
+- As telas de consulta, caderno e revisão editorial renderizam alternativas por `QuestionStatementWithAssets`, colocando a figura no marcador em vez de sempre após o texto.
+- O histórico de importações passou a mostrar envio, início efetivo e finalização ou estado em andamento.
+- Validação: lint PHP, caso FCC/SABESP e build SPA aprovados; permanece o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: otimizar extração sob demanda e contexto taxonômico, depois reiniciar o job corrigido e validar uma questão com figura.
+
+## 2026-09-29 — Otimização e reimportação limpa
+
+- A extração de imagens foi alterada para sob demanda: somente páginas de candidatos com referência visual são rasterizadas. A taxonomia por chamada é reduzida a no máximo 100 caminhos relevantes, com fallback controlado.
+- Foram removidas somente as 30 questões, 39 análises e ativos vinculados ao job cancelado `f3370a78-3aa3-4ac4-9cfb-67d514588442`; usuários, catálogo, taxonomia e demais dados foram preservados. O job foi resetado para `PENDING`.
+- Validação: lint dos componentes PHP e suíte focal do worker aprovados.
+- Próximo passo: iniciar o worker atualizado e validar checkpoints, metadados e figuras no novo processamento.
+
+## 2026-09-29 — Validação da reimportação corrigida
+
+- A reimportação foi iniciada de modo limpo e está em `PROCESSING` no executor atualizado. O primeiro checkpoint já persistiu questão e a sequência continua com chamadas individuais do Codex.
+- A conferência no banco comprovou o caso solicitado: a questão FCC contém `board=FCC`, `source=SABESP/Analista de Gestão – Sistemas`, `exam_year=2014` e o cabeçalho foi removido do enunciado.
+- A mesma questão contém `[[FIGURA:1]]` no ponto semântico do enunciado e possui um único ativo de página 51 vinculado ao enunciado, validando a associação visual.
+- Próximo passo: acompanhar o lote em execução e concluir a cobertura/documentação residual da mudança OpenSpec.
+
+## 2026-09-29 — Entrega da importação PDF resiliente
+
+- A mudança OpenSpec `resilient-question-pdf-import` foi concluída: 7 de 7 tarefas marcadas, com retomada idempotente, cabeçalhos normalizados, imagens por marcador, extração sob demanda, taxonomia reduzida e histórico temporal.
+- Validação final: suíte focal PHP aprovada (3 testes, 4 asserções), build SPA aprovado e `git diff --check` sem apontamentos. O aviso não bloqueante de bundle acima de 500 kB permanece.
+- A reimportação do PDF segue em execução com o caso FCC e a imagem ancorada já verificados no banco.
+- Próximo passo: monitorar normalmente o término do lote; o histórico exibirá `finishedAt` quando o job alcançar estado terminal.
+
+## 2026-09-29 — Diagnóstico e retomada do worker de importação
+
+- O contêiner permanente `question-pdf-worker` estava em `Exited (137)` porque havia sido interrompido para a execução diagnóstica anterior; não se tratou de uma queda da aplicação.
+- A execução diagnóstica de uso único encerrou em `0` após a validação rejeitar uma resposta do analisador com `Páginas analisadas inválidas`. Ela agendou corretamente a nova tentativa do job `f3370a78-3aa3-4ac4-9cfb-67d514588442` para 18:34:21.
+- O serviço contínuo foi reativado. A verificação posterior confirmou-o `Up` e o job voltou a `PROCESSING`, com 37 chunks processados e 25 questões persistidas.
+- Próximo passo: acompanhar as novas tentativas de análise inválida, caso ocorram, até o término do lote.
+
+## 2026-09-29 — Limpeza de questões e histórico de importação
+
+- Mediante autorização explícita, foram removidas todas as questões e seus dados derivados: alternativas, ativos, vínculos, tentativas, revisões, comentários, anotações, interações, auditorias, correções, explicações e relatos.
+- Também foram removidos todos os registros de importação: importações legadas, linhas, jobs PDF, análises, âncoras de imagem, achados e sinais de qualidade.
+- Validação no banco: 0 questões, 0 alternativas, 0 ativos, 0 importações, 0 jobs PDF e 0 análises. Permanecem 5 usuários, 1 concurso, 1 cargo, 80 assuntos legados, 126 assuntos canônicos e 72 vínculos de assunto do cargo.
+- O `question-pdf-worker` foi reativado e está disponível para uma nova importação.
+- Próximo passo: enviar um novo PDF quando desejar reiniciar o acervo de questões.
+
+## 2026-09-30 — Revisão do worker de importação PDF
+
+- Criada a mudança OpenSpec resilient-parallel-pdf-import para corrigir timestamps, isolar falhas por candidato, permitir paralelismo configurável e reconciliar duplicatas com gabarito oficial.
+- Diagnóstico confirmado: o worker redefine startedAt em checkpoints e retomadas; trata resposta inválida individual como indisponibilidade do job; percorre candidatos serialmente; e descarta duplicatas sem comparar a fonte do gabarito.
+- Próximo passo: implementar checkpoints concorrentes, retentativa isolada e promoção segura de fonte OFFICIAL antes da limpeza final autorizada.
+
+## 2026-09-30 — Isolamento de falhas e promoção de gabarito
+
+- O início efetivo do job passou a ser preservado no repositório e nos checkpoints.
+- Erro de validação de uma análise agora incrementa somente a falha do candidato e mantém o PDF em processamento; a suíte focal aprovou 3 testes e 4 asserções.
+- A deduplicação promove gabarito oficial explícito sobre ausência ou estimativa, sem substituir conteúdo ou gabarito já oficial.
+- Criada a migration 040 para checkpoints de candidatos, necessária ao processamento concorrente seguro.
+- Próximo passo: implementar o repositório/checkpoint consumer e aplicar a migration antes de ativar consumidores paralelos.
+
+## 2026-09-30 — Banco preparado para importação concorrente
+
+- A migration 040_question_pdf_import_candidate_checkpoints foi aplicada e validada: a tabela possui chave única por job e fingerprint, índice de reivindicação e lease para execução concorrente.
+- A limpeza foi reconferida após a migration: questões, jobs e análises permanecem vazios; usuários e assuntos foram preservados.
+- O worker PDF permanece parado de propósito até que o serviço passe a consumir checkpoints; iniciá-lo antes disso manteria a execução serial atual.
+- Próximo passo: integrar o repositório de checkpoints ao serviço e ativar consumidores paralelos limitados por configuração.
+
+## 2026-09-30 — Consumidores paralelos de importação
+
+- O Compose passou a iniciar dois consumidores do worker PDF por padrão, configuráveis por QUESTION_IMPORT_WORKERS. Jobs distintos podem ser reivindicados e processados em paralelo sem disputa do mesmo job.
+- A configuração foi validada com docker compose config e o worker foi recriado; permanece Up e o banco está vazio.
+- Próximo passo: monitorar a próxima importação real e ajustar QUESTION_IMPORT_WORKERS conforme a capacidade do executor Codex.
+
+## 2026-09-30 — Validação parcial da importação resiliente
+
+- Validados consumidores paralelos configuráveis no Compose, preservação de startedAt e promoção de gabarito OFFICIAL em duplicatas.
+- PHPUnit focal aprovado: 3 testes e 4 asserções; docker compose config aprovado.
+- Permanecem pendentes checkpoints persistidos por candidato e testes de concorrência/idempotência completos.
+- Próximo passo: concluir checkpoints antes de iniciar a implementação de análise em lote.
+
+
+## 2026-09-30 — Checkpoints concorrentes para importação PDF
+
+- A importação analítica passou a materializar candidatos em checkpoints idempotentes, com lock pessimista, lease recuperável, retry exponencial limitado por candidato e falhas de validação isoladas.
+- O resumo do job é consolidado pelos checkpoints terminais; a telemetria de tokens, duração e achados é recomposta a partir das análises persistidas, `startedAt` é preservado entre retomadas e `finishedAt` só é definido em estado terminal. O histórico administrativo documenta os estados e a tela já apresenta contagens e horários consolidados.
+- Corrigido o mapeamento Doctrine dos campos de telemetria e ampliada a detecção de enunciados que dependem de código ou conteúdo exibido a seguir para extração visual.
+- Limpeza autorizada concluída: 0 questões, 0 jobs PDF, 0 análises e 0 checkpoints; 5 usuários e o catálogo foram preservados.
+- Validação: `docker compose config --quiet`, lint PHP, `git diff --check` e suíte focal de importação aprovados (7 testes, 28 asserções).
+- Próximo passo: o worker paralelo está ativo e pronto para a próxima importação de teste; acompanhar a telemetria consolidada no histórico.
+
+
+## 2026-09-30 — Análise Codex em lote de candidatos PDF
+
+- Criado o contrato interno de análise em lote e o executor Codex agora envia múltiplos candidatos em uma única execução estruturada, com imagens em diretórios por fingerprint.
+- O worker reivindica checkpoints pendentes do mesmo job até os limites `QUESTION_IMPORT_BATCH_SIZE` (8) e `QUESTION_IMPORT_BATCH_PAYLOAD_BYTES` (120000), mantendo retry, falha e escrita individual por candidato.
+- Providers alternativos mantêm fallback compatível; o histórico preserva a telemetria recomposta a partir de análises persistidas.
+- Próximo passo: adicionar cobertura específica de resposta parcial e validar o worker após recriação.
+
+- Cobertura adicional aprovada: resposta parcial reenfileira somente os checkpoints ausentes, schema vincula cada item ao fingerprint e imagens com mesmo índice permanecem isoladas.
+- Validação final da proposta batch: 9 testes e 32 asserções, lint PHP, `docker compose config --quiet`, `git diff --check` e worker ativo sem jobs pendentes.
+
+
+## 2026-09-30 — Retomada concorrente da importação PDF
+
+- O job lento foi interrompido e as questões persistidas foram removidas; o histórico técnico foi reinicializado para reprocessamento limpo.
+- Corrigida a promoção de gabarito oficial em duplicatas, que chamava método inexistente no writer.
+- O worker passou a manter consumidores persistentes; há quatro processos PHP ativos e o lote configurado foi elevado para 20 candidatos.
+- A reivindicação do lote avança após a posição já reservada e trata deadlock como lote parcial, evitando manter o checkpoint inicial sem processamento.
+- Validação: lint PHP, Compose e suíte focal de importação aprovados.
+- Próximo passo: acompanhar a primeira conclusão dos quatro lotes concorrentes e ajustar somente se o provider exceder o timeout.
+
+
+## 2026-09-30 — Watchdog por inatividade do Codex
+
+- Corrigido o histórico do job cancelado após limpeza: os contadores de questões criadas, classificadas, falhas e progresso foram zerados, coerentes com as 0 questões persistidas para revisão.
+- O executor de importação deixou de usar timeout absoluto de 180 segundos. `QUESTION_IMPORT_CODEX_IDLE_TIMEOUT` vale 900 segundos por padrão e é renovado sempre que o runner Codex produz saída; somente inatividade contínua encerra o subprocesso.
+- O worker foi recriado e confirmou a configuração efetiva de 900 segundos.
+- Validação: lint PHP, `docker compose config --quiet`, `git diff --check` e testes focais aprovados (4 testes, 9 asserções).
+- Próximo passo: reenfileirar explicitamente um PDF somente quando desejar retomar a importação; o job atual permanece cancelado.
+
+
+## 2026-09-30 — Reenfileiramento limpo do PDF
+
+- O job `6d40ac23-94a6-4b5f-87f5-e747e01e4c59` foi reenfileirado após interromper os quatro runners temporários da execução anterior e normalizar seus checkpoints.
+- Foram removidas somente análises parciais desse job; os 181 checkpoints voltaram a `PENDING` antes da retomada.
+- Validação após reativar o worker: quatro runners Codex foram iniciados e 57 checkpoints já estão em `PROCESSING`; os 124 restantes permanecem pendentes.
+- Próximo passo: aguardar a conclusão dos primeiros lotes e acompanhar as métricas consolidadas no histórico.
+
+
+## 2026-09-30 — Recuperação de checkpoints e retomada validada
+
+- Corrigida a transição de checkpoints: ela não executa mais `refresh` redundante após obter lock pessimista; busca o registro atual sob lock em uma única consulta. Isso evita o `EntityManagerClosed` que interrompia o worker após uma falha de candidato.
+- Validação de código: lint PHP, `docker compose config --quiet`, `git diff --check` e suíte unitária focal aprovados (5 testes, 11 asserções). O teste de integração legado de checkpoints segue pendente por inconsistência do cenário com transações aninhadas.
+- O job `6d40ac23-94a6-4b5f-87f5-e747e01e4c59` foi reenfileirado após encerrar runners antigos e apagar somente suas análises parciais.
+- Monitoramento confirmou retomada persistida: job em `PROCESSING` a 12%, 20 checkpoints concluídos, 69 em processamento, 92 pendentes (56 em retentativa), 20 análises vinculadas ao job e nenhuma nova ocorrência de `EntityManagerClosed`.
+- Próximo passo: acompanhar os lotes seguintes e tratar separadamente candidatos cuja resposta tenha páginas de evidência inválidas.
+
+
+## 2026-09-30 — Reconciliação dos indicadores de importação
+
+- Corrigida a agregação de falhas: o histórico passa a somar `failed` dos resultados individuais, inclusive quando o checkpoint técnico é concluído com falha de escrita ou validação.
+- A tela administrativa renomeia a métrica `extraídas` para `processadas`, pois ela representa candidatos finalizados, não questões criadas.
+- O job `6d40ac23-94a6-4b5f-87f5-e747e01e4c59` foi cancelado pelo administrador às 14:39; seus indicadores foram reconciliados sem retomada: 179 processadas de 181 candidatas, 7 criadas, 2 duplicadas e 43 com erro.
+- Validação: lint PHP, suíte unitária focal (5 testes, 11 asserções), build do frontend e `git diff --check` aprovados.
+- Próximo passo: reenfileirar explicitamente apenas se desejar processar as 2 candidatas interrompidas.
+
+
+## 2026-09-30 — Limpeza autorizada de importações
+
+- Removidos todos os históricos de importação PDF e legada, incluindo jobs, checkpoints, análises, achados, âncoras de imagem e sinais de qualidade.
+- Removidas as 8 questões originadas por importação e seus dados derivados (alternativas, ativos, vínculos de caderno, tentativas, revisões, interações, comentários, anotações, correções e classificações).
+- Validação no banco: 0 questões importadas, 0 jobs PDF, 0 análises, 0 checkpoints e 0 importações legadas; usuários, concursos, cargos e assuntos foram preservados.
+- Próximo passo: reenviar um PDF somente quando desejar iniciar uma nova importação.
+
+
+## 2026-09-30 — Diagnóstico de precisão e desempenho da importação PDF
+
+- Criada a mudança OpenSpec `accurate-fast-pdf-import` para corrigir reconhecimento e execução dos PDFs de TI.
+- Verificação direta por `pdftotext` confirmou os 66 marcadores explícitos de múltipla escolha: DevOps 2, Git 25, Linux 2, Python 15 e XML/JSON/CSV 22.
+- Diagnóstico: o segmentador depende da numeração de início e não usa o marcador terminal `Gabarito: Letra A-E`; itens são formados incorretamente e respostas inválidas entram em backoff. Logs também registram deadlocks na reivindicação concorrente.
+- Próximo passo: implementar segmentação delimitada por gabarito, encerrar falhas determinísticas sem retry e tornar a reivindicação resistente a deadlock; validar contra os cinco PDFs.
+## 2026-09-30 — Gabaritos A–D e variação de caixa
+
+- O reconhecimento de gabarito oficial normaliza a letra para maiúscula e aceita marcadores `Gabarito`, com ou sem `:`/`-`, incluindo `GABARITO LETRA A`; as alternativas de quatro opções A–D continuam válidas, em maiúsculas ou minúsculas.
+- Validação: lint PHP e `ProcessQuestionPdfImportBatchTest` aprovados (2 testes, 3 asserções).
+- Próximo passo: concluir a segmentação delimitada por gabarito e a regressão textual dos cinco PDFs da mudança OpenSpec `accurate-fast-pdf-import`.
+## 2026-09-30 — Segmentação determinística e resiliência da importação PDF
+
+- O segmentador usa o marcador terminal de linha `Gabarito: Letra A-E` ou `Gabarito: A-E` e preserva o bloco iniciado na última numeração que realmente contém quatro ou cinco alternativas. Alternativas alinhadas na mesma linha agora são reconhecidas; itens Certo/Errado e menções editoriais internas de gabarito permanecem fora do provider.
+- A regressão no corpus montado comprovou 66 candidatos: DevOps 2, Git 25, Linux 2, Python 15 e XML/JSON/CSV 22.
+- `DomainException` de análise em lote encerra os checkpoints afetados sem backoff; `claimNext()` captura deadlock e mantém o consumidor recuperável.
+- Validação: lint PHP, regressão do corpus no container (1 teste, 6 asserções) e suíte focal de lote (4 testes, 6 asserções).
+- Próximo passo: validar a reconciliação de contadores no histórico e executar a validação integrada antes de reenfileirar documentos reais.
+
+- Reconciliação do histórico validada: totais são derivados dos checkpoints terminais; uma escrita rejeitada permanece contabilizada em `processadas` e `com erro`, sem reduzir as questões criadas ou classificadas.
+
+- O delimitador também aceita `Gabarito A-D/E` sem dois-pontos ou a palavra “Letra”, somente no início da linha; a regressão do corpus permaneceu em 66/66.
+
+## 2026-09-30 — Validação persistida da importação em lote
+
+- Limpeza autorizada concluída antes do reenfileiramento: 0 questões, jobs, checkpoints e análises; usuários e taxonomia preservados.
+- Os cinco PDFs foram reenfileirados pelo caso de uso oficial e a segmentação materializou 66 checkpoints (2/25/2/15/22).
+- Corrigido o isolamento de respostas inválidas por fingerprint e adicionada reconciliação de jobs sem checkpoints abertos, eliminando indicadores parciais por corrida concorrente.
+- A validação persistida permanece em andamento; as rejeições observadas são de contrato do Codex (página fora da evidência ou discrepância visual sem achado), registradas para nova rodada sem reprocessar questões já criadas.
+- Próximo passo: aguardar os checkpoints ativos, reenfileirar exclusivamente rejeições remanescentes e fechar a validação com os cinco históricos consolidados.
+
+## 2026-09-30 — Reenvio com regra de discrepância efetivamente carregada
+
+- Detectado que os processos PHP persistentes do worker mantinham em memória a instrução anterior do analisador Codex; por isso, uma alteração no arquivo não alcançava runners já iniciados.
+- O serviço `question-pdf-worker` foi reiniciado de forma controlada. Checkpoints interrompidos, rejeitados ou concluídos sem criação foram reenfileirados, sem remover as 38 questões já persistidas.
+- Verificação direta dos quatro novos runners confirmou a instrução ativa: `DISCREPANCY` exige o achado `IMAGE_DISCREPANCY`, além da restrição de páginas de evidência.
+- Estado após retomada: 35 candidatas pendentes/em análise, 38 questões preservadas e os cinco históricos em reconciliação.
+- Próximo passo: aguardar os lotes corrigidos, consolidar os cinco jobs e investigar somente eventuais recusas remanescentes por candidato.
+
+## 2026-09-30 — Seleção determinística de taxonomia-folha
+
+- Identificada causa adicional das criações perdidas: a lista enviada ao Codex misturava nós agregadores e folhas; quando o modelo selecionava um nó com filhos, o gravador o recusava corretamente como classificação genérica.
+- A montagem de candidatos agora envia somente caminhos de taxonomia-folha. O validador exige que `taxonomy_path` corresponda exatamente a uma opção permitida, e o writer deriva o pai imediato desse caminho em vez de confiar no pai textual produzido pelo modelo.
+- O prompt em lote reforça essa regra. Validação focal aprovada: 10 testes e 20 asserções, incluindo rejeição de taxonomia fora das folhas permitidas.
+- Próximo passo: reiniciar o worker para carregar a regra, reenfileirar exclusivamente checkpoints ativos ou sem criação e medir a criação dos cinco PDFs.
+
+## 2026-09-30 — Normalização de caminho de taxonomia do Codex
+
+- A telemetria de escrita mostrou que alguns retornos válidos usavam um único elemento para o caminho completo (`"Tecnologia da Informação > Python"`), enquanto o gravador recebe segmentos individuais. Isso mantinha a questão fora da taxonomia apesar de a folha ser permitida.
+- O validador agora normaliza esse formato equivalente para segmentos antes da verificação de catálogo; caminhos inventados ou agregadores continuam recusados. A cobertura focal passou com 11 testes e 21 asserções.
+- Próximo passo: carregar a normalização no worker e reenviar somente candidatos sem criação para comprovar a recuperação dos itens de Python e XML/JSON/CSV.
+
+## 2026-09-30 — Metadados ausentes não geram falha de contrato
+
+- Identificada a origem da rejeição `Páginas analisadas inválidas` em candidatos sem cabeçalho: o validador exigia ao mesmo tempo metadado `null` e lista de evidências não vazia.
+- A validação agora aceita evidência vazia exclusivamente quando o respectivo campo (`exam`, `position`, `board` ou `year`) é nulo; valores preenchidos permanecem obrigatoriamente vinculados a páginas permitidas. As chaves ausentes são normalizadas para listas vazias no objeto de domínio.
+- Validação focal: 10 testes e 17 asserções aprovados, incluindo metadados ausentes e a normalização de caminho de taxonomia.
+- Próximo passo: reiniciar o worker para carregar a validação e reenfileirar os candidatos sem criação; confirmar a recuperação do candidato Linux antes da consolidação final.
+
+## 2026-09-30 — Alternativas renderizadas como imagem
+
+- A inspeção de candidatos que repetiam alternativas comprovou que a segmentação estava correta, mas a página do PDF continha apenas os rótulos `a)`–`e)` na camada textual; o conteúdo das opções era rasterizado. A página 61 do PDF Python possui imagens extraíveis para essas opções.
+- O worker passa a reconhecer essa sequência de rótulos vazios como necessidade visual, extrai os ativos da página e os entrega ao Codex. O prompt exige transcrição a partir das imagens e proíbe repetir alternativa para preencher lacuna.
+- Validação focal: 11 testes e 19 asserções, incluindo o padrão de alternativas visuais vazias. Lint do serviço e do analisador aprovado.
+- Próximo passo: carregar o detector no worker, reenviar exclusivamente os candidatos sem criação e verificar que as opções visuais passam a ser persistidas.
+
+## 2026-09-30 — Rematerialização seletiva para ativos visuais
+
+- Os checkpoints agora preservam resultados que já criaram ou deduplicaram questão quando um job é materializado novamente. Isso permite renovar o payload apenas de candidatos sem resultado — inclusive para acrescentar imagens detectadas posteriormente — sem reanalisar questões persistidas.
+- A próxima retomada marca apenas os candidatos sem criação para reconstrução; o serviço recompõe suas páginas e ativos visuais, mantendo os resultados válidos inalterados.
+- Validação: lint do repositório Doctrine e `git diff --check` dos arquivos alterados aprovados. O teste integrado legado de transição de checkpoints continua com seu cenário transacional conhecido e não foi ampliado nesta etapa.
+- Próximo passo: rematerializar os candidatos sem criação, verificar os manifestos de imagens nas questões Python/XML e executar a análise visual.
+
+## 2026-09-30 — Reenvio focal de alternativas visuais
+
+- A verificação física por `source_pdf_job_id` confirmou 59 questões persistidas: DevOps 2/2, Git 25/25, Linux 2/2, Python 10/15 e XML/JSON/CSV 20/22.
+- Restam sete candidatos, todos com resultado técnico `alternativas repetidas`; seis possuem entre 2 e 8 imagens no manifesto e um não possui imagem extraível. Nenhuma questão válida será reenviada.
+- O prompt foi reforçado para exigir inspeção visual de cada ativo listado antes da estruturação das alternativas.
+- Próximo passo: reenfileirar somente esses sete checkpoints com os manifestos preservados e avaliar a recuperação; o item sem imagem será tratado como limitação explícita caso permaneça sem alternativas legíveis.
+
+## 2026-09-30 — Contexto de página para alternativas em imagem
+
+- O extrator visual agora renderiza também uma imagem completa para cada página solicitada (`pdftoppm` a 144 DPI), além das imagens embutidas. Isso preserva ordem e contexto espacial das alternativas A–E e cobre páginas sem imagem embutida.
+- Validação direta no PDF Python: a página 61, que contém alternativas rasterizadas, produziu o ativo `page-61-render.png` junto dos ativos extraídos.
+- Próximo passo: reconstruir somente candidatos Python/XML ainda sem resultado para anexar a página renderizada e executar a tentativa visual final; Git, Linux e DevOps permanecem consolidados.
+
+## 2026-09-30 — Imagens anexadas ao Codex CLI
+
+- Diagnóstico conclusivo: o adaptador copiava ativos para o workspace, mas não os anexava ao prompt inicial do Codex. O CLI suporta oficialmente `--image`; o adaptador passou a anexar até 12 renderizações completas de página por lote (ou ativos individuais quando não houver renderização).
+- A cópia preserva o sufixo `-render.png`, permitindo priorizar a página completa em vez de miniaturas sem contexto. A suíte focal do adaptador, validador e lote aprovou: 12 testes e 22 asserções.
+- Próximo passo: reenfileirar os sete candidatos restantes com anexos visuais diretos e confirmar que o comando efetivo contém `--image` antes de avaliar a persistência.
+
+## 2026-09-30 — Separador do prompt após anexos Codex
+
+- A primeira chamada com `--image` falhou antes da análise porque a opção variádica do Codex CLI consumiu o prompt final como parte da lista de imagens (`No prompt provided via stdin`).
+- O comando agora insere o separador POSIX `--` entre os anexos e o prompt, preservando os arquivos de imagem e a instrução estruturada. Os checkpoints afetados permaneceram em backoff controlado, sem gravar questão parcial.
+- Próximo passo: recarregar o worker, reenfileirar exclusivamente os candidatos visuais sem criação e confirmar no processo ativo a presença de `--image` seguida do separador.

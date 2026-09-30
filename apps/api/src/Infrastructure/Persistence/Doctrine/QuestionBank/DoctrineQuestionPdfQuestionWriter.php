@@ -36,17 +36,18 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
         $questionIdsByCandidateFingerprint = [];
 
         foreach ($questions as $question) {
-            if (!is_array($question) || ($question['type'] ?? null) !== 'MULTIPLE_CHOICE' || !is_string($question['statement'] ?? null)) { $failed++; continue; }
+            $fingerprint = is_array($question) && is_string($question["source_candidate_fingerprint"] ?? null) ? $question["source_candidate_fingerprint"] : "unknown";
+            if (!is_array($question) || ($question['type'] ?? null) !== 'MULTIPLE_CHOICE' || !is_string($question['statement'] ?? null)) { error_log("Question import write ".$fingerprint.": estrutura inválida."); $failed++; continue; }
             $options = array_values(array_filter($question['options'] ?? [], static fn(mixed $option): bool => is_array($option) && is_string($option['content'] ?? null) && trim($option['content']) !== ''));
             $statement = $this->content->statement($question['statement'], $options);
             // O catálogo objetivo contém apenas questões objetivas de quatro ou cinco opções.
-            if ($statement === '' || !in_array(count($options), [4, 5], true)) { $failed++; continue; }
+            if ($statement === '' || !in_array(count($options), [4, 5], true)) { error_log("Question import write ".$fingerprint.": enunciado ou alternativas inválidos."); $failed++; continue; }
             $normalizedOptions = array_map(fn (array $option): string => $this->norm($this->content->option($option['content'])), $options);
-            if (count(array_unique($normalizedOptions)) !== count($normalizedOptions)) { $failed++; continue; }
+            if (count(array_unique($normalizedOptions)) !== count($normalizedOptions)) { error_log("Question import write ".$fingerprint.": alternativas repetidas."); $failed++; continue; }
             $key = $this->norm($statement);
-            if (isset($existing[$key])) { $duplicates++; continue; }
+            if (isset($existing[$key])) { $this->promoteOfficialAnswerKey($existing[$key], $options, $question); if (is_string($question["source_candidate_fingerprint"] ?? null)) $questionIdsByCandidateFingerprint[$question["source_candidate_fingerprint"]] = $existing[$key]; $duplicates++; continue; }
             $placement = $this->specificTaxonomy($question);
-            if ($placement === null) { $failed++; continue; }
+            if ($placement === null) { error_log("Question import write ".$fingerprint.": taxonomia específica inválida."); $failed++; continue; }
             [$taxonomy, $wasCreated] = $placement;
 
             $record = new QuestionRecord();
@@ -195,7 +196,20 @@ final class DoctrineQuestionPdfQuestionWriter implements QuestionPdfQuestionWrit
     /** @return list<int> */
     private function sourcePages(array $source): array { $pages = array_merge((array) ($source['pages'] ?? []), (array) ($source['image_pages'] ?? [])); $pages = array_values(array_unique(array_filter(array_map(static fn(mixed $page): int => is_int($page) ? $page : (is_string($page) && ctype_digit($page) ? (int) $page : 0), $pages), static fn(int $page): bool => $page > 0))); sort($pages); return $pages; }
 
-    private function hasVisualReference(string $content): bool { return preg_match('/\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|ilustra[cç][aã]o|mapa|fluxograma)\b/iu', $content) === 1; }
+    private function hasVisualReference(string $content): bool { return preg_match('/\b(?:figura|imagem|gr[aá]fico|tabela|quadro|diagrama|esquema|ilustra[cç][aã]o|mapa|fluxograma|exibid[oa]s+(?:as+)?seguir|conformes+(?:os+)?c[oó]digo|c[oó]digos+abaixo)\b/iu', $content) === 1; }
+    private function promoteOfficialAnswerKey(string $questionId, array $options, array $incoming): void
+    {
+        if (($incoming["answer_key_source"] ?? null) !== "OFFICIAL") return;
+        $label = strtoupper((string) ($incoming["correct_option"] ?? ""));
+        $position = ord($label) - 65;
+        if ($position < 0 || $position >= count($options)) return;
+        $question = $this->em->find(QuestionRecord::class, $questionId);
+        if (!$question instanceof QuestionRecord || $question->answerKeySource === "OFFICIAL") return;
+        $option = $this->em->createQueryBuilder()->select("option")->from(QuestionOptionRecord::class, "option")->where("option.questionId = :question")->andWhere("option.label = :label")->setParameter("question", $questionId)->setParameter("label", $label)->getQuery()->getOneOrNullResult();
+        if (!$option instanceof QuestionOptionRecord) return;
+        $question->correctOptionId = $option->id; $question->answerKeySource = "OFFICIAL"; $question->updatedAt = new \DateTimeImmutable("now");
+    }
+
     private function norm(string $content): string { return QuestionStatementFingerprint::of($content); }
     private function id(): string { $bytes = random_bytes(16); $bytes[6] = chr((ord($bytes[6]) & 15) | 64); $bytes[8] = chr((ord($bytes[8]) & 63) | 128); return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4)); }
 }

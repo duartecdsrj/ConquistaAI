@@ -12,6 +12,7 @@ use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionDuplicateDetector;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionImportAnalysisRepository;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionPdfImportJobRepository;
+use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionPdfImportCandidateCheckpointRepository;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionPdfQuestionWriter;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionQualitySignalRepository;
 use App\Infrastructure\Persistence\Doctrine\QuestionBank\DoctrineQuestionTaxonomyAssignmentRepository;
@@ -32,7 +33,10 @@ $service = new ProcessQuestionPdfImportAnalysisJobService(
     new QuestionPdfCandidateSegmenter(),
     new DoctrineQuestionImportAnalysisRepository($entityManager),
     new DoctrineQuestionQualitySignalRepository($entityManager),
+    new DoctrineQuestionPdfImportCandidateCheckpointRepository($entityManager),
     max(0, (int) Database::env('QUESTION_IMPORT_MAX_CANDIDATES', '0')),
+    max(1, (int) Database::env('QUESTION_IMPORT_BATCH_SIZE', '8')),
+    max(10000, (int) Database::env('QUESTION_IMPORT_BATCH_PAYLOAD_BYTES', '120000')),
 );
 $count = 0;
 while ($service->processNext()) { $entityManager->flush(); $entityManager->clear(); $count++; }

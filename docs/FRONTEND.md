@@ -278,3 +278,8 @@ A lista de questões expõe filtros pessoais como controles Quasar combináveis 
 ## Importação de PDFs com análise editorial
 
 A tela administrativa de importação mostra em cada job provider, duração, tokens quando reportados e indisponibilidade explícita quando não há telemetria confiável. Contagens de dúvidas de gabarito, discrepâncias visuais e incoerências estruturais aparecem sem exigir expansão. A revisão detalhada usa somente achados seguros e páginas de evidência; não revela alternativa ou gabarito inferidos. Em listagem e caderno, `qualityNotice` permanece visível como aviso editorial: a pessoa responde normalmente e solicita explicação somente após a tentativa.
+
+
+## Histórico de importação PDF
+
+A tela administrativa de Import exibe envio, início efetivo e término do job, ou o estado em andamento. Enunciados e alternativas com `[[FIGURA:n]]` são renderizados por `QuestionStatementWithAssets`, que posiciona somente os ativos vinculados pelo backend no marcador correspondente.

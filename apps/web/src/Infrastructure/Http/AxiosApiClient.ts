@@ -41,13 +41,25 @@ export async function deleteData<TResponse>(url: string, config?: AxiosRequestCo
 
 export async function getPage<T>(url: string, query: PageQuery = {}, filters: QueryParameters = {}): Promise<PageResult<T>> {
   const response = await client.get<ApiEnvelope<readonly T[]>>(url, { params: { ...paginationParams(query), ...withoutUndefined(filters) } })
-  const pagination = response.data.meta.pagination
-  if (!pagination) throw new ApiRequestError('INVALID_API_CONTRACT', 'A API nao retornou paginacao.', 500)
-  return { items: response.data.data, pagination, requestId: response.data.meta.request_id }
+  const payload = response.data
+  if (!isPaginatedEnvelope<T>(payload)) throw new ApiRequestError('INVALID_API_CONTRACT', 'A API retornou uma lista em formato invalido.', 500)
+  return { items: payload.data, pagination: payload.meta.pagination, requestId: payload.meta.request_id }
 }
 export function paginationParams(query: PageQuery): Record<string, number> { return { page: Math.max(1, Math.trunc(query.page ?? 1)), per_page: Math.min(100, Math.max(1, Math.trunc(query.perPage ?? 25))) } }
 function withoutUndefined(values: QueryParameters): Record<string, string | number | boolean> {
   return Object.fromEntries(Object.entries(values).filter((entry): entry is [string, string | number | boolean] => entry[1] !== undefined))
+}
+function isPaginatedEnvelope<T>(payload: unknown): payload is ApiEnvelope<readonly T[]> & { readonly meta: ApiMeta & { readonly pagination: PaginationMeta } } {
+  if (typeof payload !== 'object' || payload === null || !('data' in payload) || !('meta' in payload)) return false
+  const envelope = payload as { readonly data?: unknown; readonly meta?: unknown }
+  if (!Array.isArray(envelope.data) || typeof envelope.meta !== 'object' || envelope.meta === null) return false
+  const meta = envelope.meta as { readonly request_id?: unknown; readonly pagination?: unknown }
+  if (typeof meta.request_id !== 'string' || typeof meta.pagination !== 'object' || meta.pagination === null) return false
+  const pagination = meta.pagination as Partial<PaginationMeta>
+  return Number.isInteger(pagination.page)
+    && Number.isInteger(pagination.per_page)
+    && Number.isInteger(pagination.total)
+    && Number.isInteger(pagination.total_pages)
 }
 function toApiRequestError(error: AxiosError<ApiFailure>): ApiRequestError {
   const failure = error.response?.data

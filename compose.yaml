@@ -115,8 +115,9 @@ services:
 
   question-pdf-worker:
     build: ./apps/api
-    command: ["sh", "-c", "while true; do php bin/process-question-pdf-imports.php; sleep 5; done"]
+    command: ["sh", "-c", "worker_loop() { while true; do php -d log_errors=1 -d error_log=/dev/stderr bin/process-question-pdf-imports.php; sleep 1; done; }; workers=$${QUESTION_IMPORT_WORKERS:-2}; i=1; while [ $$i -le $$workers ]; do worker_loop & i=$$((i + 1)); done; wait"]
     environment:
+      QUESTION_IMPORT_WORKERS: ${QUESTION_IMPORT_WORKERS:-2}
       APP_ENV: ${APP_ENV:-development}
       APP_DEBUG: ${APP_DEBUG:-true}
       DB_HOST: ${DB_HOST:-mysql}
@@ -131,9 +132,11 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
       QUESTION_IMPORT_ANALYZER: ${QUESTION_IMPORT_ANALYZER:-codex}
       QUESTION_IMPORT_CODEX_MODEL: ${QUESTION_IMPORT_CODEX_MODEL:-gpt-5}
-      QUESTION_IMPORT_CODEX_TIMEOUT: ${QUESTION_IMPORT_CODEX_TIMEOUT:-180}
+      QUESTION_IMPORT_CODEX_IDLE_TIMEOUT: ${QUESTION_IMPORT_CODEX_IDLE_TIMEOUT:-900}
       QUESTION_IMPORT_CODEX_NETWORK: ${QUESTION_IMPORT_CODEX_NETWORK:-conquistaai_public}
       QUESTION_IMPORT_MAX_CANDIDATES: ${QUESTION_IMPORT_MAX_CANDIDATES:-0}
+      QUESTION_IMPORT_BATCH_SIZE: ${QUESTION_IMPORT_BATCH_SIZE:-20}
+      QUESTION_IMPORT_BATCH_PAYLOAD_BYTES: ${QUESTION_IMPORT_BATCH_PAYLOAD_BYTES:-120000}
       CORRECTION_WORKSPACE_VOLUME: ${CORRECTION_WORKSPACE_VOLUME:-conquistaai_correction_workspaces}
       CODEX_AUTH_VOLUME: ${CODEX_AUTH_VOLUME:-conquistaai_codex_auth}
     volumes:
@@ -262,6 +265,7 @@ services:
 
 networks:
   public:
+    name: conquistaai_public
   internal:
     internal: true
 
@@ -273,4 +277,6 @@ volumes:
   question_pdf_documents:
   question_pdf_assets:
   correction_workspaces:
+    name: conquistaai_correction_workspaces
   codex_auth:
+    name: conquistaai_codex_auth
