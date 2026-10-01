@@ -47,3 +47,51 @@ onMounted(refresh)
 /* Taxonomia: árvore em painel de conhecimento, com oficina editorial ao lado. */
 .page-heading{padding:8px 0 24px;border-bottom:1px solid #dce7f6}.tree-card{border-radius:25px!important;background:linear-gradient(160deg,#fff,#f2f7ff)!important}.workspace-card{border-radius:25px!important;background:rgba(255,255,255,.86)!important}.workspace-tabs{padding:8px 12px;background:#f6f9ff;border-bottom:1px solid #dce7f6}.workspace-tabs :deep(.q-tab--active){border-radius:12px;background:#e8f1ff}.workspace-panels{background:transparent}.panel-eyebrow{color:#7a62ec!important}.review-list{border-radius:15px!important;border-color:#dce7f6!important}.empty-state{padding:45px 20px;border:1px dashed #cbdcf4;border-radius:18px;background:#f8fbff}
 </style>
+
+<style scoped lang="sass">
+.tree-card, .workspace-card
+  color: #dceaff !important
+  border-color: #1d3453 !important
+  background: #0c1a2e !important
+
+.tree-head h2, .workspace-card h2, .tree-label
+  color: #eef6ff !important
+
+.tree-head p, .panel-copy, .empty-state
+  color: #a8bbd4 !important
+
+.tree-tools, .workspace-tabs
+  border-color: #1d3453 !important
+  background: #091a2f !important
+
+.tree-body
+  color: #dceaff !important
+  background: #0c1a2e !important
+
+:deep(.q-tree)
+  color: #dceaff !important
+
+:deep(.q-tree__node-header)
+  min-height: 36px
+  color: #dceaff !important
+  border-radius: 8px
+
+:deep(.q-tree__node-header:hover)
+  color: #f4f9ff !important
+  background: #112b4b !important
+
+:deep(.q-tree__node--selected > .q-tree__node-header)
+  color: #f5faff !important
+  background: #153d6b !important
+
+:deep(.q-tree__arrow), :deep(.q-tree__node-header .q-icon)
+  color: #78c4ff !important
+
+:deep(.tree-label span)
+  color: #e4efff !important
+  font-weight: 650
+
+:deep(.tree-label .q-badge)
+  color: #cde5ff !important
+  background: #163b66 !important
+</style>

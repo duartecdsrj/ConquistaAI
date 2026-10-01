@@ -217,3 +217,360 @@ input
 
   .q-card:not(.q-dialog__inner .q-card)
     backdrop-filter: none
+
+// Fundação global da Arena: azul-noturno, superfícies densas e contraste de jogo.
+:root
+  color: #dce9ff
+  background: #071221
+  --ink: #e8f2ff
+  --muted: #8ca2c3
+  --paper: #0c1a2e
+  --canvas: #071221
+  --line: #1d3453
+  --blue: #1482f6
+  --violet: #6e7fff
+  --mint: #49d89a
+  --sun: #ffd55d
+  --coral: #ff766b
+  --focus: #78c4ff
+  --shadow: 0 18px 42px rgba(0, 0, 0, .24)
+
+body
+  background: radial-gradient(circle at 84% -8%, rgba(26, 105, 255, .18), transparent 28rem), #071221
+
+.q-btn--unelevated
+  color: #fff
+  background: #1482f6
+  box-shadow: 0 8px 18px rgba(0, 126, 255, .19)
+
+.q-btn--outline
+  border-color: #2b4d74
+  color: #b9d8ff
+  background: rgba(10, 25, 45, .55)
+
+.q-btn:focus-visible, .q-field--focused .q-field__control, .q-tab:focus-visible, .q-item:focus-visible
+  outline: 2px solid var(--focus)
+  outline-offset: 2px
+
+.q-card
+  color: var(--ink)
+  border: 1px solid var(--line) !important
+  background: var(--paper) !important
+  box-shadow: none !important
+
+.q-dialog .q-card
+  background: #0e2038 !important
+  box-shadow: var(--shadow) !important
+
+.q-field--outlined .q-field__control:before
+  border-color: #2b4d74
+
+.q-field--outlined .q-field__control, .q-field--filled .q-field__control
+  color: var(--ink)
+  background: #0a192d
+
+.q-field__label, .q-field__native, .q-field__input, .q-field__marginal, .q-field__bottom
+  color: #9db4d3 !important
+
+.q-menu, .q-select__dialog
+  color: var(--ink)
+  background: #0e2038
+  border: 1px solid var(--line)
+
+.q-item
+  color: #cdddf3
+
+.q-item__label--caption, .q-field__messages
+  color: var(--muted) !important
+
+.q-tab
+  color: #8ca2c3
+
+.q-tab--active
+  color: #78c4ff !important
+
+.q-separator
+  background: var(--line) !important
+
+.q-banner
+  color: #dce9ff
+  border: 1px solid #29486c
+  background: #0d1d34
+
+.page, .app-page, .taxonomy-page
+  color: var(--ink)
+
+.page h1, .app-page h1, .taxonomy-page h1, .page h2, .app-page h2, .taxonomy-page h2, .page-title
+  color: var(--ink) !important
+
+.page-title + p:not(.eyebrow), .page-title + .copy, .page p:not(.eyebrow), .app-page p:not(.eyebrow), .taxonomy-page p:not(.eyebrow)
+  color: var(--muted) !important
+
+.page .top, .app-page .hero, .taxonomy-page .page-heading
+  border-bottom-color: var(--line)
+
+.eyebrow, .kicker
+  color: #78b9ff !important
+
+.metric-card, .metrics .q-card, .goal-card, .summary, .plan-card, .directed-section .plan-card, .subjects, .book, .notebook-card, .question-workspace, .chat, .workspace-card, .question-nav-panel, .progress-panel, .sidebar
+  color: var(--ink) !important
+  border-color: var(--line) !important
+  background: #0c1a2e !important
+
+.plan-card, .directed-section .plan-card, .subjects
+  border-left-color: #2d9afa !important
+
+.error, .error-banner
+  color: #ffc4bd !important
+  border-color: rgba(255, 118, 107, .42) !important
+  background: rgba(116, 38, 47, .36) !important
+
+.success-banner
+  color: #aaf2ce !important
+  border-color: rgba(73, 216, 154, .38) !important
+  background: rgba(22, 98, 74, .32) !important
+
+
+// Refinamento de contraste: prevalece sobre o legado claro presente nos estilos scoped das telas.
+.q-page, .q-page-container
+  color: var(--ink)
+
+.q-page h1, .q-page h2, .q-page h3, .q-page h4, .q-page h5, .q-page h6,
+.q-dialog h1, .q-dialog h2, .q-dialog h3
+  color: #eef6ff !important
+
+.q-page p, .q-dialog p, .q-page .hint, .q-page .copy,
+.q-page .muted, .q-page .caption, .q-page .description
+  color: #a8bbd4 !important
+
+.q-page .q-card, .q-page .q-banner, .q-page .q-list,
+.q-page .q-tab-panels, .q-page .q-expansion-item__container,
+.q-page .q-stepper, .q-page .q-timeline__content
+  color: var(--ink) !important
+  border-color: #1d3453 !important
+  background: #0c1a2e !important
+
+.q-page .q-card__section, .q-dialog .q-card__section
+  color: var(--ink)
+
+.q-page .q-chip:not(.q-chip--colored), .q-dialog .q-chip:not(.q-chip--colored)
+  color: #b9d8ff !important
+  border-color: #2b4d74 !important
+  background: #10233d !important
+
+.q-page .q-badge:not(.bg-primary):not(.bg-positive):not(.bg-negative):not(.bg-warning),
+.q-dialog .q-badge:not(.bg-primary):not(.bg-positive):not(.bg-negative):not(.bg-warning)
+  color: #b9d8ff !important
+  background: #16345a !important
+
+.q-page .q-skeleton
+  opacity: .28
+
+.q-page .q-item, .q-dialog .q-item
+  color: #d8e7fb !important
+
+.q-page .q-item__label--caption, .q-dialog .q-item__label--caption
+  color: #8ca2c3 !important
+
+.q-page .q-item:hover
+  background: #102642 !important
+
+.q-page .q-separator
+  background: #1d3453 !important
+
+.q-page .q-linear-progress__track
+  opacity: .35
+
+
+
+// Controles de entrada e navegação: superfícies distintas, valor claro e estado ativo evidente.
+.q-page .q-field__control, .q-dialog .q-field__control,
+.q-page .q-field--outlined .q-field__control, .q-dialog .q-field--outlined .q-field__control
+  min-height: 44px
+  color: #edf6ff !important
+  border-radius: 10px !important
+  background: #08182b !important
+
+.q-page .q-field--outlined .q-field__control:before, .q-dialog .q-field--outlined .q-field__control:before
+  border-color: #315578 !important
+
+.q-page .q-field--outlined.q-field--focused .q-field__control:before,
+.q-page .q-field--outlined.q-field--focused .q-field__control:after,
+.q-dialog .q-field--outlined.q-field--focused .q-field__control:before,
+.q-dialog .q-field--outlined.q-field--focused .q-field__control:after
+  border-color: #41a5ff !important
+
+.q-page .q-field__label, .q-dialog .q-field__label
+  color: #9db4d3 !important
+
+.q-page .q-field--focused .q-field__label, .q-dialog .q-field--focused .q-field__label
+  color: #78c4ff !important
+
+.q-page .q-field__native, .q-page .q-field__input, .q-page .q-field__marginal,
+.q-dialog .q-field__native, .q-dialog .q-field__input, .q-dialog .q-field__marginal
+  color: #edf6ff !important
+
+.q-page .q-field__append .q-icon, .q-page .q-field__prepend .q-icon,
+.q-dialog .q-field__append .q-icon, .q-dialog .q-field__prepend .q-icon
+  color: #8eb8e6 !important
+
+.q-menu, .q-select__dialog, .q-dialog__inner .q-menu
+  color: #e8f2ff !important
+  border-color: #29486c !important
+  background: #0d2038 !important
+  box-shadow: 0 16px 38px rgba(0, 0, 0, .32)
+
+.q-menu .q-item, .q-select__dialog .q-item
+  color: #dbeaff !important
+
+.q-menu .q-item--active, .q-menu .q-item:hover,
+.q-select__dialog .q-item--active, .q-select__dialog .q-item:hover
+  color: #f4f9ff !important
+  background: #14355b !important
+
+.q-page .q-tabs
+  color: #8ca2c3 !important
+  border-bottom: 1px solid #1d3453
+  background: #09182b !important
+
+.q-page .q-tab
+  min-height: 46px
+  color: #91a8c7 !important
+
+.q-page .q-tab--active
+  color: #8fcaff !important
+  background: linear-gradient(180deg, rgba(30, 126, 241, .18), rgba(15, 48, 83, .18)) !important
+
+.q-page .q-tab__indicator
+  height: 3px !important
+  background: #41a5ff !important
+
+.q-page .q-tab-panels, .q-page .q-tab-panel
+  color: #dbeaff !important
+  background: #0c1a2e !important
+
+.q-pagination .q-btn
+  color: #afc9e7 !important
+  border: 1px solid #29486c
+  background: #0b1b30 !important
+
+.q-pagination .q-btn.q-btn--active
+  color: #fff !important
+  border-color: #1482f6 !important
+  background: #1482f6 !important
+
+
+
+// Dados estruturados: cabeçalho, células, seleção e rodapé em níveis de leitura distintos.
+.q-page .q-table__container, .q-page .q-table__middle, .q-page .q-table,
+.q-page .q-table__top, .q-page .q-table__bottom
+  color: #dceaff !important
+  border-color: #1d3453 !important
+  background: #0c1a2e !important
+
+.q-page .q-table thead tr, .q-page .q-table thead th
+  color: #b9d8ff !important
+  border-color: #29486c !important
+  background: #10233d !important
+  font-size: 11px
+  font-weight: 800
+  letter-spacing: .06em
+  text-transform: uppercase
+
+.q-page .q-table tbody td
+  color: #dceaff !important
+  border-color: #19324f !important
+  background: #0c1a2e !important
+
+.q-page .q-table tbody tr:hover td
+  background: #112947 !important
+
+.q-page .q-table tbody tr.q-table__selected td,
+.q-page .q-table tbody tr.bg-primary td
+  color: #f5faff !important
+  background: #143b69 !important
+
+.q-page .q-table__bottom
+  color: #9db4d3 !important
+  border-top: 1px solid #1d3453 !important
+
+.q-page .q-table__bottom .q-btn
+  color: #b9d8ff !important
+
+.q-page .q-markup-table, .q-page .q-markup-table table
+  color: #dceaff !important
+  border-color: #1d3453 !important
+  background: #0c1a2e !important
+
+.q-page .q-markup-table thead tr, .q-page .q-markup-table th
+  color: #b9d8ff !important
+  border-color: #29486c !important
+  background: #10233d !important
+
+.q-page .q-markup-table td
+  color: #dceaff !important
+  border-color: #19324f !important
+
+.q-page .q-list--bordered, .q-page .q-list--separator
+  border-color: #1d3453 !important
+
+.q-page .q-expansion-item__container > .q-item,
+.q-page .q-tree__node-header
+  color: #dceaff !important
+  border-color: #1d3453 !important
+  background: #0c1a2e !important
+
+.q-page .q-tree__node--selected > .q-tree__node-header
+  color: #f2f8ff !important
+  background: #153b67 !important
+
+.q-page .q-tree__arrow
+  color: #78b9ff !important
+
+.q-page .q-editor, .q-page .q-editor__content
+  color: #e8f2ff !important
+  border-color: #29486c !important
+  background: #09192d !important
+
+
+// Sobrescrita de páginas legadas: os refinamentos locais não podem reintroduzir o tema claro.
+body .q-page [class*="card"], body .q-page [class*="panel"], body .q-page [class*="workspace"],
+body .q-page [class*="dialog"], body .q-page [class*="toolbar"], body .q-page [class*="empty"],
+body .q-page [class*="list"], body .q-page [class*="table"]
+  color: #dceaff !important
+  border-color: #1d3453 !important
+  background-color: #0c1a2e !important
+
+body .q-page [class*="card"] h1, body .q-page [class*="card"] h2, body .q-page [class*="card"] h3,
+body .q-page [class*="panel"] h1, body .q-page [class*="panel"] h2, body .q-page [class*="panel"] h3,
+body .q-page [class*="workspace"] h1, body .q-page [class*="workspace"] h2, body .q-page [class*="workspace"] h3
+  color: #eef6ff !important
+
+body .q-page [class*="card"] p, body .q-page [class*="panel"] p,
+body .q-page [class*="workspace"] p, body .q-page [class*="dialog"] p,
+body .q-page [class*="empty"] p
+  color: #a8bbd4 !important
+
+body .q-page .option-card, body .q-page .question-index, body .q-page .answer-info,
+body .q-page .goal-metrics span
+  color: #dceaff !important
+  border-color: #29486c !important
+  background: #0a1b30 !important
+
+body .q-page .option-card.selected, body .q-page .question-index.current
+  color: #f5faff !important
+  border-color: #41a5ff !important
+  background: #153d6b !important
+
+// Mantém os blocos de conquista como exceção intencional, agora escuros e contrastantes.
+body .q-page .weekly-card, body .q-page .wait-hero
+  color: #f4f9ff !important
+  border-color: #245c9e !important
+  background: linear-gradient(120deg, #0d2449, #123970 62%, #274fa1) !important
+
+body .q-page .weekly-card p, body .q-page .weekly-card h1, body .q-page .weekly-card h2,
+body .q-page .weekly-card strong, body .q-page .weekly-card span, body .q-page .wait-hero p,
+body .q-page .wait-hero h1, body .q-page .wait-hero h2
+  color: #f4f9ff !important
+
+// Fim da fundação visual compartilhada.

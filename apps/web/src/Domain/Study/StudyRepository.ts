@@ -20,7 +20,7 @@ export interface Notebook {
 
 export interface NotebookStatistics { readonly total: number; readonly answered: number; readonly correct: number; readonly incorrect: number; readonly percentage: number; readonly averageElapsedSeconds: number; readonly elapsedSeconds: number; readonly answeredQuestionIds: readonly string[] }
 
-export interface StudyContestSubject { readonly id:string; readonly parentId:string|null; readonly name:string; readonly level:number; readonly selectionWeight:number }
+export interface StudyContestSubject { readonly id:string; readonly parentId:string|null; readonly name:string; readonly level:number; readonly selectionWeight:number; readonly questionCount:number }
 export interface DirectedStudyPlan { readonly id:string; readonly examId:string; readonly positionId:string; readonly name:string; readonly createdAt:string }
 export interface StudyGoal { readonly weeklyQuestionGoal: number; readonly completedQuestions: number; readonly percentage: number; readonly periodStartsAt: string }
 export interface StudyPlanPriority { readonly subjectId: string; readonly total: number; readonly correct: number; readonly percentage: number; readonly distinctDays: number; readonly sufficientData: boolean; readonly reason: string; readonly action: 'RESPONDER_CONJUNTO_FILTRADO' | 'PRATICAR_AMOSTRA' }

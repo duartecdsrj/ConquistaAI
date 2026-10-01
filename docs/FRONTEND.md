@@ -285,3 +285,10 @@ A tela administrativa de importação mostra em cada job provider, duração, to
 ## Histórico de importação PDF
 
 A tela administrativa de Import exibe envio, início efetivo e término do job, ou o estado em andamento. Enunciados e alternativas com `[[FIGURA:n]]` são renderizados por `QuestionStatementWithAssets`, que posiciona somente os ativos vinculados pelo backend no marcador correspondente.
+
+
+## Seletor hierárquico de assuntos
+
+SubjectTreeSelect em Interface/Http/Shared recebe opções tipadas com id, name e parentId e devolve somente a lista imutável de IDs selecionados. Catálogo, Cadernos, Revisão Editorial e Arena o reutilizam; páginas não achatam a taxonomia nem acessam HTTP para montar a árvore.
+
+<!-- fim da documentação -->

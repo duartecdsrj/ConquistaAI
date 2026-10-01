@@ -1,3 +1,80 @@
+## 2026-10-01 — Renovação operacional das contagens de Taxonomia
+
+- Confirmada em runtime a consulta Doctrine com contagens publicadas e a serialização HTTP com `questionCount` positivo; por exemplo, o nó Administração devolve 135 questões.
+- O zero persistente na tela era causado pelo processo web da API ainda servir código anterior em memória após a alteração do serviço.
+- Reiniciado somente o contêiner `api`; a API, frontend, banco, Nginx, workers e realtime voltaram ao estado `running`.
+- Próximo passo: recarregar a página da Taxonomia no navegador para obter a resposta renovada.
+
+## 2026-10-01 — Correção da contagem na Taxonomia
+
+- Corrigido o serviço paginado da Taxonomia: a variável do total de assuntos era sobrescrita durante a agregação de questões dos descendentes, devolvendo paginação incorreta.
+- A agregação agora preserva o total real de nós e consulta toda a hierarquia, sem o antigo limite fixo de 1.000 assuntos.
+- Os badges continuam exibindo somente questões `PUBLISHED`, agregadas de cada nó e de seus descendentes.
+- Validação: lint PHP, PHPUnit focal (1 teste, 2 asserções), build tipado da SPA e `git diff --check` aprovados. Mantém-se somente o alerta não bloqueante de bundle acima de 500 kB.
+- Próximo passo: nenhum para esta correção pontual.
+
+## 2026-10-01 — Correção da árvore de assuntos da Arena
+
+- Corrigido `GET /arena/subjects`: a projeção tentava ler `questionCount` de uma entidade de taxonomia que não possui essa propriedade, interrompendo a resposta e deixando o componente sem nós.
+- O serviço passa a consultar as contagens diretas pelo contrato de repositório; cada nó entrega `id`, `name`, `parentId` e a quantidade correta de questões.
+- O cliente Arena busca todas as páginas de assuntos e mantém essa carga isolada da listagem de salas, para que erro em uma sala não oculte a árvore.
+- `SubjectTreeSelect` passa a abrir com os assuntos contraídos, preservando busca, expansão manual, seleção e badges de contagem.
+- Validação: lint PHP, PHPUnit focal (1 teste, 5 asserções), build tipado da SPA e `git diff --check` aprovados. Permanece somente o alerta não bloqueante de bundle acima de 500 kB.
+- Próximo passo: nenhum para esta correção pontual.
+
+## 2026-10-01 — Seleção hierárquica de assuntos
+
+- Criado `SubjectTreeSelect`, componente Quasar reutilizável que apresenta a taxonomia em árvore, com busca, expansão e seleção múltipla sem alterar os IDs enviados aos casos de uso.
+- Integrado aos fluxos de Assuntos do cargo, Caderno específico, Revisão Editorial e Arena. A Arena passou a receber `parentId` na projeção de assuntos para reconstruir a hierarquia real.
+- Validação: build da SPA aprovado e lint PHP do DTO e serviço Arena aprovado. Permanece o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: nenhum.
+
+
+## 2026-10-01 — Correção do menu lateral e árvore de conhecimento
+
+- O drawer passou a aplicar azul-noturno também à superfície interna do Quasar, eliminando o fundo branco persistente; itens, ícones e item ativo mantêm contraste adequado.
+- A árvore de conhecimento da Taxonomia agora tem superfície escura, títulos claros, texto de nó legível, seleção azul, hover e badges de contagem contrastantes.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados. Permanece apenas o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: nenhum para esta correção pontual.
+
+
+## 2026-10-01 — Contraste integral das telas no padrão Arena
+
+- Concluída a revisão transversal de contraste: títulos, texto auxiliar, caixas de conteúdo, diálogos, campos, selects, menus, tabs, paginação, tabelas, listas, árvores e conteúdo estruturado usam superfícies azul-profundo e níveis de texto legíveis.
+- Estilos scoped legados não voltam a aplicar caixas ou texto claros: a fundação global possui prioridade suficiente e preserva os blocos de conquista como exceção azul-profundo contrastante.
+- Adicionado `apps/api/.dockerignore` para excluir avatares privados do contexto Docker, permitindo a construção da suíte visual isolada sem ampliar permissões dos dados pessoais.
+- Validação: `docker compose exec -T frontend npm run build` e `./scripts/test-visual-e2e.sh` concluídos após limpeza dos recursos temporários E2E; `git diff --check` aprovado. Mantém-se apenas o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: usar esta escala de contraste como referência obrigatória para novos componentes e páginas.
+
+
+## 2026-10-01 — Dados estruturados no tema Arena (em andamento)
+
+- Tabelas, cabeçalhos, linhas, seleção, paginação, listas, árvores e editor agora têm superfícies e contraste próprios no tema escuro.
+- Próximo passo: validar build e procurar resquícios de fundos claros em regras locais.
+
+
+## 2026-10-01 — Controles escuros da Arena (em andamento)
+
+- Campos, selects, menus, tabs e paginação receberam fundo azul-profundo, texto de alto contraste, foco azul-claro e estado ativo distinguível.
+- Próximo passo: aplicar a mesma hierarquia às tabelas, listas estruturadas e cabeçalhos.
+
+
+## 2026-10-01 — Revisão de contraste da identidade Arena (em andamento)
+
+- Identificado que estilos scoped das telas ainda preservam tons e superfícies do tema claro, sobrepondo parcialmente a fundação da Arena.
+- Iniciada uma camada compartilhada de contraste para conteúdo, títulos, texto auxiliar, cards, listas, chips, banners e estados de carregamento.
+- Próximo passo: concluir campos, tabs, tabelas, paginação e validar a composição em todas as jornadas.
+
+
+## 2026-10-01 — Identidade visual unificada pela Arena
+
+- A identidade da Arena passou a ser a fundação de toda a SPA: canvas azul-noturno, superfícies azul-profundo, bordas discretas, ação azul-elétrica e dourado reservado para conquista.
+- Tokens Quasar, estilos globais e o shell foram alinhados; cabeçalho e drawer não alternam mais para o padrão claro fora da Arena. Campos, botões, menus, banners e foco de teclado receberam os estados coerentes e acessíveis.
+- `DESIGN_SYSTEM.md` foi reescrito como contrato da identidade Arena, preservando Quasar, responsividade e a arquitetura DDD do frontend.
+- Validação: `docker compose exec -T frontend npm run build` aprovado. Permanece o aviso conhecido de chunk JavaScript acima de 500 kB, sem falha de tipos ou empacotamento.
+- Próximo passo: usar a identidade Arena como referência obrigatória em refinamentos visuais pontuais e validar visualmente as jornadas críticas em desktop e mobile quando o ambiente E2E estiver disponível.
+
+
 ## 2026-09-29 — Correção de GD e testes de Performance
 
 - A imagem da API foi reconstruída; a extensão GD, já declarada no Dockerfile, agora está carregada no contêiner e os testes de avatar voltaram a executar.

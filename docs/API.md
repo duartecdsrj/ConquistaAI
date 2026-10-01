@@ -330,3 +330,10 @@ A explicação retorna `id`, `questionId`, `attemptId` opcional, `status` (`PEND
 ### Histórico de importação PDF
 
 Cada item de `GET /admin/question-pdf-imports` e `GET /admin/question-pdf-imports/{id}` inclui `createdAt`, `startedAt` e `finishedAt`. `startedAt` informa o início efetivo da execução; `finishedAt` é preenchido em conclusão, falha ou cancelamento. O histórico administrativo apresenta os três horários e mantém `finishedAt` como pendente enquanto o job estiver ativo.
+
+
+## Assuntos da Arena
+
+GET /arena/subjects retorna itens paginados com id, name e parentId anulável. O vínculo de pai permite ao cliente apresentar a taxonomia como árvore; o envio de prontidão continua recebendo somente IDs em taxonomy_subject_ids.
+
+<!-- fim do contrato -->

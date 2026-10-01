@@ -1,111 +1,73 @@
 # Design System — ConquistaAI
 
-## Direção: caderno editorial de preparação
+## Direção: Arena de conquista
 
-A identidade do ConquistaAI não deve parecer um painel corporativo. Ela combina a precisão de uma ferramenta de estudo com a materialidade de um caderno bem editado: páginas claras, tinta azul-marinho, blocos de conteúdo com propósito e sinais de progresso que convidam a continuar.
+A identidade do ConquistaAI é a da Arena: um ambiente de estudo concentrado, azul-noturno e orientado à conquista. A interface privilegia informação útil, ritmo de progresso e contraste preciso — sem simular um painel corporativo claro.
 
-A aplicação preserva o comportamento e os componentes Quasar existentes. A mudança é de hierarquia e composição: cartões não são a unidade padrão da página; são usados apenas quando criam foco, contenção ou uma decisão clara.
+A Arena não é uma exceção visual. Ela define a linguagem de todas as jornadas, da entrada ao estudo, revisão, catálogo e administração.
 
-## Princípios
-
-- **Uma página, uma intenção.** Cada tela começa por contexto, título e uma frase de orientação. A ação principal aparece perto dessa narrativa, não perdida em uma barra de controles.
-- **Camadas em vez de caixas.** Fundo, faixa de contexto, superfície de leitura e notas laterais são camadas distintas. Não cercar cada fragmento de informação com uma borda.
-- **Aprender tem ritmo.** Métricas ficam em faixas, listas se comportam como uma biblioteca e a questão é tratada como papel de leitura, não como linha de tabela.
-- **Cor com semântica, não decoração.** Azul conduz a ação; violeta indica conexão/conhecimento; menta comunica avanço; âmbar chama atenção. Cores de apoio não substituem texto, ícone ou estado.
-- **Mobile é outra composição.** Não é o desktop comprimido: a narrativa vem antes, ações são alcançáveis, tabs rolam horizontalmente e a densidade diminui.
-
-## Fundamentos visuais
+## Fundamentos
 
 | Papel | Token | Uso |
 | --- | --- | --- |
-| Tinta | #132750 | títulos, navegação e texto de maior contraste |
-| Azul de ação | #1769F6 | CTA, foco, seleção e dados principais |
-| Violeta de conhecimento | #7A62EC | conexões, trilhas, contexto de taxonomia e acentos editoriais |
-| Menta de progresso | #44C59A | sucesso, evolução e conclusão |
-| Âmbar de atenção | #FFBD45 | alerta e estado que pede leitura |
-| Coral de erro | #FF766B | erro destrutivo, sempre com mensagem |
-| Papel | #F8FBFF | superfícies de leitura e painéis principais |
-| Canvas | #EDF4FF | página, com gradientes atmosféricos discretos |
-| Linha | #DCE7F6 | divisores e contornos necessários |
-| Texto auxiliar | #66799B | metadados, instruções e descrições |
+| Canvas | `#071221` | fundo geral e áreas imersivas |
+| Superfície | `#0C1A2E` | cards, painéis e áreas de leitura |
+| Superfície elevada | `#0E2038` | menus e diálogos |
+| Linha | `#1D3453` | limites e divisores discretos |
+| Texto | `#E8F2FF` | títulos e conteúdo prioritário |
+| Texto auxiliar | `#8CA2C3` | metadados e orientação |
+| Azul elétrico | `#1482F6` | ação principal, seleção e foco |
+| Azul claro | `#78C4FF` | informação ativa e feedback |
+| Menta | `#49D89A` | sucesso e progresso concluído |
+| Dourado | `#FFD55D` | conquista, pontuação e marco positivo |
+| Coral | `#FF766B` | erro, bloqueio e ação destrutiva |
 
-Tipografia: **Inter**, fallback de sistema. O título da página é 32–36 px / 750 no desktop e 28–30 px / 750 no mobile, com tracking fechado. O eyebrow é 10–11 px, em caixa alta e espaçamento amplo. Corpo e controles ficam entre 13–15 px; metadados, entre 11–12 px. Não usar mais de três níveis de peso em uma área de leitura.
+Tipografia: **Inter**, com fallback de sistema. Títulos são compactos, em alto contraste e com tracking negativo leve. Eyebrows e labels de contexto usam caixa alta, azul-claro e espaçamento amplo.
 
-Os raios são expressivos, mas têm função: 10–13 px em controles, 18–22 px em superfícies de tarefa e 24–28 px em espaços de foco. Sombras são azuladas e só indicam elevação real; o divisor é preferível quando a relação é sequencial.
+## Princípios
 
-## Estrutura de página
+- **Uma atmosfera, todos os módulos.** Canvas, shell e superfícies seguem a paleta Arena em toda navegação autenticada.
+- **Concentração antes de decoração.** Use planos escuros, bordas sutis e espaço para destacar tarefas; sombras só expressam elevação real.
+- **Conquista tem significado.** Dourado é exclusivo de placar, conquista e progresso relevante; azul é a ação.
+- **Estado é explícito.** Sucesso, alerta e erro combinam cor, ícone e texto. Nunca dependem só de cor.
+- **Mobile preserva o ritmo.** A composição reduz densidade e mantém ações alcançáveis, sem comprimir o desktop.
 
-### Shell
+## Shell e superfícies
 
-- O drawer é uma estante de estudo: fundo claro com profundidade sutil, marca bem definida e item ativo como faixa azul–violeta, não apenas texto colorido.
-- O cabeçalho é translúcido e leve. Não deve competir com o título da página.
-- O canvas possui gradientes amplos e quase imperceptíveis; não adicionar ilustrações decorativas repetidas.
+- Drawer e cabeçalho usam azul-noturno. A navegação ativa aparece em faixa azul-profundo com indicador azul-claro.
+- Cards, listas e oficinas usam superfície azul-profundo, borda `#1D3453` e sem sombras decorativas.
+- Diálogos e menus usam superfície elevada para se separar da página.
+- O canvas pode receber apenas gradiente radial azul discreto; não usar padrões, ilustrações ou brilho repetitivo.
 
-### Cabeçalho editorial
-
-- Use eyebrow, título, descrição curta e, quando houver, uma única ação dominante.
-- O título recebe sublinhado azul–violeta discreto; esta marca deve aparecer uma vez por página.
-- Em páginas de ação contínua (Caderno, Assistente), o cabeçalho pode ser uma faixa de contexto em vez de um bloco separado.
-
-### Superfícies
-
-| Padrão | Quando usar | Característica |
-| --- | --- | --- |
-| Faixa de panorama | início, desempenho, meta | dados ou narrativa em linha; não quatro cartões soltos |
-| Papel de leitura | questão, conversa, explicação | fundo claro, largura confortável e pouco ruído visual |
-| Oficina | importação, taxonomia, catálogo | ferramentas agrupadas com contexto e área de trabalho clara |
-| Biblioteca | cadernos, recursos, listas | itens com respiro, progressão e ações contextuais |
-| Nota | evidência, recomendação, alerta | faixa de cor suave com borda lateral, jamais CTA concorrente |
-
-## Padrões por jornada
-
-- **Início:** abre com uma faixa de propósito. Métricas são uma régua de progresso e os cadernos recentes aparecem como peças de biblioteca com variação sutil de cor.
-- **Cadernos e plano:** a meta semanal é uma faixa imersiva azul; prioridades e planos são capítulos subsequentes. A grade de cadernos não deve repetir cartões neutros idênticos.
-- **Execução do caderno:** a questão é o centro. Navegador e anotações funcionam como instrumentos laterais; controles de resposta devem ter contraste e área de toque generosa.
-- **Desempenho:** indicadores ocupam uma única faixa divisível. O gráfico e os assuntos privilegiam comparação e leitura, não decoração.
-- **Banco e revisão:** filtros ficam em uma faixa. Cada questão aberta torna-se papel editorial: cabeçalho com proveniência, enunciado legível, alternativas separadas e ativos preservados.
-- **Taxonomia:** árvore é uma biblioteca de conhecimento; área de trabalho é uma oficina. A relação pai–filho precisa ser visível sem poluir com linhas excessivas.
-- **Catálogo:** tabs definem o nível de contexto e a tabela/lista mostra apenas o recorte atual. Marcas têm bloco próprio, sem reduzir legibilidade do nome.
-- **Importação:** fila e histórico representam um fluxo. O envio é a primeira etapa visual e o histórico fica recolhido até ser necessário.
-- **Assistente:** conversa é espaço de leitura; evidências devem parecer notas de rodapé rastreáveis.
-- **Login:** é uma abertura de estudo, com composição assimétrica e atmosfera azul/violeta; o formulário continua simples e direto.
-
-## Componentes
+## Componentes Quasar
 
 | Componente | Regra |
 | --- | --- |
-| CTA primário | QBtn unelevated, azul. Um por agrupamento visual. Rótulo usa verbo claro. |
-| Ação secundária | QBtn flat ou outline; não competir cromaticamente com CTA. |
-| Campo | QInput/QSelect outlined, label explícito, fundo quase branco e foco azul. |
-| Tabs | densas, em faixa; item ativo tem indicador e superfície suave. Em mobile, usar rolagem horizontal. |
-| Métrica | label curta, número ou valor com contraste, descrição contextual. Agrupar em régua ou faixa antes de criar cards. |
-| Lista | divisores leves ou linhas pontilhadas; estados de hover/seleção devem ser visíveis. |
-| Estado vazio | mensagem específica, orientação e CTA quando existir próxima ação segura. Não criar ilustração genérica sem utilidade. |
-| Banner/nota | ícone + mensagem; sucesso, atenção e erro nunca dependem somente de cor. |
+| CTA primário | `QBtn unelevated` azul-elétrico, texto branco e verbo claro. Um por agrupamento. |
+| Ação secundária | `QBtn outline` com borda azul-petróleo e texto azul-claro. |
+| Campo | `QInput`/`QSelect` outlined sobre fundo azul-profundo, label legível e foco azul-claro. |
+| Tabs | faixa escura, item ativo azul-claro e indicador visível. Em mobile, rolagem horizontal. |
+| Lista | superfície contínua com divisores sutis; hover azul-profundo mais claro. |
+| Métrica | valor em texto claro; azul para dado ativo, menta para evolução e dourado para conquista. |
+| Banner | superfície tonal compatível, ícone e mensagem; erro coral e sucesso menta. |
+| Foco | todo controle de teclado recebe anel azul-claro de 2 px. |
 
-## Desktop e mobile
+## Layout e responsividade
 
-No desktop, o conteúdo tem largura definida pelo tipo de tarefa, com respiro de 32–42 px. Use assimetria quando ela destacar foco: leitura maior, ferramentas menores. Grids de quatro colunas são reservados a uma única faixa de indicadores.
+Desktop usa conteúdo proporcional à tarefa, com respiro de 32–42 px e assimetria apenas para priorizar leitura. Em até 899 px, a navegação vira drawer sobreposto. Em até 599 px, páginas usam 16 px laterais, listas e leitura ficam em uma coluna e controles têm alvo mínimo de 40 px.
 
-No mobile (até 600 px), usar 16 px laterais, título menor e blocos de 20–22 px de raio. Faixas podem avançar 4 px além da grade para criar presença. Métricas podem formar matriz 2 × 2; listas e superfícies de leitura ficam em uma coluna. Nenhum controle deve ter alvo inferior a 40 px.
+Questões e conversas são superfícies de foco: texto claro, largura confortável e controles sem ruído. Telas administrativas mantêm oficina e biblioteca, porém com as mesmas superfícies escuras da Arena.
 
 ## Acessibilidade
 
-- Estado não é apenas cor: use texto, ícone e contraste.
-- Todo ícone acionável tem aria-label; campo possui label visível ou acessível.
-- Foco de teclado permanece visível em botões, tabs, árvores, itens de lista e menus.
-- A ordem de leitura no DOM acompanha a prioridade visual, especialmente no mobile.
-- Não colocar texto auxiliar com contraste insuficiente sobre gradiente ou cor de apoio.
+- Texto principal e auxiliar devem conservar contraste adequado sobre suas superfícies.
+- Ícones acionáveis têm `aria-label`; campos têm label visível ou acessível.
+- A ordem do DOM acompanha a prioridade visual.
+- Estados de carregamento, vazio, sucesso, atenção e erro informam significado por texto e/ou ícone além da cor.
 
-## Implementação
+## Implementação e verificação
 
-- Quasar é obrigatório. Os tokens vivem em apps/web/src/styles/quasar.variables.sass; a linguagem transversal vive em apps/web/src/styles/app.sass.
-- Estilos locais só refinam a composição da página. Eles não alteram dados, regras de negócio ou o fluxo Page → composable → use case → repository → Axios → API.
-- Reutilizar os padrões deste documento antes de criar novo cartão, sombra ou tonalidade.
-- Não usar conteúdo demonstrativo: loading, erro, vazio, filtros e paginação refletem o contrato real da API.
-
-## Verificação visual
-
-- Build verifica tipos e empacotamento; Playwright verifica a composição em desktop (1440 × 900) e mobile (390 × 844).
-- Execute ./scripts/test-visual-e2e.sh para levantar o ambiente isolado concursos-e2e, aplicar migrations, carregar a fixture determinística e registrar os cenários sem IDs ou contas manuais.
-- Mudanças em shell, cabeçalho, caderno, listas, filtros ou formulários exigem screenshots novas e comparação consciente. Baseline é uma referência de regressão, não substituto de revisão humana.
+- Tokens Quasar vivem em `apps/web/src/styles/quasar.variables.sass`.
+- A fundação transversal vive em `apps/web/src/styles/app.sass`; o shell em `apps/web/src/Interface/Http/Layout/AppShell.vue`.
+- Páginas refinam apenas sua composição e preservam o fluxo Page/Component → Composable → Use Case → Repository → Axios → API.
+- Verifique desktop em 1440 × 900 e mobile em 390 × 844. Execute `npm run build` no frontend e, quando disponível, `./scripts/test-visual-e2e.sh`.
