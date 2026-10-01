@@ -28,7 +28,7 @@ final class DoctrineQuestionPdfImportCandidateCheckpointRepository implements Qu
     public function claimNext(): ?QuestionPdfImportCandidateCheckpoint
     {
         try { return $this->em->wrapInTransaction(function (): ?QuestionPdfImportCandidateCheckpoint {
-            $now = new \DateTimeImmutable("now"); $stale = $now->modify("-10 minutes");
+            $now = new \DateTimeImmutable("now"); $stale = $now->modify("-30 minutes");
             $record = $this->nextPending($now) ?? $this->nextExpiredLease($stale);
             if (!$record instanceof QuestionPdfImportCandidateCheckpointRecord) return null;
             $record->status = "PROCESSING"; $record->leaseStartedAt = $now; $record->nextAttemptAt = null; $record->errorMessage = null; $record->updatedAt = $now;

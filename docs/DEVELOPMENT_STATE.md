@@ -205,6 +205,12 @@
 - As dependências PHP não existem no checkout local; validações futuras devem continuar sendo executadas no contêiner API.
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-30 — Validação da importação PDF precisa e rápida
+
+- A suíte focal de análise em lote, schema e entrada Codex foi aprovada (9 testes, 24 asserções); a regressão de segmentação permanece coberta no conjunto da mudança.
+- `docker compose config --quiet` e o build da SPA foram aprovados. O build preserva somente o aviso conhecido de chunk acima de 500 kB.
+- A mudança `accurate-fast-pdf-import` está validada; a próxima etapa é otimizar a execução Codex sem reduzir a análise editorial por modelo.
+
 ## 2026-09-30 — Retomada resiliente da fila de importação PDF
 
 - Corrigida a reivindicação de checkpoints: pendentes elegíveis e leases expirados agora são consultados separadamente, evitando o `OR` que causava `filesort` sobre payloads JSON grandes. A migration `042_question_pdf_import_checkpoint_claim_order.sql` adiciona o índice `(status, created_at)` para a ordenação do próximo trabalho.
