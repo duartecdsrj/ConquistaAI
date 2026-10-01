@@ -205,6 +205,44 @@
 - As dependências PHP não existem no checkout local; validações futuras devem continuar sendo executadas no contêiner API.
 # Estado de desenvolvimento — ConquistaAI
 
+## 2026-09-30 — Retomada resiliente da fila de importação PDF
+
+- Corrigida a reivindicação de checkpoints: pendentes elegíveis e leases expirados agora são consultados separadamente, evitando o `OR` que causava `filesort` sobre payloads JSON grandes. A migration `042_question_pdf_import_checkpoint_claim_order.sql` adiciona o índice `(status, created_at)` para a ordenação do próximo trabalho.
+- Falhas DBAL na reivindicação passam a encerrar o ciclo de forma recuperável; o loop do worker inicia um novo processo com `EntityManager` limpo, em vez de propagar o estado fechado.
+- A migration foi aplicada e o `question-pdf-worker` foi reiniciado. O job `7314960c-c5f9-4b00-87d5-5bb93bf107b6` retomou 120 checkpoints em processamento com oito executores Codex ativos; 1.100 permanecem pendentes.
+- Validação: lint PHP, `docker compose config --quiet` e `EXPLAIN` da consulta pendente usando `idx_question_pdf_candidate_claim_order` sem `filesort`. O teste integrado legado de claim não é isolado da fila real e falhou ao reivindicar checkpoint de produção em vez da fixture; não foi usado como evidência da correção.
+- Próximo passo: acompanhar a conclusão dos primeiros lotes e revisar quaisquer falhas específicas do provider.
+
+## 2026-09-30 — Remoção do lote importado de Redes
+
+- Removidas, por solicitação do usuário, as 580 questões vinculadas ao job `4d7ca5e7-0f76-4013-ac5e-e170eb579d3b`, suas 2.857 alternativas, 33 ativos visuais e vínculos de taxonomia.
+- Não havia tentativas, cadernos ou interações vinculadas ao lote. O PDF-fonte e o histórico do job foram preservados para auditoria; a remoção do conteúdo é definitiva.
+- Validação: contagem pós-transação confirmou zero questões remanescentes para o job, zero alternativas e zero ativos no banco.
+- Próximo passo: nenhuma ação pendente para este lote removido.
+
+## 2026-09-30 — Recuperação comprovada de banca e gabarito do lote de Redes
+
+- Cruzados os 580 enunciados importados com o PDF-fonte, considerando repetições entre listas e questões comentadas somente quando a evidência convergia.
+- Atualizadas 465 bancas e 368 gabaritos com fonte `OFFICIAL`; nenhuma resposta foi inferida. As páginas encontradas foram preservadas em `source_pdf_pages` como proveniência.
+- Permanecem sem banca 115 questões e sem gabarito 212 questões para as quais o PDF não apresentou evidência única e explícita pelo cruzamento determinístico.
+- Validação: lint do recuperador, prévia sem escrita (554 localizadas) e conferência SQL dos metadados e gabaritos persistidos.
+- Próximo passo: revisar editorialmente os itens restantes com evidência ambígua ou texto não localizável.
+
+## 2026-09-30 — Reclassificação do lote de Redes importado
+
+- Corrigida a classificação provisória das 580 questões do job `4d7ca5e7-0f76-4013-ac5e-e170eb579d3b`, que antes vinculava todo o lote a Fundamentos de Redes.
+- Regras determinísticas por conteúdo redistribuíram 423 questões entre 33 folhas canônicas, incluindo TCP/IP, IPv6, switching/VLAN, Ethernet, DNS, roteamento, redes sem fio, armazenamento, segurança e protocolos específicos. Permanecem 157 em Fundamentos de Redes por não haver evidência textual suficiente para uma folha mais específica.
+- Validação: prévia sem escrita, lint do utilitário, e conferência pós-gravação de 580 vínculos distintos para as 580 questões do job.
+- Próximo passo: revisão editorial opcional dos 157 itens genéricos para classificar casos que exijam contexto semântico além de palavras-chave.
+
+## 2026-09-30 — Importação JSON de Redes com referências visuais do PDF
+
+- Importadas 580 questões objetivas válidas do lote de Redes de Computadores como itens compartilhados do banco, sem criar concurso, cargo ou edital. `TCE-RJ` e `Auditor de Controle Externo - Tecnologia da Informação` permanecem somente nos metadados de origem de cada questão.
+- O job `4d7ca5e7-0f76-4013-ac5e-e170eb579d3b` preserva o PDF de referência e o histórico da importação: 597 candidatos estruturais, 580 criados, 1 duplicado, 16 recusados na escrita e 1.439 itens sem estrutura objetiva excluídos previamente.
+- Associados 33 ativos visuais às questões a partir de imagens incorporadas e de renderizações de páginas vetoriais indicadas no JSON; o fallback de página foi necessário porque o PDF não incorpora todas as figuras como bitmap.
+- Validação: prévia estrutural, lint dos dois utilitários de importação, consulta de totais do job, questões e ativos persistidos.
+- Próximo passo: revisão editorial das 16 rejeições e das questões que usam página inteira como referência visual, para eventual recorte fino.
+
 ## 2026-09-29 — Executor Codex da importação restaurado
 
 - O `question-pdf-worker` foi reconstruído a partir da imagem que já instala `docker-cli`; a instância anterior estava defasada e não possuía o binário necessário para executar o runner isolado pelo socket Docker.
@@ -3033,3 +3071,9 @@ docker compose exec -T frontend npm run build
 - A primeira chamada com `--image` falhou antes da análise porque a opção variádica do Codex CLI consumiu o prompt final como parte da lista de imagens (`No prompt provided via stdin`).
 - O comando agora insere o separador POSIX `--` entre os anexos e o prompt, preservando os arquivos de imagem e a instrução estruturada. Os checkpoints afetados permaneceram em backoff controlado, sem gravar questão parcial.
 - Próximo passo: recarregar o worker, reenfileirar exclusivamente os candidatos visuais sem criação e confirmar no processo ativo a presença de `--image` seguida do separador.
+## 2026-09-30 — Redesenho visual da Arena
+
+- A tela `ArenaPage.vue` foi reconstruída exclusivamente no frontend conforme a referência: superfícies azul-marinho compactas, cartão inicial centralizado com emblema e métricas, criação em etapas, descoberta de salas, entrada por código, espera com prontidão, questão cronometrada, resultado de rodada e ranking final. Resultado e ranking usam apenas o placar real devolvido pela API. O shell recebe o tema escuro somente enquanto a Arena estiver ativa.
+- A implementação preserva `useArena`, `ArenaUseCases`, o repositório Axios e o Socket.IO existentes; não houve alteração de API, banco, backend ou workers de importação.
+- Validação: `docker compose exec -T frontend npm run build` aprovado. O build mantém apenas o aviso não bloqueante já conhecido de chunk JavaScript acima de 500 kB.
+- Próximo passo: validar visualmente com uma sessão autenticada e uma sala real em desktop e mobile.

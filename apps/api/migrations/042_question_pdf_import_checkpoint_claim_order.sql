@@ -1,0 +1,1 @@
+CREATE INDEX idx_question_pdf_candidate_claim_order ON question_pdf_import_candidate_checkpoints (status, created_at);

@@ -29,11 +29,11 @@ final class DoctrineQuestionPdfImportCandidateCheckpointRepository implements Qu
     {
         try { return $this->em->wrapInTransaction(function (): ?QuestionPdfImportCandidateCheckpoint {
             $now = new \DateTimeImmutable("now"); $stale = $now->modify("-10 minutes");
-            $record = $this->em->createQueryBuilder()->select("checkpoint")->from(QuestionPdfImportCandidateCheckpointRecord::class, "checkpoint")->where("(checkpoint.status = :pending AND (checkpoint.nextAttemptAt IS NULL OR checkpoint.nextAttemptAt <= :now)) OR (checkpoint.status = :processing AND checkpoint.leaseStartedAt <= :stale)")->setParameter("pending", "PENDING")->setParameter("processing", "PROCESSING")->setParameter("now", $now)->setParameter("stale", $stale)->orderBy("checkpoint.createdAt", "ASC")->setMaxResults(1)->getQuery()->setLockMode(LockMode::PESSIMISTIC_WRITE)->getOneOrNullResult();
+            $record = $this->nextPending($now) ?? $this->nextExpiredLease($stale);
             if (!$record instanceof QuestionPdfImportCandidateCheckpointRecord) return null;
             $record->status = "PROCESSING"; $record->leaseStartedAt = $now; $record->nextAttemptAt = null; $record->errorMessage = null; $record->updatedAt = $now;
             $this->em->flush(); return $this->map($record);
-        }); } catch (\Doctrine\DBAL\Exception\DeadlockException) { return null; }
+        }); } catch (\Doctrine\DBAL\Exception) { return null; }
     }
     /**  list<QuestionPdfImportCandidateCheckpoint> */
     public function claimCompatible(string $jobId, int $afterPosition, int $limit, int $maxPayloadBytes): array
@@ -73,6 +73,16 @@ final class DoctrineQuestionPdfImportCandidateCheckpointRepository implements Qu
             if ($scheduled instanceof QuestionPdfImportCandidateCheckpointRecord && $scheduled->jobId === $jobId && $scheduled->candidateFingerprint === $fingerprint) return $scheduled;
         }
         $record = $this->em->createQueryBuilder()->select("checkpoint")->from(QuestionPdfImportCandidateCheckpointRecord::class, "checkpoint")->where("checkpoint.jobId = :job")->andWhere("checkpoint.candidateFingerprint = :fingerprint")->setParameter("job", $jobId)->setParameter("fingerprint", $fingerprint)->getQuery()->getOneOrNullResult();
+        return $record instanceof QuestionPdfImportCandidateCheckpointRecord ? $record : null;
+    }
+    private function nextPending(\DateTimeImmutable $now): ?QuestionPdfImportCandidateCheckpointRecord
+    {
+        $record = $this->em->createQueryBuilder()->select("checkpoint")->from(QuestionPdfImportCandidateCheckpointRecord::class, "checkpoint")->where("checkpoint.status = :pending")->andWhere("checkpoint.nextAttemptAt IS NULL OR checkpoint.nextAttemptAt <= :now")->setParameter("pending", "PENDING")->setParameter("now", $now)->orderBy("checkpoint.createdAt", "ASC")->setMaxResults(1)->getQuery()->setLockMode(LockMode::PESSIMISTIC_WRITE)->getOneOrNullResult();
+        return $record instanceof QuestionPdfImportCandidateCheckpointRecord ? $record : null;
+    }
+    private function nextExpiredLease(\DateTimeImmutable $stale): ?QuestionPdfImportCandidateCheckpointRecord
+    {
+        $record = $this->em->createQueryBuilder()->select("checkpoint")->from(QuestionPdfImportCandidateCheckpointRecord::class, "checkpoint")->where("checkpoint.status = :processing")->andWhere("checkpoint.leaseStartedAt <= :stale")->setParameter("processing", "PROCESSING")->setParameter("stale", $stale)->orderBy("checkpoint.createdAt", "ASC")->setMaxResults(1)->getQuery()->setLockMode(LockMode::PESSIMISTIC_WRITE)->getOneOrNullResult();
         return $record instanceof QuestionPdfImportCandidateCheckpointRecord ? $record : null;
     }
     private function map(QuestionPdfImportCandidateCheckpointRecord $record): QuestionPdfImportCandidateCheckpoint { return new QuestionPdfImportCandidateCheckpoint($record->id, $record->jobId, $record->candidateFingerprint, $record->positionIndex, $record->candidatePayload, $record->status, $record->retryCount, $record->nextAttemptAt, $record->leaseStartedAt, $record->errorMessage, $record->createdAt, $record->updatedAt); }
