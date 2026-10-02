@@ -214,6 +214,10 @@ A tela pública de Questões reutiliza `QuestionContent` e `QuestionAssetImage`,
 
 O cabeçalho não exibe busca global nem notificações enquanto não houver casos de uso e contratos de API correspondentes. Isso evita botões sem efeito; navegação, perfil e encerramento de sessão permanecem funcionais.
 
+### Navegação na revisão
+
+A sessão de revisão exibe um único card e ações Anterior/Próximo. Ações de navegação passam por `useReview -> ReviewUseCases -> ReviewRepository`; a página não calcula fila localmente. Próximo pode exibir outro card sem registrar classificação e Anterior só visita cards já servidos pela sessão.
+
 
 O seletor administrativo de assuntos por cargo percorre todas as páginas da taxonomia antes de montar suas opções, preservando a árvore e sem ocultar itens após o limite de página da API.
 

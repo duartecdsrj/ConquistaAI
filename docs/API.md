@@ -12,10 +12,11 @@ Todas as rotas deste grupo exigem usuário autenticado e sempre restringem dados
 | `GET /review/sessions/quick` | monta revisão rápida com os cards de maior prioridade; aceita `limit` de 1 a 100 (padrão 10) |
 | `GET /review/sessions/advance` | inicia revisão antecipada somente sem cards vencidos; aceita `limit` de 1 a 100 (padrão 10) |
 | `POST /review/sessions/{sessionId}/cards/{cardId}/reviews` | registra uma classificação imutável (`AGAIN`, `HARD`, `GOOD` ou `EASY`) do card pertencente à sessão do usuário |
+| `POST /review/sessions/{sessionId}/navigation` | move para `PREVIOUS` ou `NEXT` entre cards já servidos; `NEXT` pode servir o próximo card elegível sem classificação |
 | `GET /review/mastery-map` | retorna mapa paginado e hierárquico de domínio por assunto canônico; aceita `page` e `per_page` |
 | `GET /study/notebooks/{id}/analysis` | retorna somente o estado e resultado persistido da análise assíncrona do caderno do usuário |
 
-As rotas de sessão retornam `data` com `id`, `kind` (`DAILY`, `QUICK` ou `ADVANCE`), `status`, `requestedLimit`, `cards`, `overdueCards` e `canAdvance`. `cards` contém no máximo o card atual; o próximo é selecionado apenas depois da classificação confirmada. `overdueCards` é a quantidade atual de cards vencidos. `canAdvance` só é verdadeiro sem vencidos e com card futuro elegível. A rota de avanço responde `409 STATE_CONFLICT` quando houver card vencido. Cada card expõe `id`, `front`, `back` e `conceptId`; a interface mantém `back` oculto até ação explícita.
+As rotas de sessão retornam `data` com `id`, `kind` (`DAILY`, `QUICK` ou `ADVANCE`), `status`, `requestedLimit`, `cards`, `overdueCards`, `canAdvance`, `canGoPrevious` e `canGoNext`. `cards` contém no máximo o card atual. `POST /review/sessions/{sessionId}/navigation` recebe `{ "direction": "NEXT" }` ou `{ "direction": "PREVIOUS" }`; não cria revisão e sempre restringe a navegação à sessão do usuário. `NEXT` reutiliza um card já servido ou seleciona o próximo elegível, sem classificar o card exibido. `overdueCards` é a quantidade atual de cards vencidos. `canAdvance` só é verdadeiro sem vencidos e com card futuro elegível. A rota de avanço responde `409 STATE_CONFLICT` quando houver card vencido. Cada card expõe `id`, `front`, `back` e `conceptId`; a interface mantém `back` oculto até ação explícita.
 
 `POST /review/sessions/{sessionId}/cards/{cardId}/reviews` recebe:
 

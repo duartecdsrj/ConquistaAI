@@ -10,6 +10,7 @@ use App\Application\Review\Mapper\ReviewResponseMapper;
 use App\Application\Review\Service\BuildReviewSessionService;
 use App\Application\Review\Service\GetMasteryMapService;
 use App\Application\Review\Service\GetNotebookAnalysisService;
+use App\Application\Review\Service\NavigateReviewSessionService;
 use App\Application\Review\Service\RateFlashcardService;
 use App\Domain\Review\Enum\ReviewSessionKind;
 use App\Domain\Review\Service\InitialReviewPriorityCalculator;
@@ -52,13 +53,14 @@ final class ReviewRouteRegistrar
         $read = new ReviewReadController($this->auth, new GetMasteryMapService($mastery, new DoctrineTaxonomySubjectRepository($em)), new GetNotebookAnalysisService($analysisExecutions, $analysisActions, new NotebookAnalysisResponseMapper()), $this->responses);
         $reviews = new DoctrineFlashcardReviewRepository($em);
         $builder = new BuildReviewSessionService($sessions, $progress, $mastery, $cards, $reviews, new InitialReviewPriorityCalculator());
-        $session = new ReviewSessionController($this->auth, $builder, $progress, new ReviewResponseMapper(), $this->responses);
+        $session = new ReviewSessionController($this->auth, $builder, new NavigateReviewSessionService($builder, new DoctrineTransactionManager($em)), $progress, new ReviewResponseMapper(), $reviews, $this->responses);
         $rating = new ReviewRatingController($this->auth, new RateFlashcardService($sessions, $progress, $reviews, new InitialSpacedRepetitionStrategy(new ReviewAlgorithmConfiguration()), new DoctrineTransactionManager($em)), $builder, $sessions, $progress, new FlashcardReviewResponseMapper(), new ReviewResponseMapper(), $this->responses);
 
         $app->get('/v1/review/mastery-map', static fn (ServerRequestInterface $r, ResponseInterface $p): ResponseInterface => $read->mastery($r, $p, $identity->accessToken($r), max(1, (int) ($r->getQueryParams()['page'] ?? 1)), min(100, max(1, (int) ($r->getQueryParams()['per_page'] ?? 25)))));
         $app->get('/v1/review/sessions/daily', static fn (ServerRequestInterface $r, ResponseInterface $p): ResponseInterface => $session->get($r, $p, $identity->accessToken($r), ReviewSessionKind::DAILY, min(100, max(1, (int) ($r->getQueryParams()['limit'] ?? 20)))));
         $app->get('/v1/review/sessions/quick', static fn (ServerRequestInterface $r, ResponseInterface $p): ResponseInterface => $session->get($r, $p, $identity->accessToken($r), ReviewSessionKind::QUICK, min(100, max(1, (int) ($r->getQueryParams()['limit'] ?? 10)))));
         $app->get('/v1/review/sessions/advance', static fn (ServerRequestInterface $r, ResponseInterface $p): ResponseInterface => $session->get($r, $p, $identity->accessToken($r), ReviewSessionKind::ADVANCE, min(100, max(1, (int) ($r->getQueryParams()['limit'] ?? 10)))));
+        $app->post('/v1/review/sessions/{sessionId}/navigation', function (ServerRequestInterface $r, ResponseInterface $p, array $a) use ($session, $identity, $requests): ResponseInterface { return $session->navigate($r,$p,$identity->accessToken($r),(string)($a['sessionId']??''),$requests->navigation($r)); });
         $app->post('/v1/review/sessions/{sessionId}/cards/{cardId}/reviews', function (ServerRequestInterface $r, ResponseInterface $p, array $a) use ($rating, $identity, $requests): ResponseInterface {
             try {
                 return $rating->rate($r, $p, $identity->accessToken($r), $requests->rate($r, (string) ($a['sessionId'] ?? ''), (string) ($a['cardId'] ?? '')));

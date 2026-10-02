@@ -3193,3 +3193,36 @@ docker compose exec -T frontend npm run build
 
 - A reprodução em navegador revelou uma regra global de fundo com `!important`, que ainda vencia o primeiro estilo inline. Os quatro botões agora recebem fundo e texto inline também com `!important`: vermelho, laranja, azul e verde.
 - Próximo passo: validar o build tipado da SPA e revisar visualmente os quatro estados na sessão autenticada.
+## 2026-10-02 — Importação de deck JSON para revisão
+
+- Adicionado o comando `apps/api/bin/import-flashcards-json.php`, que valida um deck JSON, cria ou reutiliza o assunto canônico informado, deduplica cards pelo fingerprint e inicializa o progresso individual do usuário para revisão imediata.
+- O comando usa exclusivamente os repositórios Doctrine, o caso de uso de criação/reuso de flashcard e uma transação; não altera histórico de revisões existente.
+- Executada a importação do deck `Inglês CESGRANRIO - Transpetro` para `duartecds@gmail.com`: 59 cards e 59 progressos individuais foram criados, todos disponíveis para revisão imediata. O assunto canônico raiz `Inglês` foi criado porque ainda não existia no catálogo.
+- Validação: JSON com 59 itens e nenhum card vazio; lint PHP do comando aprovado; consulta Doctrine confirmou 59 vínculos de progresso da conta com os cards de Inglês. Uma segunda execução criou 0 cards e 0 progressos, reutilizando os 59 existentes.
+- Próximo passo: nenhum para esta importação.
+
+## 2026-10-02 — Importação de vocabulário CESGRANRIO
+
+- Importado o deck `Vocabulário CESGRANRIO - Inglês` para `duartecds@gmail.com`. Os três marcadores vazios que antecediam o objeto no texto colado foram removidos somente do fluxo de leitura; os 142 cards foram preservados.
+- Os 142 flashcards e seus 142 progressos individuais foram criados no assunto canônico `Inglês`, disponíveis para revisão imediata. Nenhum card do deck anterior foi alterado.
+- Validação: `total_cards` e a lista continham 142 itens, sem frente ou verso vazio; a consulta Doctrine confirmou a quantidade total de vínculos de progresso para o assunto.
+- Próximo passo: nenhum para esta importação.
+
+## 2026-10-02 — Botões de classificação da revisão no mobile
+
+- Reorganizada a classificação da revisão em uma matriz 2×2 no celular, com botões de 74 px de altura e conteúdo interno alinhado horizontalmente. Isso elimina o empilhamento visual do ícone, rótulo e atalho numérico observado na sessão.
+- Os atalhos numéricos permanecem em desktop e são ocultos em telas sensíveis ao toque, onde não representam uma ação disponível. Cores, rótulos, ícones e chamadas ao caso de uso de revisão foram preservados.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados. Mantém-se apenas o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: nenhum para este ajuste pontual.
+
+## 2026-10-02 — Navegação entre cards de revisão
+
+- A sessão agora persiste a posição do card atual e aceita `POST /review/sessions/{id}/navigation` com `NEXT` ou `PREVIOUS`. Avançar não cria revisão: reapresenta um card já servido ou serve o próximo elegível; voltar não altera o histórico.
+- A SPA usa o fluxo DDD de Review para os controles Anterior e Próximo, sem calcular lista localmente. Ao revisitar card já classificado, a interface informa o estado e não apresenta outra classificação.
+- Validação: migration 043 aplicada; lint PHP, PHPUnit focal de Review, build tipado da SPA e `git diff --check` aprovados. Mantém-se somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: nenhum para a mudança `review-card-navigation`.
+## 2026-10-02 — Persistência transacional da navegação de cards
+
+- Corrigida a navegação que avançava apenas uma vez: cada `NEXT` ou `PREVIOUS` agora é executado pelo caso de uso `NavigateReviewSessionService` dentro de uma transação Doctrine. A posição atual e o card servido são gravados antes da resposta HTTP, evitando que a requisição seguinte volte à posição anterior.
+- Validação: lint dos três arquivos PHP modificados, suíte unitária de Review (15 testes, 38 asserções) e `git diff --check` aprovados.
+- Próximo passo: nenhum; recarregar a página de revisão e navegar normalmente.
