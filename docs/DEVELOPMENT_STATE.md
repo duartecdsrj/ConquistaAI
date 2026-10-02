@@ -3189,3 +3189,7 @@ docker compose exec -T frontend npm run build
 - Validação: lint PHP dos arquivos alterados, suíte unitária existente de Review (15 testes, 38 asserções), build tipado da SPA e `git diff --check` aprovados. Mantém-se o aviso não bloqueante de bundle acima de 500 kB.
 - Pendência: adicionar cenários focais para seleção incremental, conflito de avanço, próximo card e idempotência antes de arquivar a mudança OpenSpec.
 - Próximo passo: criar os testes focais da fila e arquivar `continuous-review-queue` após validação completa.
+## 2026-10-02 — Correção das cores de classificação da revisão
+
+- A reprodução em navegador revelou uma regra global de fundo com `!important`, que ainda vencia o primeiro estilo inline. Os quatro botões agora recebem fundo e texto inline também com `!important`: vermelho, laranja, azul e verde.
+- Próximo passo: validar o build tipado da SPA e revisar visualmente os quatro estados na sessão autenticada.
