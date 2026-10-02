@@ -3080,6 +3080,27 @@ docker compose exec -T frontend npm run build
 
 - O delimitador também aceita `Gabarito A-D/E` sem dois-pontos ou a palavra “Letra”, somente no início da linha; a regressão do corpus permaneceu em 66/66.
 
+## 2026-10-02 — Correção da criação de sessão de revisão
+
+- Corrigido o import de `ReviewSessionCardRecord` no repositório Doctrine de sessões. A referência anterior apontava para o namespace do repositório em vez da entidade, causando `500 INTERNAL_ERROR` em `GET /review/sessions/daily` ao gravar os cards da sessão.
+- Corrigida também a persistência da sessão após uma classificação: os vínculos de cards já carregados não são mais recriados sem mudança de composição, evitando colisão de identidade no Doctrine.
+- Validação: reprodução confirmou as exceções Doctrine; após os patches, a sessão diária da conta afetada foi criada com 20 cards e uma classificação `GOOD` foi persistida, com próxima revisão em 2026-10-05. A execução HTTP completa de `POST /v1/review/sessions/{sessionId}/cards/{cardId}/reviews` devolveu `200` com o envelope de sucesso. Lint PHP, suíte focal de Review (15 testes, 38 asserções) e `git diff --check` passaram.
+- Próximo passo: ampliar a cobertura integrada do repositório de sessões quando o fluxo de revisão evoluir.
+
+## 2026-10-02 — Redesenho das telas de cards de revisão
+
+- A sessão de revisão foi redesenhada a partir da referência aprovada: progresso no topo, superfície central azul-profunda para a frente e o verso, ação explícita de revelação e classificações grandes `Não lembrei`, `Difícil`, `Lembrei` e `Fácil`.
+- Desktop usa quatro ações em linha; em telas móveis elas passam a uma coluna com alvos de toque de pelo menos 48 px. A navegação entre cards e os estados vazio, concluído, carregamento e erro foram preservados.
+- Não houve alteração de contrato ou simulação de conteúdo: `ReviewSessionPage -> useReview -> ReviewUseCases -> AxiosReviewRepository` continua sendo a única origem para card, progresso e persistência de classificação.
+- Documentação de frontend atualizada. Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle JavaScript acima de 500 kB.
+- Próximo passo: revisar a renderização autenticada em desktop e mobile quando a fixture visual de Review estiver disponível.
+
+## 2026-10-02 — Ajuste de cor das classificações de revisão
+
+- Refinados os valores para a amostra visual da referência: fundos sólidos `#2B1C2A`, `#2B211C`, `#092C51` e `#09382F`, com bordas menos saturadas. Isso elimina os degradês que deixavam os quatro botões mais claros que a imagem.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle JavaScript acima de 500 kB.
+- Próximo passo: revisar a renderização autenticada em desktop e mobile quando a fixture visual de Review estiver disponível.
+
 ## 2026-09-30 — Validação persistida da importação em lote
 
 - Limpeza autorizada concluída antes do reenfileiramento: 0 questões, jobs, checkpoints e análises; usuários e taxonomia preservados.
@@ -3160,3 +3181,11 @@ docker compose exec -T frontend npm run build
 - A implementação preserva `useArena`, `ArenaUseCases`, o repositório Axios e o Socket.IO existentes; não houve alteração de API, banco, backend ou workers de importação.
 - Validação: `docker compose exec -T frontend npm run build` aprovado. O build mantém apenas o aviso não bloqueante já conhecido de chunk JavaScript acima de 500 kB.
 - Próximo passo: validar visualmente com uma sessão autenticada e uma sala real em desktop e mobile.
+## 2026-10-02 — Fila contínua de revisão (em andamento)
+
+- A revisão deixa de pré-selecionar uma seção congelada: a sessão mantém somente os cards já servidos para auditoria, e a API seleciona um único card atual depois de cada classificação confirmada.
+- `GET /review/sessions/daily` e o retorno de classificação agora expõem `overdueCards` e `canAdvance`; `GET /review/sessions/advance` permite adiantar cards futuros apenas sem pendências vencidas e retorna conflito quando houver uma pendência.
+- A SPA substitui o card pelo estado devolvido pela API, exibe o saldo vencido e mostra **Adiantar revisões** somente quando a API permite. Contratos HTTP e frontend foram atualizados.
+- Validação: lint PHP dos arquivos alterados, suíte unitária existente de Review (15 testes, 38 asserções), build tipado da SPA e `git diff --check` aprovados. Mantém-se o aviso não bloqueante de bundle acima de 500 kB.
+- Pendência: adicionar cenários focais para seleção incremental, conflito de avanço, próximo card e idempotência antes de arquivar a mudança OpenSpec.
+- Próximo passo: criar os testes focais da fila e arquivar `continuous-review-queue` após validação completa.

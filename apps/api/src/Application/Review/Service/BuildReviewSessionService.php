@@ -1,15 +1,19 @@
 <?php
 declare(strict_types=1);
 namespace App\Application\Review\Service;
-use App\Domain\Review\Entity\ReviewSession;use App\Domain\Review\Enum\ReviewSessionKind;use App\Domain\Review\Enum\ReviewSessionStatus;use App\Domain\Review\Repository\FlashcardRepositoryInterface;use App\Domain\Review\Repository\ReviewSessionRepositoryInterface;use App\Domain\Review\Repository\UserConceptMasteryRepositoryInterface;use App\Domain\Review\Repository\UserFlashcardProgressRepositoryInterface;use App\Domain\Review\Service\ReviewPriorityCalculatorInterface;
+use App\Domain\Review\Entity\ReviewSession;use App\Domain\Review\Enum\ReviewSessionKind;use App\Domain\Review\Enum\ReviewSessionStatus;use App\Domain\Review\Repository\FlashcardRepositoryInterface;use App\Domain\Review\Repository\FlashcardReviewRepositoryInterface;use App\Domain\Review\Repository\ReviewSessionRepositoryInterface;use App\Domain\Review\Repository\UserConceptMasteryRepositoryInterface;use App\Domain\Review\Repository\UserFlashcardProgressRepositoryInterface;use App\Domain\Review\Service\ReviewPriorityCalculatorInterface;
 final readonly class BuildReviewSessionService {
- public function __construct(private ReviewSessionRepositoryInterface $sessions,private UserFlashcardProgressRepositoryInterface $progresses,private UserConceptMasteryRepositoryInterface $mastery,private FlashcardRepositoryInterface $cards,private ReviewPriorityCalculatorInterface $priorities){}
+ public function __construct(private ReviewSessionRepositoryInterface $sessions,private UserFlashcardProgressRepositoryInterface $progresses,private UserConceptMasteryRepositoryInterface $mastery,private FlashcardRepositoryInterface $cards,private FlashcardReviewRepositoryInterface $reviews,private ReviewPriorityCalculatorInterface $priorities){}
  public function execute(string $userId,ReviewSessionKind $kind,int $limit,\DateTimeImmutable $now):ReviewSession {
   if($limit<1||$limit>100)throw new \InvalidArgumentException('Limite de revisão inválido.');
-  $active=$this->sessions->findActive($userId,$kind);if($active!==null){$active->cards=$this->resolve($active->flashcardIds);return $active;}
-  $candidates=[];foreach($this->progresses->dueForUser($userId,$now,100) as $progress){$card=$this->cards->findById($progress->flashcardId);if($card===null)continue;$mastery=$this->mastery->find($userId,$card->primaryTaxonomySubjectId);$candidates[]=['id'=>$card->id,'score'=>$this->priorities->calculate($progress,$mastery?->masteryScore,0,0,$now)];}
-  usort($candidates,static fn(array $a,array $b):int=>$b['score']<=>$a['score']);$ids=array_column(array_slice($candidates,0,$limit),'id');$session=new ReviewSession($this->uuid(),$userId,$kind,ReviewSessionStatus::ACTIVE,$limit,$now,flashcardIds:$ids,cards:$this->resolve($ids));$this->sessions->save($session);return $session;
+  if($kind===ReviewSessionKind::ADVANCE&&$this->progresses->countDueForUser($userId,$now)>0)throw new \DomainException('Há cards vencidos para revisar.');
+  $session=$this->sessions->findActive($userId,$kind)??new ReviewSession($this->uuid(),$userId,$kind,ReviewSessionStatus::ACTIVE,$limit,$now);
+  $current=$session->flashcardIds===[]?null:$session->flashcardIds[array_key_last($session->flashcardIds)];
+  if($current!==null&&!$this->reviews->hasSessionReview($session->id,$current)){$session->cards=$this->resolve([$current]);return $session;}
+  if(count($session->flashcardIds)>=$session->requestedLimit){$session->complete($now);$this->sessions->save($session);return $session;}
+  $next=$this->next($userId,$kind,$now,$session->flashcardIds);$this->sessions->save($session);if($next!==null){$this->sessions->serveCard($session,$next);$session->cards=$this->resolve([$next]);}return $session;
  }
+ private function next(string $userId,ReviewSessionKind $kind,\DateTimeImmutable $now,array $excluded):?string{$progresses=$kind===ReviewSessionKind::ADVANCE?$this->progresses->upcomingForUser($userId,$now,100,$excluded):$this->progresses->dueForUser($userId,$now,100,$excluded);$candidates=[];foreach($progresses as $progress){$card=$this->cards->findById($progress->flashcardId);if($card===null)continue;$mastery=$this->mastery->find($userId,$card->primaryTaxonomySubjectId);$candidates[]=['id'=>$card->id,'score'=>$this->priorities->calculate($progress,$mastery?->masteryScore,0,0,$now),'dueAt'=>$progress->state()->dueAt];}if($kind===ReviewSessionKind::ADVANCE)usort($candidates,static fn(array $a,array $b):int=>$a['dueAt']<=>$b['dueAt']);else usort($candidates,static fn(array $a,array $b):int=>$b['score']<=>$a['score']);return $candidates[0]['id']??null;}
  private function resolve(array $ids):array{return array_values(array_filter(array_map(fn(string $id)=>$this->cards->findById($id),$ids)));}
  private function uuid():string{$b=random_bytes(16);$b[6]=chr((ord($b[6])&15)|64);$b[8]=chr((ord($b[8])&63)|128);return vsprintf('%s%s-%s-%s-%s-%s%s%s',str_split(bin2hex($b),4));}
 }

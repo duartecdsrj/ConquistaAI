@@ -105,6 +105,8 @@ O módulo `Review` segue `Domain/Review -> Application/Review -> Infrastructure/
 
 A página de sessão usa cartões Quasar com frente inicialmente apresentada e verso revelado somente por ação explícita. Após revelar, exibe `AGAIN`, `HARD`, `GOOD` e `EASY`, progresso real e assunto canônico. A saída é segura: o identificador da sessão retornado pela API permite retomada sem simular respostas ou recalcular a fila no cliente. Em mobile, um card ocupa a largura disponível e as quatro ações mantêm alvos de toque adequados.
 
+A experiência da sessão usa uma fila contínua: a API entrega somente o card atual e, após a classificação, devolve o próximo card confirmado. A tela mostra a contagem real de cards vencidos e, quando ela chega a zero, oferece revisão antecipada apenas se `canAdvance` vier verdadeiro. A frente/verso ocupa uma superfície azul-profunda central; as quatro classificações aparecem como ações grandes, semanticamente coloridas e ordenadas de “Não lembrei” a “Fácil”. O texto, a fila e a elegibilidade continuam vindo exclusivamente da API.
+
 O resultado de análise de caderno é integrado à experiência Study e consulta exclusivamente o estado persistido. `PENDING` e `PROCESSING` mostram processamento sem conteúdo inventado; `FAILED` oferece mensagem segura e possibilidade de atualização; `COMPLETED` mostra apenas resumo e ações que a API persistiu. O mapa de domínio é navegável pela hierarquia canônica, trata carregamento, erro e vazio, e apresenta `INSUFFICIENT` como "dados insuficientes", nunca como domínio baixo.
 
 ## Marca
