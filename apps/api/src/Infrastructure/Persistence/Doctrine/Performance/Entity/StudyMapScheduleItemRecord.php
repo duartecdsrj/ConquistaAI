@@ -20,13 +20,3 @@ class StudyMapScheduleItemRecord
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')] public DateTimeImmutable $createdAt;
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')] public DateTimeImmutable $updatedAt;
 }
-
-#[ORM\Entity]
-#[ORM\Table(name: 'study_map_schedule_dependencies')]
-class StudyMapScheduleDependencyRecord
-{
-    #[ORM\Id] #[ORM\Column(name: 'user_id', type: 'string', length: 36)] public string $userId;
-    #[ORM\Id] #[ORM\Column(name: 'exam_id', type: 'string', length: 36)] public string $examId;
-    #[ORM\Id] #[ORM\Column(name: 'taxonomy_subject_id', type: 'string', length: 36)] public string $taxonomySubjectId;
-    #[ORM\Id] #[ORM\Column(name: 'predecessor_subject_id', type: 'string', length: 36)] public string $predecessorSubjectId;
-}

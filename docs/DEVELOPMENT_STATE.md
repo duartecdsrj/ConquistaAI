@@ -3317,3 +3317,21 @@ docker compose exec -T frontend npm run build
 - Adicionada a seção `Cronograma` no menu principal, separada de `Desempenho`. Ela carrega o Gantt por concurso e mantém filtro de período, agendamento, dependências e estados de estudo.
 - A tela de Desempenho permanece voltada exclusivamente às estatísticas de práticas.
 - Próximo passo: validar a navegação e a compilação da SPA.
+
+## 2026-10-03 — Cronograma Transpetro até a prova
+
+- Criado cronograma Gantt da Transpetro com 12 blocos sequenciais de 04/10 a 28/11 e dependências entre Redes, Linux, Windows, Contêineres, Infraestrutura, Cloud, Banco de Dados, Segurança, Desenvolvimento, DevOps, Storage e Gestão de Projetos.
+- A semana de 29/11 a 05/12 foi mantida livre para revisões e simulados antes da prova em 06/12/2026.
+- Corrigido o autoload das entidades Doctrine do cronograma, separando registros de itens e dependências em arquivos PSR-4 próprios.
+- Validação: lint PHP das entidades e persistência dos 12 itens pelo caso de uso de cronograma.
+- Próximo passo: atualizar o Gantt na seção Cronograma e ajustar estados conforme o avanço real.
+
+## 2026-10-03 — Correção de disparo do cronograma
+
+- A seleção do concurso na página Cronograma agora observa diretamente o valor reativo, incluindo a seleção inicial carregada da API, e sempre dispara a consulta do mapa.
+- Próximo passo: recarregar a seção Cronograma e confirmar o Gantt da Transpetro.
+
+## 2026-10-03 — Seletor do cronograma sem bloqueio
+
+- Removido o estado de carregamento próprio do seletor de concurso; a lista agora atualiza o valor e chama o mapa diretamente na resolução da consulta, com falha exibida em tela.
+- Próximo passo: confirmar a seleção Transpetro e a renderização do Gantt.
