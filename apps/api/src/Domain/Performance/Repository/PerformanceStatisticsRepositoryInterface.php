@@ -21,6 +21,8 @@ interface PerformanceStatisticsRepositoryInterface
     public function completedAnswersForUserAndExam(string $userId, string $examId): array;
     /** @return list<TaxonomyHierarchyNode> */
     public function taxonomyHierarchyForSyllabus(string $syllabusId): array;
+    /** @return list<TaxonomyHierarchyNode> */
+    public function taxonomyHierarchyForExam(string $examId): array;
     /** @return list<StudyPlanAnswer> */
     public function completedPlanAnswersForUser(string $userId): array;
 }

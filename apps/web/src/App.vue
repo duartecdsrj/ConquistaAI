@@ -17,6 +17,7 @@
     <AssistantPage v-else-if="section === 'assistant'" />
     <DiscoveryPage v-else-if="section === 'discovery'" />
     <ArenaPage v-else-if="section === 'arena'" :user-id="user.id" />
+    <StudySchedulePage v-else-if="section === 'schedule'" />
     <PerformancePage v-else :initial-exam-id="selectedPerformanceExamId" />
   </AppShell>
   <q-banner v-if="activeNotification" class="global-correction-notification" rounded inline-actions>
@@ -36,6 +37,7 @@ import NotebooksPage from './Interface/Http/Study/NotebooksPage.vue'
 import NotebookExecutionPage from './Interface/Http/Study/NotebookExecutionPage.vue'
 import QuestionsPage from './Interface/Http/QuestionBank/QuestionsPage.vue'
 import PerformancePage from './Interface/Http/Performance/PerformancePage.vue'
+import StudySchedulePage from './Interface/Http/Performance/StudySchedulePage.vue'
 import ReviewInsightsPage from './Interface/Http/Review/ReviewInsightsPage.vue'
 import AssistantPage from './Interface/Http/Assistant/AssistantPage.vue'
 import CatalogPage from './Interface/Http/Catalog/CatalogPage.vue'
@@ -69,7 +71,7 @@ const canResendCorrection = computed(() => user.value?.roles.includes("ADMIN") =
 async function recoverNotification(): Promise<void> { try { const completed = await questionUseCases.latestCompletedCorrection.execute(); if ((completed.status === "PROPOSED" || completed.status === "FAILED") && !isIgnored(completed.id)) pendingNotification.value = { userId: "", requestId: completed.id, questionId: completed.questionId, status: completed.status } } catch { } }
 function dismissNotification(): void { pendingNotification.value = null; dismiss() }
 function ignoreNotification(): void { const active = activeNotification.value; if (!active) return; ignore(active.requestId); pendingNotification.value = null; dismiss() }
-const validSections: readonly ApplicationSection[] = ['profile', 'home', 'notebooks', 'questions', 'catalog', 'import', 'editorial', 'taxonomy', 'audit', 'assistant', 'discovery', 'users', 'arena', 'performance']
+const validSections: readonly ApplicationSection[] = ['profile', 'home', 'notebooks', 'questions', 'catalog', 'import', 'editorial', 'taxonomy', 'audit', 'assistant', 'discovery', 'users', 'arena', 'performance', 'schedule']
 
 function openNotebook(id: string): void { activeNotebookId.value = id }
 function openPerformance(examId: string): void { selectedPerformanceExamId.value = examId; section.value = 'performance' }

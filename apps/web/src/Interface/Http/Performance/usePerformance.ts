@@ -1,5 +1,5 @@
 import { readonly, ref } from 'vue'
-import type { BasicStatistics, SyllabusDashboard } from '../../../Domain/Performance/PerformanceRepository'
+import type { BasicStatistics, SyllabusDashboard, StudyMap, SaveStudyMapSchedule } from '../../../Domain/Performance/PerformanceRepository'
 import { performanceUseCases } from '../../../Infrastructure/Container'
 
 export function usePerformance() {
@@ -7,6 +7,7 @@ export function usePerformance() {
   const error = ref('')
   const statistics = ref<BasicStatistics | null>(null)
   const dashboard = ref<SyllabusDashboard | null>(null)
+  const studyMap = ref<StudyMap | null>(null)
   async function load(): Promise<void> {
     loading.value = true; error.value = ''
     try { statistics.value = await performanceUseCases.getMine.execute() }
@@ -19,5 +20,7 @@ export function usePerformance() {
     catch (reason) { error.value = reason instanceof Error ? reason.message : 'Não foi possível carregar o painel por edital.' }
     finally { loading.value = false }
   }
-  return { loading: readonly(loading), error: readonly(error), statistics: readonly(statistics), dashboard: readonly(dashboard), load, loadDashboard }
+  async function loadStudyMap(examId:string, from?:string, to?:string):Promise<void>{ loading.value=true; error.value=""; try { studyMap.value=await performanceUseCases.studyMap.execute(examId,from,to) } catch(reason){ error.value=reason instanceof Error?reason.message:"Não foi possível carregar o mapa de estudo." } finally { loading.value=false } }
+  async function saveStudyMapSchedule(input:SaveStudyMapSchedule):Promise<boolean>{ loading.value=true; error.value=""; try { await performanceUseCases.saveStudyMapSchedule.execute(input); await loadStudyMap(input.examId); return true } catch(reason){ error.value=reason instanceof Error?reason.message:"Não foi possível salvar o cronograma."; return false } finally { loading.value=false } }
+  return { loading: readonly(loading), error: readonly(error), statistics: readonly(statistics), dashboard: readonly(dashboard), studyMap: readonly(studyMap), load, loadDashboard, loadStudyMap, saveStudyMapSchedule }
 }

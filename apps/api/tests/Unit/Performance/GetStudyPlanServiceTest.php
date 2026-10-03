@@ -17,6 +17,7 @@ final class GetStudyPlanServiceTest extends TestCase {
    public function completedAnswersForUserAndSyllabus(string $userId,string $syllabusId): array { return []; }
    public function completedAnswersForUserAndExam(string $userId,string $examId): array { return []; }
    public function taxonomyHierarchyForSyllabus(string $syllabusId): array { return []; }
+   public function taxonomyHierarchyForExam(string $examId): array { return []; }
    public function completedPlanAnswersForUser(string $userId): array { $answers=[]; for($i=0;$i<10;$i++) $answers[]=new StudyPlanAnswer('weak',$i<3,new \DateTimeImmutable('2026-09-'.(20+($i%3)))); return $answers; }
   };
   $plan=(new GetStudyPlanService($repository))->getForUser('user');

@@ -12,11 +12,11 @@ Todas as rotas deste grupo exigem usuário autenticado e sempre restringem dados
 | `GET /review/sessions/quick` | monta revisão rápida com os cards de maior prioridade; aceita `limit` de 1 a 100 (padrão 10) |
 | `GET /review/sessions/advance` | inicia revisão antecipada somente sem cards vencidos; aceita `limit` de 1 a 100 (padrão 10) |
 | `POST /review/sessions/{sessionId}/cards/{cardId}/reviews` | registra uma classificação imutável (`AGAIN`, `HARD`, `GOOD` ou `EASY`) do card pertencente à sessão do usuário |
-| `POST /review/sessions/{sessionId}/navigation` | move para `PREVIOUS` ou `NEXT` entre cards já servidos; `NEXT` pode servir o próximo card elegível sem classificação |
+| `POST /review/sessions/{sessionId}/navigation` | move para `PREVIOUS` ou `NEXT` somente entre cards pendentes já servidos; `NEXT` pode servir o próximo card elegível sem classificação |
 | `GET /review/mastery-map` | retorna mapa paginado e hierárquico de domínio por assunto canônico; aceita `page` e `per_page` |
 | `GET /study/notebooks/{id}/analysis` | retorna somente o estado e resultado persistido da análise assíncrona do caderno do usuário |
 
-As rotas de sessão retornam `data` com `id`, `kind` (`DAILY`, `QUICK` ou `ADVANCE`), `status`, `requestedLimit`, `cards`, `overdueCards`, `canAdvance`, `canGoPrevious` e `canGoNext`. `cards` contém no máximo o card atual. `POST /review/sessions/{sessionId}/navigation` recebe `{ "direction": "NEXT" }` ou `{ "direction": "PREVIOUS" }`; não cria revisão e sempre restringe a navegação à sessão do usuário. `NEXT` reutiliza um card já servido ou seleciona o próximo elegível, sem classificar o card exibido. `overdueCards` é a quantidade atual de cards vencidos. `canAdvance` só é verdadeiro sem vencidos e com card futuro elegível. A rota de avanço responde `409 STATE_CONFLICT` quando houver card vencido. Cada card expõe `id`, `front`, `back` e `conceptId`; a interface mantém `back` oculto até ação explícita.
+As rotas de sessão retornam `data` com `id`, `kind` (`DAILY`, `QUICK` ou `ADVANCE`), `status`, `requestedLimit`, `cards`, `overdueCards`, `canAdvance`, `canGoPrevious` e `canGoNext`. `cards` contém no máximo o card atual. `POST /review/sessions/{sessionId}/navigation` recebe `{ "direction": "NEXT" }` ou `{ "direction": "PREVIOUS" }`; não cria revisão e sempre restringe a navegação à sessão do usuário. `NEXT` reutiliza somente um card pendente já servido ou seleciona o próximo elegível, sem classificar o card exibido. `overdueCards` é a quantidade atual de cards vencidos. `canAdvance` só é verdadeiro sem vencidos e com card futuro elegível. A rota de avanço responde `409 STATE_CONFLICT` quando houver card vencido. Cada card expõe `id`, `front`, `back` e `conceptId`; a interface mantém `back` oculto até ação explícita.
 
 `POST /review/sessions/{sessionId}/cards/{cardId}/reviews` recebe:
 
@@ -339,3 +339,9 @@ Cada item de `GET /admin/question-pdf-imports` e `GET /admin/question-pdf-import
 GET /arena/subjects retorna itens paginados com id, name e parentId anulável. O vínculo de pai permite ao cliente apresentar a taxonomia como árvore; o envio de prontidão continua recebendo somente IDs em taxonomy_subject_ids.
 
 <!-- fim do contrato -->
+
+### Mapa de estudo e cronograma
+
+`GET /api/v1/performance/study-map?exam_id={uuid}&from=YYYY-MM-DD&to=YYYY-MM-DD` requer autenticação e devolve somente o mapa do usuário autenticado para o concurso informado. `exam_id` é obrigatório; `from` e `to` são opcionais, devem ser datas ISO válidas e, quando ambos existirem, `from` não pode ser posterior a `to`. A resposta reúne `summary`, a árvore `subjects` e os itens `schedule`. Cada nó possui `id`, `parentId`, `name`, `depth`, `children`, `answered`, `correct`, `incorrect`, `accuracy` anulável, `distinctDays` e `evidenceStatus` (`NO_DATA`, `INSUFFICIENT` ou `SUFFICIENT`).
+
+`PUT /api/v1/performance/study-map/schedule` recebe `examId`, `subjectId`, `startDate`, `endDate`, `status` (`PLANNED`, `STUDIED` ou `COMPLETED`) e `predecessorSubjectIds` opcional. Cria ou substitui o item daquele assunto no cronograma pessoal. `PATCH /api/v1/performance/study-map/schedule/{subjectId}` aceita os mesmos campos editáveis para atualizar o item. Datas inválidas, assunto fora da matriz do concurso, dependência externa, auto-dependência ou ciclo respondem `422 VALIDATION_FAILED`. A conclusão preserva as datas e a faixa temporal original.

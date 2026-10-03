@@ -7,7 +7,7 @@ import { AxiosUserManagementRepository } from './UserManagement/AxiosUserManagem
 import { CreateAssistantConversationUseCase, ListAssistantConversationsUseCase, ListAssistantMessagesUseCase, ListAssistantSyllabiUseCase, SendAssistantMessageUseCase } from '../Application/Assistant/AssistantUseCases'
 import { AxiosAssistantRepository } from './Assistant/AxiosAssistantRepository'
 import { GoogleLoginUseCase, LoginUseCase, LogoutUseCase, RestoreSessionUseCase } from '../Application/Identity/AuthUseCases'
-import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
+import { GetMyStatisticsUseCase, GetSyllabusDashboardUseCase, GetStudyMapUseCase, SaveStudyMapScheduleUseCase, SubmitNotebookAnswerUseCase } from '../Application/Performance/PerformanceUseCases'
 import { ApproveQuestionCorrectionUseCase, AskQuestionPdfAssistanceUseCase, GetLatestQuestionCorrectionUseCase, GetLatestCompletedQuestionCorrectionUseCase, ListPublishedQuestionsUseCase, RequestQuestionCorrectionUseCase } from '../Application/QuestionBank/QuestionUseCases'
 import { CreateQuestionCommentUseCase, CreateQuestionProblemReportUseCase, GetLatestQuestionExplanationUseCase, GetQuestionInteractionUseCase, GetQuestionNoteUseCase, ListQuestionCommentsUseCase, RequestQuestionExplanationUseCase, SaveQuestionNoteUseCase, UpdateQuestionInteractionUseCase } from '../Application/QuestionLearning/QuestionLearningUseCases'
 import { GetLatestQuestionAuditReportUseCase, ListLatestQuestionAuditFindingsUseCase } from '../Application/QuestionBank/QuestionAuditUseCases'
@@ -75,7 +75,7 @@ export const questionUseCases = { listPublished: new ListPublishedQuestionsUseCa
 const questionAuditRepository = new AxiosQuestionAuditRepository()
 export const questionAuditUseCases = { latest: new GetLatestQuestionAuditReportUseCase(questionAuditRepository), findings: new ListLatestQuestionAuditFindingsUseCase(questionAuditRepository) }
 const performanceRepository = new AxiosPerformanceRepository()
-export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), getDashboard: new GetSyllabusDashboardUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository) }
+export const performanceUseCases = { getMine: new GetMyStatisticsUseCase(performanceRepository), getDashboard: new GetSyllabusDashboardUseCase(performanceRepository), submitAnswer: new SubmitNotebookAnswerUseCase(performanceRepository), studyMap: new GetStudyMapUseCase(performanceRepository), saveStudyMapSchedule: new SaveStudyMapScheduleUseCase(performanceRepository) }
 export const catalogUseCases = new CatalogUseCases(new AxiosCatalogRepository())
 export const importUseCases = new ImportUseCases(new AxiosImportRepository())
 const editorialRepository = new AxiosEditorialRepository()

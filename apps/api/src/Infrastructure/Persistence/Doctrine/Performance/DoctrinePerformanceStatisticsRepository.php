@@ -63,7 +63,7 @@ final class DoctrinePerformanceStatisticsRepository implements PerformanceStatis
 
     public function syllabiWithCompletedAnswersForUser(string $userId): array
     {
-        $rows = $this->entityManager->createQueryBuilder()->select('DISTINCT syllabus.id AS id, syllabus.name AS name, position.name AS positionName, exam.name AS examName')->from(AttemptRecord::class, 'attempt')->innerJoin(QuestionRecord::class, 'question', 'WITH', 'question.id = attempt.questionId')->innerJoin(SyllabusRecord::class, 'syllabus', 'WITH', 'syllabus.id = question.syllabusId')->innerJoin(PositionRecord::class, 'position', 'WITH', 'position.id = syllabus.positionId')->innerJoin(ExamRecord::class, 'exam', 'WITH', 'exam.id = position.examId')->where('attempt.userId = :userId')->andWhere('attempt.completedAt IS NOT NULL')->setParameter('userId', $userId)->orderBy('exam.name')->addOrderBy('position.name')->addOrderBy('syllabus.name')->getQuery()->getArrayResult();
+        $rows = $this->entityManager->createQueryBuilder()->select("DISTINCT syllabus.id AS id, syllabus.name AS name, 'Cargo não informado' AS positionName, exam.name AS examName")->from(AttemptRecord::class, 'attempt')->innerJoin(QuestionRecord::class, 'question', 'WITH', 'question.id = attempt.questionId')->innerJoin(SyllabusRecord::class, 'syllabus', 'WITH', 'syllabus.id = question.syllabusId')->innerJoin(ExamRecord::class, 'exam', 'WITH', 'exam.id = syllabus.examId')->where('attempt.userId = :userId')->andWhere('attempt.completedAt IS NOT NULL')->setParameter('userId', $userId)->orderBy('exam.name')->addOrderBy('syllabus.name')->getQuery()->getArrayResult();
         return array_map(static fn (array $row): SyllabusOption => new SyllabusOption((string) $row['id'], (string) $row['name'], (string) $row['positionName'], (string) $row['examName']), $rows);
     }
 
@@ -86,6 +86,17 @@ final class DoctrinePerformanceStatisticsRepository implements PerformanceStatis
         return array_map(static fn (array $row): TaxonomyHierarchyNode => new TaxonomyHierarchyNode((string) $row['id'], $row['parentId'] === null ? null : (string) $row['parentId'], (string) $row['name']), $rows);
 
     }
+    public function taxonomyHierarchyForExam(string $examId): array
+    {
+        $assignmentRows = $this->entityManager->createQueryBuilder()->select("assignment.taxonomySubjectId AS subjectId")->from(PositionTaxonomyAssignmentRecord::class, "assignment")->innerJoin(PositionRecord::class, "position", "WITH", "position.id = assignment.positionId")->where("position.examId = :examId")->setParameter("examId", $examId)->getQuery()->getScalarResult();
+        $assignments = array_map(static fn (array $row): string => (string) $row["subjectId"], $assignmentRows);
+        $all = $this->entityManager->createQueryBuilder()->select("taxonomy.id AS id, taxonomy.parentId AS parentId, taxonomy.name AS name")->from(TaxonomySubjectRecord::class, "taxonomy")->where("taxonomy.active = true")->getQuery()->getArrayResult();
+        $byId = []; foreach ($all as $node) $byId[(string) $node["id"]] = $node;
+        $included = []; foreach ($assignments as $subjectId) { while (isset($byId[$subjectId]) && !isset($included[$subjectId])) { $included[$subjectId] = true; $subjectId = $byId[$subjectId]["parentId"]; } }
+        do { $added = false; foreach ($byId as $id => $node) { if ($node["parentId"] !== null && isset($included[$node["parentId"]]) && !isset($included[$id])) { $included[$id] = true; $added = true; } } } while ($added);
+        return array_values(array_map(static fn (array $row): TaxonomyHierarchyNode => new TaxonomyHierarchyNode((string) $row["id"], $row["parentId"] === null ? null : (string) $row["parentId"], (string) $row["name"]), array_filter($all, static fn (array $row): bool => isset($included[(string) $row["id"]]))));
+    }
+
     public function completedPlanAnswersForUser(string $userId): array
     {
         $firstSubject = $this->entityManager->createQueryBuilder()->select('MIN(subjectSelection.subjectId)')->from(QuestionSubjectRecord::class, 'subjectSelection')->where('subjectSelection.questionId = question.id');

@@ -3226,3 +3226,94 @@ docker compose exec -T frontend npm run build
 - Corrigida a navegação que avançava apenas uma vez: cada `NEXT` ou `PREVIOUS` agora é executado pelo caso de uso `NavigateReviewSessionService` dentro de uma transação Doctrine. A posição atual e o card servido são gravados antes da resposta HTTP, evitando que a requisição seguinte volte à posição anterior.
 - Validação: lint dos três arquivos PHP modificados, suíte unitária de Review (15 testes, 38 asserções) e `git diff --check` aprovados.
 - Próximo passo: nenhum; recarregar a página de revisão e navegar normalmente.
+
+## 2026-10-02 — Navegação restrita a cards pendentes
+
+- A navegação da revisão agora ignora cards que já receberam classificação na sessão. Anterior e Próximo só percorrem cards pendentes; ao retomar uma sessão, um pendente já servido é priorizado antes da seleção de um novo card.
+- O histórico de classificações e o agendamento individual permanecem imutáveis. Um card classificado como `AGAIN` volta à fila normal somente ao atingir seu `dueAt`; não é mais reexibido pela navegação manual.
+- Validação: consulta Doctrine da sessão afetada confirmou cinco cards classificados e um pendente; suíte unitária de Review aprovada.
+- Próximo passo: nenhum.
+
+## 2026-10-02 — Alternância da frente do flashcard
+
+- A tela de revisão agora oferece `Ver frente novamente` após revelar a resposta, permitindo alternar livremente entre frente e verso antes de classificar.
+- A classificação continua usando a sessão devolvida pela API e redefine a face exibida para a frente do próximo card pendente imediatamente após a resposta.
+- Validação: `docker compose exec -T frontend npm run build` aprovado; permanece apenas o aviso não bloqueante de bundle acima de 500 kB.
+- Próximo passo: nenhum.
+
+## 2026-10-02 — Persistência atômica de cards servidos
+
+- A abertura e a retomada de sessão agora executam em transação Doctrine. O vínculo entre sessão e card é confirmado antes da resposta HTTP, impedindo que a interface exiba um card que a classificação subsequente ainda não encontra na sessão persistida.
+- A transação é compartilhada pelos casos de uso de montar sessão, navegar e classificar; o controlador permanece sem responsabilidade transacional.
+- Validação: lint PHP, composição da API e suíte unitária de Review aprovados.
+- Próximo passo: nenhum.
+
+## 2026-10-03 — Proposta do mapa de estudo por desempenho
+
+- Criada a mudança OpenSpec `study-map-performance` para uma visão hierárquica por concurso, com assuntos, subassuntos e métricas derivadas exclusivamente das respostas finais das práticas do usuário.
+- O escopo não inclui cronograma, horas estimadas ou progresso artificial: nós sem prática serão apresentados como sem dados.
+- Validação: proposta, design, especificação delta e lista de tarefas criados conforme o fluxo OpenSpec.
+- Próximo passo: aplicar `study-map-performance` e executar as tarefas na ordem definida.
+
+## 2026-10-03 — Ampliação para cronograma Gantt
+
+- A mudança `study-map-performance` passou a incluir cronograma Gantt persistido por concurso, com datas planejadas, dependências explícitas entre assuntos e estados `PLANNED`, `STUDIED` e `COMPLETED`.
+- Marcar um assunto como estudado ou concluído preserva sua faixa e posição temporal; desempenho de práticas e conclusão planejada permanecem métricas distintas.
+- Validação: proposta, design, requisitos e tarefas foram revisados e validados pelo OpenSpec.
+- Próximo passo: aplicar `study-map-performance`.
+
+## 2026-10-03 — Contrato do mapa de estudo
+
+- Documentado o contrato autenticado do mapa de estudo, do cronograma Gantt e das dependências em `docs/API.md`, incluindo validações de escopo, datas e ciclos.
+- Próximo passo: persistir itens de cronograma e suas dependências.
+
+## 2026-10-03 — Persistência do cronograma Gantt
+
+- Adicionada a migration 044, entidades de domínio, interface e repositório Doctrine para itens do cronograma e dependências por usuário, concurso e assunto canônico.
+- Validação: lint PHP das novas classes e `git diff --check` aprovados.
+- Próximo passo: definir DTOs tipados e validar datas, estados e dependências.
+
+## 2026-10-03 — DTOs do mapa de estudo
+
+- Criados DTOs imutáveis para consulta, gravação de cronograma, nós da árvore, itens Gantt e resumo do mapa.
+- Validação: lint PHP dos DTOs e `git diff --check` aprovados.
+- Próximo passo: validar regras de datas, escopo e dependências acíclicas no caso de uso.
+
+## 2026-10-03 — Regras de cronograma e dependências
+
+- O caso de uso de gravação valida assunto aplicável ao concurso, intervalo de datas, dependências no mesmo cronograma, auto-dependência e ciclos antes da transação.
+- Estados de estudo preservam datas planejadas e registram conclusão sem alterar resultados de prática.
+- Validação: lint PHP e `git diff --check` aprovados.
+- Próximo passo: ampliar a porta de estatísticas para montar a árvore aplicável ao concurso.
+
+## 2026-10-03 — API do mapa e cronograma
+
+- Implementadas consulta hierárquica por concurso, agregação de práticas finais, rotas autenticadas de leitura e gravação do cronograma e migration 044 aplicada.
+- Validação: lint PHP, `bin/migrate.php`, composição da API e `git diff --check` aprovados.
+- Próximo passo: integrar o contrato à SPA e construir o mapa Gantt.
+
+## 2026-10-03 — Interface do mapa Gantt
+
+- Integrada a visão de mapa de estudo à Performance: resumo real, árvore expansível de assuntos e subassuntos, grade Gantt, agenda de assunto, dependências e estados de estudo preservando a posição temporal.
+- A SPA consome exclusivamente as novas rotas pelo repositório Axios e trata ausência de dados sem simular estatísticas.
+- Validação: build tipado da SPA e suíte unitária de Performance aprovados.
+- Próximo passo: concluir testes de integração/HTTP do mapa e validar a mudança OpenSpec.
+
+## 2026-10-03 — Entrega validada do mapa Gantt
+
+- Concluído o mapa de estudo por concurso: árvore de assuntos, evidências das práticas, cronograma Gantt persistido, dependências acíclicas e estados planejado, estudado e concluído sem deslocar as datas.
+- A tela permite filtrar o período do mapa, editar a agenda e manter a faixa temporal mesmo quando o assunto é declarado estudado ou concluído.
+- Validação: PHP lint das rotas e repositório, PHPUnit de Performance (11 testes, 27 asserções), `npm run build`, `git diff --check`, migration 044 aplicada e smoke HTTP sem token retornando `401 UNAUTHENTICATED`.
+- Próximo passo: mudança arquivada no OpenSpec; acompanhar uso real do cronograma e ajustar apenas a partir de feedback.
+
+## 2026-10-03 — Correção de carregamento do mapa
+
+- Corrigida a consulta de editais do painel de desempenho: o modelo atual relaciona edital diretamente ao concurso e não possui mais `positionId`.
+- O mapa Gantt agora é carregado antes dos indicadores auxiliares, portanto permanece disponível mesmo se outro painel falhar.
+- Próximo passo: validar a tela de desempenho com a sessão já autenticada.
+
+## 2026-10-03 — Menu exclusivo de cronograma
+
+- Adicionada a seção `Cronograma` no menu principal, separada de `Desempenho`. Ela carrega o Gantt por concurso e mantém filtro de período, agendamento, dependências e estados de estudo.
+- A tela de Desempenho permanece voltada exclusivamente às estatísticas de práticas.
+- Próximo passo: validar a navegação e a compilação da SPA.

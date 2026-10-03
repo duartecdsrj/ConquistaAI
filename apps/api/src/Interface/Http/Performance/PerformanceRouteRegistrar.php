@@ -11,17 +11,24 @@ use App\Application\Performance\Service\GetBasicStatisticsService;
 use App\Application\Performance\Service\StartAttemptService;
 use App\Application\Performance\Service\GetSyllabusDashboardService;
 use App\Application\Performance\Service\GetStudyPlanService;
+use App\Application\Performance\Service\GetStudyMapService;
+use App\Application\Performance\Service\SaveStudyMapScheduleService;
+use App\Application\Performance\Mapper\StudyMapScheduleResponseMapper;
 use App\Infrastructure\Http\ApiResponseFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineEntityManagerFactory;
 use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Infrastructure\Persistence\Doctrine\Performance\DoctrineAttemptRepository;
 use App\Infrastructure\Persistence\Doctrine\Performance\DoctrinePerformanceStatisticsRepository;
+use App\Infrastructure\Persistence\Doctrine\Performance\DoctrineStudyMapScheduleRepository;
+use App\Infrastructure\Persistence\Doctrine\Performance\DoctrineStudyMapSubjectScopeRepository;
 use App\Infrastructure\Persistence\Doctrine\QuestionLearning\DoctrineCompletedAttemptLearningSignalReader;
 use App\Infrastructure\Persistence\Doctrine\QuestionLearning\DoctrineLearningEventRepository;
 use App\Infrastructure\Persistence\Doctrine\Study\DoctrineNotebookRepository;
 use App\Interface\Http\Identity\IdentityRequestFactory;
 use App\Interface\Http\Performance\Controller\AttemptController;
 use App\Interface\Http\Performance\Controller\StatisticsController;
+use App\Interface\Http\Performance\Controller\StudyMapController;
+use App\Interface\Http\Performance\StudyMapRequestFactory;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -48,6 +55,8 @@ final class PerformanceRouteRegistrar
             $this->responses,
         );
         $statistics = new DoctrinePerformanceStatisticsRepository($entityManager);
+        $studyMap = new StudyMapController($this->authentication, new GetStudyMapService($statistics = new DoctrinePerformanceStatisticsRepository($entityManager), new DoctrineStudyMapScheduleRepository($entityManager)), new SaveStudyMapScheduleService(new DoctrineStudyMapScheduleRepository($entityManager), new DoctrineStudyMapSubjectScopeRepository($entityManager), $transactions), new StudyMapScheduleResponseMapper(), $this->responses);
+        $studyMapRequests = new StudyMapRequestFactory();
         $statisticsController = new StatisticsController(
             $this->authentication,
             new GetStudyPlanService($statistics),
@@ -58,6 +67,19 @@ final class PerformanceRouteRegistrar
         $identity = new IdentityRequestFactory();
         $answers = new AnswerRequestFactory();
         $responses = $this->responses;
+
+        $app->get('/v1/performance/study-map', static function (ServerRequestInterface $request, ResponseInterface $response) use ($studyMap, $studyMapRequests, $identity, $responses): ResponseInterface {
+            try { $access = $identity->accessToken($request); } catch (InvalidArgumentException $exception) { return self::unauthenticated($responses, $request, $response, $exception); }
+            try { $query = $request->getQueryParams(); $examId = $query['exam_id'] ?? null; if (!is_string($examId) || $examId === '') throw new InvalidArgumentException('exam_id obrigatório.'); [$from, $to] = $studyMapRequests->dates($query); return $studyMap->get($request, $response, $access, $examId, $from, $to); } catch (InvalidArgumentException) { return $responses->problem($response, 'VALIDATION_FAILED', 'Parâmetros do mapa de estudo são inválidos.', 422, (string) $request->getAttribute('request_id')); }
+        });
+        $app->put('/v1/performance/study-map/schedule', static function (ServerRequestInterface $request, ResponseInterface $response) use ($studyMap, $studyMapRequests, $identity, $responses): ResponseInterface {
+            try { $access = $identity->accessToken($request); } catch (InvalidArgumentException $exception) { return self::unauthenticated($responses, $request, $response, $exception); }
+            try { return $studyMap->save($request, $response, $access, $studyMapRequests->schedule($request)); } catch (InvalidArgumentException) { return $responses->problem($response, 'VALIDATION_FAILED', 'Cronograma de estudo inválido.', 422, (string) $request->getAttribute('request_id')); }
+        });
+        $app->patch('/v1/performance/study-map/schedule/{subjectId}', static function (ServerRequestInterface $request, ResponseInterface $response, array $arguments) use ($studyMap, $studyMapRequests, $identity, $responses): ResponseInterface {
+            try { $access = $identity->accessToken($request); } catch (InvalidArgumentException $exception) { return self::unauthenticated($responses, $request, $response, $exception); }
+            try { return $studyMap->save($request, $response, $access, $studyMapRequests->schedule($request, (string) ($arguments['subjectId'] ?? ''))); } catch (InvalidArgumentException) { return $responses->problem($response, 'VALIDATION_FAILED', 'Cronograma de estudo inválido.', 422, (string) $request->getAttribute('request_id')); }
+        });
 
         $app->get('/v1/statistics/me', static function (ServerRequestInterface $request, ResponseInterface $response) use ($statisticsController, $identity, $responses): ResponseInterface {
             try { return $statisticsController->mine($request, $response, $identity->accessToken($request)); }

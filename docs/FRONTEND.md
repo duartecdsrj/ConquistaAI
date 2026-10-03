@@ -216,7 +216,7 @@ O cabeçalho não exibe busca global nem notificações enquanto não houver cas
 
 ### Navegação na revisão
 
-A sessão de revisão exibe um único card e ações Anterior/Próximo. Ações de navegação passam por `useReview -> ReviewUseCases -> ReviewRepository`; a página não calcula fila localmente. Próximo pode exibir outro card sem registrar classificação e Anterior só visita cards já servidos pela sessão.
+A sessão de revisão exibe um único card, permite alternar entre frente e verso e oferece ações Anterior/Próximo. Ações de navegação passam por `useReview -> ReviewUseCases -> ReviewRepository`; a página não calcula fila localmente. Próximo pode exibir outro card sem registrar classificação e Anterior só visita cards pendentes já servidos pela sessão.
 
 
 O seletor administrativo de assuntos por cargo percorre todas as páginas da taxonomia antes de montar suas opções, preservando a árvore e sem ocultar itens após o limite de página da API.
@@ -298,3 +298,13 @@ A tela administrativa de Import exibe envio, início efetivo e término do job, 
 SubjectTreeSelect em Interface/Http/Shared recebe opções tipadas com id, name e parentId e devolve somente a lista imutável de IDs selecionados. Catálogo, Cadernos, Revisão Editorial e Arena o reutilizam; páginas não achatam a taxonomia nem acessam HTTP para montar a árvore.
 
 <!-- fim da documentação -->
+
+## Mapa de estudo Gantt
+
+A página Performance consome `GET /performance/study-map` pelas camadas `PerformancePage -> usePerformance -> PerformanceUseCases -> PerformanceRepository -> AxiosPerformanceRepository`. O mapa combina a árvore canônica do concurso, métricas de práticas confirmadas e itens persistidos do cronograma. A expansão da árvore e a escala visual são locais à apresentação; datas, dependências e estados `PLANNED`, `STUDIED` e `COMPLETED` são confirmados pela API.
+
+O Gantt preserva a posição temporal de assuntos estudados ou concluídos. Em telas pequenas, a grade pode rolar horizontalmente dentro do cartão, enquanto os controles de planejamento continuam com áreas de toque utilizáveis.
+
+## Cronograma de estudo
+
+O menu lateral possui a seção `Cronograma`, independente de `Desempenho`. Ela segue `StudySchedulePage -> usePerformance -> PerformanceUseCases -> PerformanceRepository -> AxiosPerformanceRepository -> API`, permite escolher o concurso e apresenta somente o mapa Gantt, filtros de período e planejamento confirmado. A tela de Desempenho permanece destinada a indicadores e análises.
