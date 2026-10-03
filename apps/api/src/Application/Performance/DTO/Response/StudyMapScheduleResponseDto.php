@@ -13,5 +13,6 @@ final readonly class StudyMapScheduleResponseDto
         public string $status,
         public ?string $completedAt,
         public array $predecessorSubjectIds,
+        public ?int $estimatedMinutes,
     ) {}
 }

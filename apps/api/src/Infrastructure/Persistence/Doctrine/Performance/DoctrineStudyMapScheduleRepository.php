@@ -33,6 +33,7 @@ final class DoctrineStudyMapScheduleRepository implements StudyMapScheduleReposi
         $record->taxonomySubjectId = $item->taxonomySubjectId;
         $record->startDate = $item->startDate;
         $record->endDate = $item->endDate;
+        $record->estimatedMinutes = $item->estimatedMinutes;
         $record->status = $item->status->value;
         $record->completedAt = $item->completedAt;
         $record->createdAt = $item->createdAt;
@@ -55,6 +56,6 @@ final class DoctrineStudyMapScheduleRepository implements StudyMapScheduleReposi
     /** @param list<string> $predecessors */
     private function map(StudyMapScheduleItemRecord $item, array $predecessors): StudyMapScheduleItem
     {
-        return new StudyMapScheduleItem($item->userId, $item->examId, $item->taxonomySubjectId, $item->startDate, $item->endDate, StudyScheduleStatus::from($item->status), $item->completedAt, $predecessors, $item->createdAt, $item->updatedAt);
+        return new StudyMapScheduleItem($item->userId, $item->examId, $item->taxonomySubjectId, $item->startDate, $item->endDate, StudyScheduleStatus::from($item->status), $item->completedAt, $predecessors, $item->createdAt, $item->updatedAt, $item->estimatedMinutes);
     }
 }

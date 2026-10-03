@@ -1,3 +1,40 @@
+## 2026-10-03 — Desmembramento de Banco de Dados no cronograma
+
+- Criados nove subassuntos canônicos do item 11 do edital como filhos de Banco de Dados e vinculados exclusivamente ao cargo Análise de Sistemas – Infraestrutura.
+- O bloco pessoal de Banco de Dados foi substituído por nove faixas encadeadas entre 03 e 08/11, preservando a dependência de Computação em Nuvem na entrada e de Segurança da Informação na saída.
+- Carga definida: 2h, 3h, 4h, 2h, 5h, 2h, 3h, 1h e 2h, totalizando as 24h previstas para Banco de Dados.
+- Validação: consulta ao banco confirmou os nove itens, 1.440 minutos e todas as dependências.
+- Próximo passo: recarregar o Cronograma para visualizar os novos subassuntos.
+
+## 2026-10-03 — Otimização da área do cronograma
+
+- Removido o cabeçalho de título da página e reduzidas as margens laterais para dedicar mais largura à grade Gantt.
+- Adicionada a opção de vista mensal, mantendo as vistas semanal e diária; o rótulo passa a exibir mês e ano nessa escala.
+- Incluída a linha vermelha “Hoje” em cada faixa temporal quando a data atual estiver no intervalo visível.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; persiste somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: nenhum para este refinamento visual.
+
+## 2026-10-03 — Uniformização das linhas do Gantt
+
+- Corrigido o fundo das linhas do cronograma: todas as linhas, inclusive subassuntos, agora usam a mesma superfície azul-clara e o mesmo divisor.
+- A distinção entre assunto e subassunto permanece na hierarquia e nos marcadores de cor, sem alterar o contraste do conteúdo.
+- Próximo passo: nenhum para este ajuste visual.
+
+## 2026-10-03 — Persistência de estimativas do cronograma (em andamento)
+
+- Aplicada a migration `045_study_map_planning_indicators.sql`: itens de cronograma agora aceitam `estimated_minutes` sem invalidar planos existentes, e a configuração pessoal do mapa ganhou suporte à data de prova.
+- A estimativa foi transportada por DTO, serviço, domínio, repositório Doctrine e resposta do item; o diálogo de planejamento permite informá-la em minutos.
+- Validação: lint PHP dos arquivos alterados, build da SPA e `git diff --check` aprovados; API reiniciada após a migration.
+- Próximo passo: concluir os agregados persistidos de prazo, distribuição e desempenho no contrato do mapa.
+
+## 2026-10-03 — Painel Gantt de planejamento (em andamento)
+
+- Criada a mudança OpenSpec `gantt-dashboard-layout` e documentado o contrato de estimativas, data de prova e indicadores reais do mapa.
+- A página de Cronograma recebeu grade Gantt hierárquica, filtros, cartões de resumo e coluna lateral responsiva com progresso, distribuição, desempenho e legenda.
+- Para evitar indicadores fictícios, a carga exibe “Não informado” até a persistência de estimativas por assunto ser concluída; práticas e conclusões usam os dados já retornados pelo mapa.
+- Validação: `docker compose exec -T frontend npm run build` aprovada; permanece o aviso conhecido de chunk acima de 500 kB.
+- Próximo passo: persistir estimativas e data de prova no backend, conectando os totais do painel.
+
 ## 2026-10-01 — Renovação operacional das contagens de Taxonomia
 
 - Confirmada em runtime a consulta Doctrine com contagens publicadas e a serialização HTTP com `questionCount` positivo; por exemplo, o nó Administração devolve 135 questões.
@@ -3335,3 +3372,22 @@ docker compose exec -T frontend npm run build
 
 - Removido o estado de carregamento próprio do seletor de concurso; a lista agora atualiza o valor e chama o mapa diretamente na resolução da consulta, com falha exibida em tela.
 - Próximo passo: confirmar a seleção Transpetro e a renderização do Gantt.
+
+## 2026-10-03 — Gantt apenas com tarefas
+
+- A grade do mapa agora exibe somente assuntos que possuem tarefa agendada, além dos pais necessários para preservar o contexto da árvore. Assuntos sem tarefa permanecem disponíveis apenas no seletor de planejamento.
+- Próximo passo: validar a renderização do Gantt com o cronograma Transpetro.
+## 2026-10-03 — Mapa SVG com eixos independentes
+
+- O Gantt do Cronograma foi convertido de uma grade HTML única para painéis SVG sincronizados.
+- A rolagem vertical mantém o cabeçalho do período visível; a rolagem horizontal mantém os assuntos, estimativas e progresso congelados à esquerda.
+- Barras, inclusão de atividade e expansão da árvore continuam interativas e acessíveis por teclado no SVG.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: validar a interação visual no Cronograma com a quantidade real de assuntos planejados.
+
+## 2026-10-03 — Alinhamento dos painéis SVG do Gantt
+
+- Corrigido o posicionamento explícito dos quatro painéis do mapa: cabeçalho de assuntos, cabeçalho temporal, linhas de assuntos e linhas temporais.
+- A coluna de assuntos não é mais reduzida por media query, impedindo sobreposição de estimativa e progresso em telas estreitas.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: confirmar o alinhamento visual no Cronograma.

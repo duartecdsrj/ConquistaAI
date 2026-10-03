@@ -17,5 +17,8 @@ final readonly class StudyMapResponseDto
         public int $unclassifiedAnswers,
         public array $subjects,
         public array $schedule,
+        public ?StudyMapPlanningSummaryResponseDto $planningSummary = null,
+        public array $workloadDistribution = [],
+        public array $performanceInsights = [],
     ) {}
 }

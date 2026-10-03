@@ -27,8 +27,9 @@ final class StudyMapRequestFactory
         $end = $this->date($payload['endDate'] ?? null);
         $status = isset($payload['status']) && is_string($payload['status']) ? StudyScheduleStatus::tryFrom($payload['status']) : null;
         $predecessors = $payload['predecessorSubjectIds'] ?? [];
-        if (!is_string($examId) || !is_string($resolvedSubjectId) || $start === null || $end === null || $status === null || !is_array($predecessors) || array_filter($predecessors, static fn ($id): bool => !is_string($id))) throw new \InvalidArgumentException('Dados de cronograma inválidos.');
-        return new SaveStudyMapScheduleRequestDto('', $examId, $resolvedSubjectId, $start, $end, $status, array_values(array_unique($predecessors)));
+        $estimatedMinutes = $payload['estimatedMinutes'] ?? null;
+        if (!is_string($examId) || !is_string($resolvedSubjectId) || $start === null || $end === null || $status === null || ($estimatedMinutes !== null && (!is_int($estimatedMinutes) || $estimatedMinutes < 0)) || !is_array($predecessors) || array_filter($predecessors, static fn ($id): bool => !is_string($id))) throw new \InvalidArgumentException('Dados de cronograma inválidos.');
+        return new SaveStudyMapScheduleRequestDto('', $examId, $resolvedSubjectId, $start, $end, $status, array_values(array_unique($predecessors)), $estimatedMinutes);
     }
 
     private function date(mixed $value): ?\DateTimeImmutable

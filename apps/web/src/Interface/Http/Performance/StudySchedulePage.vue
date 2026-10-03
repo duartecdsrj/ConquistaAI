@@ -1,9 +1,5 @@
 <template>
   <q-page class="page">
-    <section class="top">
-      <div><p class="eyebrow">PLANEJAMENTO</p><h1>Seu cronograma de estudos</h1><p>Organize os assuntos por data, dependência e estado de estudo.</p></div>
-      <q-btn flat no-caps color="primary" label="Atualizar" :loading="loading" @click="refresh" />
-    </section>
     <q-banner v-if="error || catalogError" rounded class="error">{{ error || catalogError }}</q-banner>
     <q-card flat class="scope"><q-card-section><q-select v-model="selectedExamId" outlined dense emit-value map-options label="Concurso" :options="contestOptions" /></q-card-section></q-card>
     <q-linear-progress v-if="loading" indeterminate color="primary" class="map-loading" />
@@ -44,5 +40,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page{max-width:1050px;margin:auto;padding:42px 34px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 0 25px;border-bottom:1px solid #dce7f6}.eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.top h1,h2{margin:0;color:#142950}.top p{margin:7px 0;color:#71819e}.scope{margin-top:22px;border:1px solid #dce7f6;border-radius:18px;background:rgba(255,255,255,.86)}.scope :deep(.q-card__section){max-width:440px}.map-loading{margin-top:14px;border-radius:99px}.error{margin-top:16px;background:#fff3f2;color:#ae2f25}.empty{margin-top:24px;border:1px solid #dce7f6;border-radius:18px}.empty :deep(.q-card__section){display:flex;align-items:center;gap:18px;padding:30px}.empty p{margin:6px 0 0;color:#71819e}@media(max-width:700px){.page{padding:28px 16px}.top{align-items:flex-start}.top .q-btn{flex:none}}
+.page{max-width:none;margin:0;padding:14px 12px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:10px 0 25px;border-bottom:1px solid #dce7f6}.eyebrow{margin:0 0 7px;color:#7187ad;font-size:11px;font-weight:800;letter-spacing:.1em}.top h1,h2{margin:0;color:#142950}.top p{margin:7px 0;color:#71819e}.scope{margin-top:0;border:1px solid #dce7f6;border-radius:18px;background:rgba(255,255,255,.86)}.scope :deep(.q-card__section){max-width:440px}.map-loading{margin-top:14px;border-radius:99px}.error{margin-top:16px;background:#fff3f2;color:#ae2f25}.empty{margin-top:24px;border:1px solid #dce7f6;border-radius:18px}.empty :deep(.q-card__section){display:flex;align-items:center;gap:18px;padding:30px}.empty p{margin:6px 0 0;color:#71819e}@media(max-width:700px){.page{padding:28px 16px}.top{align-items:flex-start}.top .q-btn{flex:none}}
 </style>

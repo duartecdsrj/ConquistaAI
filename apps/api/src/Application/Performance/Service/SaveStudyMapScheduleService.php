@@ -38,12 +38,12 @@ final readonly class SaveStudyMapScheduleService
                 }
             }
             $previous = $bySubject[$request->subjectId] ?? null;
-            $bySubject[$request->subjectId] = new StudyMapScheduleItem($request->userId, $request->examId, $request->subjectId, $request->startDate, $request->endDate, $request->status, null, array_values(array_unique($request->predecessorSubjectIds)), $previous?->createdAt ?? $now, $now);
+            $bySubject[$request->subjectId] = new StudyMapScheduleItem($request->userId, $request->examId, $request->subjectId, $request->startDate, $request->endDate, $request->status, null, array_values(array_unique($request->predecessorSubjectIds)), $previous?->createdAt ?? $now, $now, $request->estimatedMinutes ?? $previous?->estimatedMinutes);
             if ($this->hasCycle($bySubject, $request->subjectId)) {
                 throw new \InvalidArgumentException('As dependências do cronograma não podem formar ciclos.');
             }
             $completedAt = $request->status === StudyScheduleStatus::PLANNED ? null : ($previous?->completedAt ?? $now);
-            $item = new StudyMapScheduleItem($request->userId, $request->examId, $request->subjectId, $request->startDate, $request->endDate, $request->status, $completedAt, array_values(array_unique($request->predecessorSubjectIds)), $previous?->createdAt ?? $now, $now);
+            $item = new StudyMapScheduleItem($request->userId, $request->examId, $request->subjectId, $request->startDate, $request->endDate, $request->status, $completedAt, array_values(array_unique($request->predecessorSubjectIds)), $previous?->createdAt ?? $now, $now, $request->estimatedMinutes ?? $previous?->estimatedMinutes);
             $this->schedule->save($item);
             return $item;
         });

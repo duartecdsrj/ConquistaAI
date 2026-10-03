@@ -7,6 +7,11 @@ use App\Application\Performance\DTO\Request\GetStudyMapRequestDto;
 use App\Application\Performance\DTO\Response\StudyMapResponseDto;
 use App\Application\Performance\DTO\Response\StudyMapScheduleResponseDto;
 use App\Application\Performance\DTO\Response\StudyMapSubjectResponseDto;
+use AppApplicationPerformanceDTOResponseStudyMapPlanningSummaryResponseDto;
+use AppApplicationPerformanceDTOResponseStudyMapWorkloadDistributionResponseDto;
+use AppApplicationPerformanceDTOResponseStudyMapPerformanceInsightResponseDto;
+use AppDomainPerformanceEnumStudyScheduleStatus;
+use AppDomainPerformanceRepositoryStudyMapSettingsRepositoryInterface;
 use App\Domain\Performance\Repository\PerformanceStatisticsRepositoryInterface;
 use App\Domain\Performance\Repository\StudyMapScheduleRepositoryInterface;
 use App\Domain\Performance\ValueObject\TaxonomyHierarchyNode;
@@ -41,7 +46,7 @@ final readonly class GetStudyMapService
         $subjects = array_map(fn (TaxonomyHierarchyNode $node): StudyMapSubjectResponseDto => $this->subject($node, $children, $metrics, 0), $roots);
         $correct = count(array_filter($answers, static fn ($answer): bool => $answer->isCorrect));
         $total = count($answers);
-        return new StudyMapResponseDto($request->examId, $request->from?->format('Y-m-d'), $request->to?->format('Y-m-d'), $total, $correct, $total - $correct, $total ? round(($correct / $total) * 100, 2) : null, 0, $subjects, array_map(static fn ($item): StudyMapScheduleResponseDto => new StudyMapScheduleResponseDto($item->taxonomySubjectId, $item->startDate->format('Y-m-d'), $item->endDate->format('Y-m-d'), $item->status->value, $item->completedAt?->format(DATE_ATOM), $item->predecessorSubjectIds), $this->schedule->listForUserExam($request->userId, $request->examId)));
+        return new StudyMapResponseDto($request->examId, $request->from?->format('Y-m-d'), $request->to?->format('Y-m-d'), $total, $correct, $total - $correct, $total ? round(($correct / $total) * 100, 2) : null, 0, $subjects, array_map(static fn ($item): StudyMapScheduleResponseDto => new StudyMapScheduleResponseDto($item->taxonomySubjectId, $item->startDate->format('Y-m-d'), $item->endDate->format('Y-m-d'), $item->status->value, $item->completedAt?->format(DATE_ATOM), $item->predecessorSubjectIds, $item->estimatedMinutes), $this->schedule->listForUserExam($request->userId, $request->examId)));
     }
 
     /** @param array<string, list<TaxonomyHierarchyNode>> $children @param array<string, array{answered:int,correct:int,days:array<string,bool>}> $metrics */

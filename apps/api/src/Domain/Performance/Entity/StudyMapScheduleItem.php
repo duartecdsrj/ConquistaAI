@@ -19,6 +19,7 @@ final readonly class StudyMapScheduleItem
         public array $predecessorSubjectIds,
         public \DateTimeImmutable $createdAt,
         public \DateTimeImmutable $updatedAt,
+        public ?int $estimatedMinutes = null,
     ) {
         if ($endDate < $startDate) {
             throw new \InvalidArgumentException('A data final não pode ser anterior à inicial.');

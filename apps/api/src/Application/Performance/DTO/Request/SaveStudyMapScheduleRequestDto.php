@@ -16,5 +16,6 @@ final readonly class SaveStudyMapScheduleRequestDto
         public \DateTimeImmutable $endDate,
         public StudyScheduleStatus $status,
         public array $predecessorSubjectIds,
+        public ?int $estimatedMinutes = null,
     ) {}
 }

@@ -32,7 +32,7 @@ final class StudyMapController
     {
         try {
             $user = $this->auth->currentUser($access);
-            $saved = $this->schedule->execute(new SaveStudyMapScheduleRequestDto($user->id, $input->examId, $input->subjectId, $input->startDate, $input->endDate, $input->status, $input->predecessorSubjectIds), new \DateTimeImmutable('now'));
+            $saved = $this->schedule->execute(new SaveStudyMapScheduleRequestDto($user->id, $input->examId, $input->subjectId, $input->startDate, $input->endDate, $input->status, $input->predecessorSubjectIds, $input->estimatedMinutes), new \DateTimeImmutable('now'));
             return $this->responses->success($response, $this->mapper->map($saved), (string) $request->getAttribute('request_id'));
         } catch (\InvalidArgumentException) {
             return $this->responses->problem($response, 'VALIDATION_FAILED', 'Cronograma de estudo inválido.', 422, (string) $request->getAttribute('request_id'));

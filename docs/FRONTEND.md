@@ -303,7 +303,7 @@ SubjectTreeSelect em Interface/Http/Shared recebe opções tipadas com id, name 
 
 A página Performance consome `GET /performance/study-map` pelas camadas `PerformancePage -> usePerformance -> PerformanceUseCases -> PerformanceRepository -> AxiosPerformanceRepository`. O mapa combina a árvore canônica do concurso, métricas de práticas confirmadas e itens persistidos do cronograma. A expansão da árvore e a escala visual são locais à apresentação; datas, dependências e estados `PLANNED`, `STUDIED` e `COMPLETED` são confirmados pela API.
 
-O Gantt preserva a posição temporal de assuntos estudados ou concluídos. Em telas pequenas, a grade pode rolar horizontalmente dentro do cartão, enquanto os controles de planejamento continuam com áreas de toque utilizáveis.
+O Gantt preserva a posição temporal de assuntos estudados ou concluídos. A área visual é composta por SVGs sincronizados: o cabeçalho permanece visível na rolagem vertical, os assuntos ficam congelados à esquerda durante a rolagem horizontal da linha do tempo e os dois eixos podem ser percorridos sem deslocar essas referências. Em telas pequenas, a grade mantém os controles de planejamento utilizáveis.
 
 ## Cronograma de estudo
 
