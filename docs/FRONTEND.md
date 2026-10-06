@@ -303,8 +303,12 @@ SubjectTreeSelect em Interface/Http/Shared recebe opções tipadas com id, name 
 
 A página Performance consome `GET /performance/study-map` pelas camadas `PerformancePage -> usePerformance -> PerformanceUseCases -> PerformanceRepository -> AxiosPerformanceRepository`. O mapa combina a árvore canônica do concurso, métricas de práticas confirmadas e itens persistidos do cronograma. A expansão da árvore e a escala visual são locais à apresentação; datas, dependências e estados `PLANNED`, `STUDIED` e `COMPLETED` são confirmados pela API.
 
-O Gantt preserva a posição temporal de assuntos estudados ou concluídos. A área visual é composta por SVGs sincronizados: o cabeçalho permanece visível na rolagem vertical, os assuntos ficam congelados à esquerda durante a rolagem horizontal da linha do tempo e os dois eixos podem ser percorridos sem deslocar essas referências. Em telas pequenas, a grade mantém os controles de planejamento utilizáveis.
+O Gantt preserva a posição temporal de assuntos estudados ou concluídos. A área visual é composta por SVGs sincronizados: o cabeçalho permanece visível na rolagem vertical, os assuntos ficam congelados à esquerda durante a rolagem horizontal da linha do tempo e os dois eixos podem ser percorridos sem deslocar essas referências. Quando há período selecionado, a régua SVG começa em `from`, termina em `to` e recalcula seus intervalos ao alternar entre vistas diária, semanal e mensal. O mapa mostra somente assuntos com atividade e os ancestrais necessários para contextualizá-los; subassuntos sem atividade não ocupam linhas. Em telas pequenas, a grade mantém os controles de planejamento utilizáveis.
 
 ## Cronograma de estudo
 
-O menu lateral possui a seção `Cronograma`, independente de `Desempenho`. Ela segue `StudySchedulePage -> usePerformance -> PerformanceUseCases -> PerformanceRepository -> AxiosPerformanceRepository -> API`, permite escolher o concurso e apresenta somente o mapa Gantt, filtros de período e planejamento confirmado. A tela de Desempenho permanece destinada a indicadores e análises.
+O menu lateral possui a seção `Cronograma`, independente de `Desempenho`. Ela segue `StudySchedulePage -> usePerformance -> PerformanceUseCases -> PerformanceRepository -> AxiosPerformanceRepository -> API`, permite escolher o concurso e um período opcional por datas de início e fim. A alteração ou limpeza das datas recarrega o mapa com os parâmetros `from` e `to` já definidos no contrato. A tela de Desempenho permanece destinada a indicadores e análises.
+### Minijogos de revisão
+
+- A seção **Minijogos** consome os 34 processos do COBIT 4.1 pelo módulo `Review` (Domain → Application → Axios → composable/página) e permite associá-los aos domínios PO, AI, DS e ME, sem expor nos cartões o código que denuncia o domínio.
+- A correção é enviada à API somente após todas as associações; a tela mostra o domínio correto em cada erro e permite reiniciar a tentativa.

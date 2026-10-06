@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+namespace Tests\Unit\Review;
+use App\Application\Review\DTO\Request\CobitGameAnswersRequestDto;use App\Application\Review\Service\CobitGameService;use PHPUnit\Framework\TestCase;
+final class CobitGameServiceTest extends TestCase { public function testProvidesAllProcessesWithoutTheirDomainPrefixAndScoresAssociations():void{$service=new CobitGameService();$game=$service->exercise();self::assertCount(4,$game->domains);self::assertCount(34,$game->processes);self::assertArrayNotHasKey('code',$game->processes[0]);$result=$service->evaluate(new CobitGameAnswersRequestDto(array_map(static fn(array $process):array=>['processId'=>$process['id'],'domainId'=>match(substr($process['id'],0,2)){'PO'=>'PO','AI'=>'AI','DS'=>'DS',default=>'ME'}],$game->processes)));self::assertSame(34,$result->correctCount);self::assertSame(100,$result->percentage);} public function testRejectsIncompleteAssociations():void{$this->expectException(\InvalidArgumentException::class);(new CobitGameService())->evaluate(new CobitGameAnswersRequestDto([['processId'=>'PO1','domainId'=>'PO']]));} }

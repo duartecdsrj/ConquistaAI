@@ -4,12 +4,14 @@ declare(strict_types=1);
 namespace App\Interface\Http\Review;
 
 use App\Application\Review\DTO\Request\RateFlashcardInputRequestDto;
+use App\Application\Review\DTO\Request\CobitGameAnswersRequestDto;
 use App\Domain\Review\Enum\ReviewRating;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 
 final class ReviewRequestFactory
 {
+    public function cobitAnswers(ServerRequestInterface $request): CobitGameAnswersRequestDto { try{$payload=json_decode((string)$request->getBody(),true,512,JSON_THROW_ON_ERROR);}catch(\JsonException){throw new InvalidArgumentException('JSON inválido.');}$answers=is_array($payload)?$payload['answers']??null:null;if(!is_array($answers)||array_is_list($answers)===false)throw new InvalidArgumentException('Respostas inválidas.');$valid=[];foreach($answers as $answer){if(!is_array($answer)||!is_string($answer['processId']??null)||!is_string($answer['domainId']??null))throw new InvalidArgumentException('Resposta inválida.');$valid[]=['processId'=>$answer['processId'],'domainId'=>$answer['domainId']];}return new CobitGameAnswersRequestDto($valid);}
     public function navigation(ServerRequestInterface $request): string { try{$payload=json_decode((string)$request->getBody(),true,512,JSON_THROW_ON_ERROR);}catch(\JsonException){throw new InvalidArgumentException('JSON inválido.');} $direction=is_array($payload)?$payload['direction']??null:null; if(!is_string($direction)||!in_array($direction,['NEXT','PREVIOUS'],true))throw new InvalidArgumentException('Direção inválida.');return $direction; }
     public function page(ServerRequestInterface $request): int { return $this->positiveInteger($request->getQueryParams()['page'] ?? 1, 'page'); }
     public function perPage(ServerRequestInterface $request): int { $perPage = $this->positiveInteger($request->getQueryParams()['per_page'] ?? 25, 'per_page'); if ($perPage > 100) throw new InvalidArgumentException('Parâmetro per_page inválido.'); return $perPage; }

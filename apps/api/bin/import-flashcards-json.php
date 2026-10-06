@@ -14,14 +14,16 @@ use App\Infrastructure\Persistence\Doctrine\DoctrineTransactionManager;
 use App\Infrastructure\Persistence\Doctrine\Identity\DoctrineUserRepository;
 use App\Infrastructure\Persistence\Doctrine\Review\DoctrineFlashcardRepository;
 use App\Infrastructure\Persistence\Doctrine\Review\DoctrineUserFlashcardProgressRepository;
+use App\Infrastructure\Persistence\Doctrine\Review\Entity\ReviewSessionRecord;
 use App\Infrastructure\Persistence\Doctrine\Taxonomy\DoctrineTaxonomySubjectRepository;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-[$script, $email, $subjectSlug] = array_pad($argv, 3, null);
+[$script, $email, $subjectSlug, $mode] = array_pad($argv, 4, null);
 $subjectSlug ??= 'ingles';
+$archiveOthers = $mode === '--archive-others';
 if (!is_string($email) || trim($email) === '' || !preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $subjectSlug)) {
-    fwrite(STDERR, "Uso: php bin/import-flashcards-json.php <email> [slug-do-assunto] < deck.json\n");
+    fwrite(STDERR, "Uso: php bin/import-flashcards-json.php <email> [slug-do-assunto] [--archive-others] < deck.json\n");
     exit(64);
 }
 
@@ -32,8 +34,8 @@ try {
     exit(65);
 }
 
-$deck = $payload['deck'] ?? null;
-$items = is_array($deck) ? $deck['cards'] ?? null : null;
+$deck = is_array($payload['deck'] ?? null) ? $payload['deck'] : $payload;
+$items = $deck['cards'] ?? null;
 if (!is_array($items) || $items === [] || (isset($deck['total_cards']) && $deck['total_cards'] !== count($items))) {
     fwrite(STDERR, "O deck precisa conter cards válidos e total_cards compatível.\n");
     exit(65);
@@ -66,7 +68,7 @@ if ($user === null || !$user->isActive()) {
 }
 
 $now = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-$result = (new DoctrineTransactionManager($entityManager))->transactional(function () use ($cards, $flashcards, $progresses, $subjects, $subjectSlug, $user, $now): array {
+$result = (new DoctrineTransactionManager($entityManager))->transactional(function () use ($cards, $flashcards, $progresses, $subjects, $subjectSlug, $user, $now, $archiveOthers, $entityManager): array {
     $subject = $subjects->findBySlug($subjectSlug);
     $subjectCreated = false;
     if ($subject === null) {
@@ -76,28 +78,47 @@ $result = (new DoctrineTransactionManager($entityManager))->transactional(functi
     }
 
     $service = new CreateOrReuseFlashcardService($flashcards, $subjects);
-    $created = $reused = $progressCreated = $progressReused = 0;
+    $created = $reused = $progressCreated = $progressReused = $progressReactivated = 0;
+    $retainedCardIds = [];
     foreach ($cards as $item) {
         $fingerprint = FlashcardFingerprint::fromContent($subject->id, FlashcardType::BASIC, $item['front'], $item['back']);
         $existing = $flashcards->findByFingerprint($subject->id, $fingerprint);
         $card = $service->execute(new CreateOrReuseFlashcardRequestDto($subject->id, $item['front'], $item['back'], FlashcardSource::EDITORIAL), $now);
+        $retainedCardIds[$card->id] = true;
         $existing === null ? $created++ : $reused++;
-        if ($progresses->find($user->id, $card->id) === null) {
+        $progress = $progresses->find($user->id, $card->id);
+        if ($progress === null) {
             $progresses->save(new UserFlashcardProgress($user->id, $card->id, new FlashcardProgressState($now, 0, 2.5, 0, 0), null, $now, $now));
             $progressCreated++;
         } else {
+            if (!$progress->active) {
+                $progress->activate($now);
+                $progresses->save($progress);
+                $progressReactivated++;
+            }
             $progressReused++;
         }
     }
-    return compact('subject', 'subjectCreated', 'created', 'reused', 'progressCreated', 'progressReused');
+    $archivedProgress = $abandonedSessions = 0;
+    if ($archiveOthers) {
+        $archivedProgress = $progresses->archiveExcept($user->id, array_keys($retainedCardIds), $now);
+        $sessions = $entityManager->getRepository(ReviewSessionRecord::class)->findBy(['userId' => $user->id, 'status' => 'ACTIVE']);
+        foreach ($sessions as $session) {
+            $session->status = 'ABANDONED';
+            $session->completedAt = $now;
+            $abandonedSessions++;
+        }
+    }
+    return compact('subject', 'subjectCreated', 'created', 'reused', 'progressCreated', 'progressReused', 'progressReactivated', 'archivedProgress', 'abandonedSessions');
 });
 
 echo json_encode([
-    'deck' => $deck['name'] ?? null,
+    'deck' => $deck['name'] ?? $deck['title'] ?? null,
     'cards' => count($cards),
     'subject' => ['id' => $result['subject']->id, 'name' => $result['subject']->name, 'created' => $result['subjectCreated']],
     'flashcards' => ['created' => $result['created'], 'reused' => $result['reused']],
-    'progress' => ['created' => $result['progressCreated'], 'reused' => $result['progressReused'], 'due_at' => $now->format(DATE_ATOM)],
+    'progress' => ['created' => $result['progressCreated'], 'reused' => $result['progressReused'], 'reactivated' => $result['progressReactivated'], 'due_at' => $now->format(DATE_ATOM)],
+    'archiving' => $archiveOthers ? ['archived_progress' => $result['archivedProgress'], 'abandoned_sessions' => $result['abandonedSessions']] : null,
 ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) . PHP_EOL;
 
 function uuid(): string

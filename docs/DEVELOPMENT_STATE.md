@@ -3391,3 +3391,69 @@ docker compose exec -T frontend npm run build
 - A coluna de assuntos não é mais reduzida por media query, impedindo sobreposição de estimativa e progresso em telas estreitas.
 - Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
 - Próximo passo: confirmar o alinhamento visual no Cronograma.
+
+## 2026-10-03 — Grade nomeada do mapa SVG
+
+- Os painéis do Gantt agora usam áreas nomeadas de CSS Grid, sem depender da colocação automática dos elementos.
+- O cabeçalho temporal é forçado à direita do cabeçalho de assuntos, e o corpo temporal à direita das linhas de assuntos.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: confirmar no navegador que as quatro regiões formam uma única grade alinhada.
+## 2026-10-03 — Filtro de período do Cronograma
+
+- Adicionados campos de data “De” e “Até” aos controles do mapa Gantt.
+- Cada alteração recarrega o mapa pelo fluxo existente de `periodChange`; limpar os dois campos restaura a visão integral.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: validar a seleção de período no Cronograma.
+## 2026-10-03 — Régua do Gantt respeita o período escolhido
+
+- A escala SVG passa a usar o início e o fim escolhidos nos filtros, em vez da primeira atividade retornada.
+- A troca entre vistas diária, semanal e mensal recalcula todos os intervalos necessários para cobrir o período selecionado.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: validar as três escalas com um intervalo personalizado.
+## 2026-10-03 — Contexto de subassuntos no Gantt
+
+- Corrigida a coleta de linhas do mapa: os filhos de um assunto que possui atividade passam a ser exibidos, ainda que não tenham atividade individual.
+- A árvore continua compacta para ramos sem qualquer planejamento, enquanto Redes de Computadores e seus subassuntos permanecem navegáveis.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: confirmar o ramo de Redes no Cronograma.
+
+## 2026-10-03 — Herança de visibilidade dos subassuntos
+
+- Corrigida a propagação da visibilidade para todos os níveis abaixo de um assunto planejado; antes ela era perdida após o primeiro filho sem agenda.
+- Redes de Computadores passa a exibir toda a sua árvore de subassuntos quando o ramo pai está no cronograma.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: confirmar a árvore completa de Redes no Cronograma.
+## 2026-10-03 — Rolagem visível do ramo de Redes
+
+- Confirmado no banco local que Redes de Computadores possui 14 filhos e que sua atividade está registrada no nó pai.
+- O corpo do SVG agora respeita o limite de altura da grade e expõe uma barra vertical na linha do tempo; os subassuntos que seguem a última linha visível podem ser alcançados ao rolar.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: confirmar visualmente a rolagem e o ramo de Redes.
+## 2026-10-03 — Árvore compacta por atividade no Gantt
+
+- Por decisão de produto, o mapa exibe somente assuntos com atividade agendada e os ancestrais indispensáveis para manter a hierarquia.
+- Subassuntos de Redes, ou de qualquer outro ramo, não ocupam linhas enquanto não possuírem atividade própria.
+- Validação: `docker compose exec -T frontend npm run build` e `git diff --check` aprovados; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: validar o mapa compacto no Cronograma.
+## 2026-10-03 — Planejamento em subassuntos da matriz
+
+- A validação do cronograma passa a aceitar um subassunto descendente de qualquer assunto canônico já vinculado ao cargo do concurso.
+- Assuntos de fora da matriz continuam rejeitados; a mudança viabiliza planejar DNS, FTP e demais protocolos abaixo de Redes de Computadores.
+- Criadas pela API autenticada 20 atividades de Redes de Computadores, de 04 a 10/10, totalizando 1.920 minutos (32 h): arquitetura, topologias, equipamentos, transmissão, QoS, OSI, TCP/IP, protocolos de aplicação e IPv6.
+- Validação: lint PHP do repositório de escopo, build da SPA e consulta ao banco confirmaram as 20 atividades, suas datas e a carga total; permanece somente o aviso conhecido de bundle acima de 500 kB.
+- Próximo passo: recarregar o Cronograma para conferir as novas faixas.
+## 2026-10-04 — Substituição segura de conjunto de flashcards
+
+- Adicionado arquivamento por usuário ao progresso de flashcards: cards fora de um novo conjunto deixam de participar das filas diária, rápida e antecipada, sem remover tentativas, avaliações ou sessões já registradas.
+- O importador aceita o formato de conjunto enviado pelo usuário, reutiliza o progresso quando frente e verso normalizados coincidem e reativa esse progresso caso estivesse arquivado.
+- Ao aplicar `--archive-others`, sessões ativas são encerradas como abandonadas para que a próxima sessão seja montada exclusivamente com o conjunto vigente; nenhum registro histórico é excluído.
+- Aplicada a migration `046_flashcard_progress_archiving.sql` e importado o conjunto “Inglês Transpetro/CESGRANRIO — Vocabulário Essencial”: 152 cards ficaram ativos (137 novos e 15 com progresso reaproveitado); 186 progressos anteriores foram arquivados da fila e duas sessões ativas foram encerradas sem remoção de dados.
+- Validação: a fila possui 152 cards ativos, 186 arquivados e preserva as 890 revisões registradas; PHPUnit focal de Review aprovado com 15 testes e 38 asserções.
+- Próximo passo: abrir uma nova sessão de revisão e confirmar visualmente a fila de Inglês.
+## 2026-10-05 — Minijogo de associação COBIT 4.1
+
+- Criado exercício autenticado de associação entre os quatro domínios do COBIT 4.1 (PO, AI, DS e ME) e 12 processos representativos.
+- A API entrega o enunciado e avalia as associações; a nova seção **Minijogos** usa o fluxo DDD do módulo Review, informa acertos/erros por processo e permite recomeçar.
+- Validação: lint PHP dos novos componentes de API, PHPUnit focal de Review e build tipado da SPA aprovados; permanece apenas o aviso conhecido de bundle acima de 500 kB.
+- Ampliado o exercício para os 34 processos oficiais do COBIT 4.1; cartões de processo não exibem mais seus códigos PO, AI, DS ou ME, evitando revelar a associação correta.
+- Próximo passo: validar a compilação e realizar uma tentativa visual com a lista completa.

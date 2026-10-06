@@ -30,7 +30,7 @@ import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import type { AuthenticatedUser } from '../../../Domain/Identity/AuthRepository'
 
-export type ApplicationSection = 'home' | 'notebooks' | 'review' | 'questions' | 'arena' | 'performance' | 'schedule' | 'assistant' | 'catalog' | 'import' | 'editorial' | 'taxonomy' | 'discovery' | 'audit' | 'users' | 'profile'
+export type ApplicationSection = 'home' | 'notebooks' | 'review' | 'games' | 'questions' | 'arena' | 'performance' | 'schedule' | 'assistant' | 'catalog' | 'import' | 'editorial' | 'taxonomy' | 'discovery' | 'audit' | 'users' | 'profile'
 
 const props = defineProps<{ readonly user: AuthenticatedUser; readonly active: ApplicationSection; readonly canManage: boolean }>()
 const emit = defineEmits<{ navigate: [section: ApplicationSection]; logout: [] }>()
@@ -43,6 +43,7 @@ const navigationItems = computed<readonly { id: ApplicationSection; label: strin
   { id: 'assistant', label: 'Assistente', caption: 'Pergunte ao edital', icon: 'diversity_3' },
   { id: 'notebooks', label: 'Cadernos e plano', caption: 'Monte e retome estudos', icon: 'menu_book' },
   { id: 'review', label: 'Revisão', caption: 'Cards e domínio', icon: 'school' },
+  { id: 'games', label: 'Minijogos', caption: 'Pratique associações', icon: 'extension' },
   { id: 'questions', label: 'Questões', caption: 'Banco publicado', icon: 'article_outlined' },
   { id: 'performance', label: 'Desempenho', caption: 'Resultados reais', icon: 'insights' },
   { id: 'schedule', label: 'Cronograma', caption: 'Planejamento Gantt', icon: 'calendar_month' },
